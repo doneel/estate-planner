@@ -6,6 +6,7 @@ import * as go from "gojs";
 import { BeneficiaryEntity, updateBeneficiaryEntity } from "./beneficiary";
 import type { Owner } from "../planSidebars/OwnerSidebar";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
+import { TransferEntity } from "./transfer";
 export type ModelType = Owner | Beneficiary;
 
 export type SetSidebarProps<T extends ModelType> = {
@@ -16,7 +17,17 @@ export type Props = {
   setSidebar: (props: SetSidebarProps<ModelType>) => void;
 };
 
-export function addOwner() {}
+class FixedLayout extends go.LayeredDigraphLayout {
+  doLayout(coll: go.Diagram | go.Group | go.Iterable<go.Part>) {
+    super.doLayout(coll);
+    if (coll instanceof go.Diagram) {
+      const diagram: go.Diagram = coll;
+      diagram.model.commit(function (m: go.Model) {
+        diagram.nodes.each((n) => n.moveTo(n.location.x + 1, n.location.y));
+      }, "");
+    }
+  }
+}
 
 export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
@@ -63,76 +74,51 @@ export async function initDiagram({ setSidebar }: Props) {
     }
   }
 
-  console.log("running");
   const diagram = new go.Diagram("myDiagramDiv", {
-    layout: new go.LayeredDigraphLayout({
+    layout: new FixedLayout({
       direction: 90,
       layerSpacing: 150,
-      columnSpacing: 100,
-      initializeOption: go.LayeredDigraphLayout.InitNaive,
+      columnSpacing: 200,
+      setsPortSpots: false,
     }),
   });
+  diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelZoom;
 
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
   diagram.nodeTemplateMap.add("Owner", OwnerEntity);
   diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryEntity);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
-  diagram.linkTemplateMap.add(
-    "gift",
-    new go.Link({
-      fromEndSegmentLength: 100,
-      toEndSegmentLength: 100,
-      routing: go.Link.Orthogonal,
-      corner: 12,
-      relinkableFrom: true,
-      relinkableTo: true,
-      selectionAdorned: false,
-    })
-      .add(new go.Shape({ strokeWidth: 2 }))
-      .add(new go.Shape({ toArrow: "Standard" }))
-      .add(
-        new go.Panel("Auto")
-          .add(
-            new go.Shape("RoundedRectangle", {
-              stroke: "black",
-              fill: "lightgray",
-            })
-          )
-          .add(
-            new go.Panel("Vertical", { margin: 12 }).add(
-              new go.TextBlock("").bind("text", "when"),
-              new go.TextBlock("").bind("text", "valueType"),
-              new go.TextBlock("").bind("text", "estimatedValue")
-            )
-          )
-      )
-  );
+  diagram.linkTemplateMap.add("transfer", TransferEntity);
   diagram.model = new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
     linkToPortIdProperty: "toPort",
     nodeDataArray: [
       { key: "Mary", category: "Owner", netWorth: null },
       { key: "Tom", category: "Owner", netWorth: null },
-      { key: "Tom Jr.", category: "Owner", netWorth: null },
+      { key: "Tom Jr.", category: "Beneficiary", birthYear: 1992 },
     ],
     linkDataArray: [
       {
         from: "Tom",
-        fromPort: "OUT",
-        toPort: "IN",
         to: "Tom Jr.",
-        category: "gift",
+        category: "transfer",
         when: "On death",
         valueType: "All remaining assets",
         estimatedValue: "49,000",
       },
       {
-        from: "Mary",
-        fromPort: "OUT",
-        toPort: "IN",
+        from: "Tom",
         to: "Tom Jr.",
-        category: "gift",
-        when: new Date(2024, 1, 17),
+        category: "transfer",
+        when: "On death",
+        valueType: "SOME remaining assets",
+        estimatedValue: "49,000",
+      },
+      {
+        from: "Mary",
+        to: "Tom Jr.",
+        category: "transfer",
+        when: new Date(2024, 1, 17).toLocaleDateString(),
         valueType: "Fixed",
         estimatedValue: "19,000",
       },

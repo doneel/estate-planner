@@ -59,6 +59,15 @@ export default function PlanPage() {
     }
   }
 
+  function resetLayout() {
+    if (diagram !== undefined) {
+      diagram.layout.invalidateLayout();
+      diagram.model.commit(function (m: go.Model) {
+        diagram.nodes.each((n) => n.moveTo(n.location.x + 1, n.location.y));
+      }, "Move nodes around");
+    }
+  }
+
   return (
     <main className="flex h-full flex-col">
       <h1 className="mx-auto text-4xl">New estate plan</h1>
@@ -74,6 +83,12 @@ export default function PlanPage() {
           onClick={addBeneficiary}
         >
           Add beneficiary
+        </button>
+        <button
+          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+          onClick={resetLayout}
+        >
+          Fix layout
         </button>
       </div>
       <div className="flex h-full w-full">

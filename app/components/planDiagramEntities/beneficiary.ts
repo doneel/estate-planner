@@ -25,10 +25,10 @@ export const BeneficiaryEntity = new go.Node("Vertical", {
     new go.Shape("Circle", {
       fill: "gray",
       stroke: "white",
-      desiredSize: new go.Size(12, 12),
+      desiredSize: new go.Size(20, 20),
       toLinkable: true,
-      toSpot: go.Spot.TopSide,
-      portId: "IN",
+      portId: "",
+      toLinkableDuplicates: true,
       mouseEnter: (e, port: go.GraphObject) => {
         //@ts-ignore
         const shapePort: go.Shape = port;
