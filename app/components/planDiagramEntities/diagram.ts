@@ -1,20 +1,19 @@
-import React from "react";
-import { e } from "vitest/dist/index-6e18a03a";
 import {
   OwnerEntity,
   updateOwnerEntity,
 } from "~/components/planDiagramEntities/owner";
 import * as go from "gojs";
 import { BeneficiaryEntity, updateBeneficiaryEntity } from "./beneficiary";
-import type { Owner } from "../planSidebars/ownerSidebar";
+import type { Owner } from "../planSidebars/OwnerSidebar";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
+export type ModelType = Owner | Beneficiary;
 
-export type SetSidebarProps = {
-  entity: Owner | Beneficiary;
-  updateCallback: (entity: Partial<Owner> | Partial<Beneficiary>) => void;
+export type SetSidebarProps<T extends ModelType> = {
+  entity: T;
+  updateCallback: <T>(entity: Partial<T>) => void;
 };
 export type Props = {
-  setSidebar: (props: SetSidebarProps) => void;
+  setSidebar: (props: SetSidebarProps<ModelType>) => void;
 };
 
 export function addOwner() {}
@@ -23,36 +22,43 @@ export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
     const node = e.diagram.selection.first();
     if (node instanceof go.Node) {
-      if (node.data.category === "Owner") {
-        setSidebar({
-          entity: {
-            name: node.data?.key,
-            category: node.data?.category,
-            birthYear: node.data?.birthYear,
-            netWorth: node.data?.netWorth,
-            expectedLifeSpan: node.data?.expectedLifeSpan,
-          },
-          updateCallback: (owner: Partial<Owner>) => {
-            const ownerEntity = e.diagram?.selection?.first();
-            ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
-          },
-        });
-      } else if (node.data.category === "Beneficiary") {
-        setSidebar({
-          entity: {
-            name: node.data?.key,
-            category: node.data?.category,
-          },
-          updateCallback: (beneficiary: Partial<Beneficiary>) => {
-            const beneficiaryEntity = e.diagram?.selection?.first();
-            beneficiaryEntity &&
-              updateBeneficiaryEntity(
-                e.diagram,
-                beneficiaryEntity,
-                beneficiary
-              );
-          },
-        });
+      const data: Owner | Beneficiary = node.data;
+      switch (data.category) {
+        case "Owner":
+          const props: SetSidebarProps<Owner> = {
+            entity: {
+              name: node.data?.key,
+              category: node.data?.category,
+              birthYear: node.data?.birthYear,
+              netWorth: node.data?.netWorth,
+              expectedLifeSpan: node.data?.expectedLifeSpan,
+            },
+            updateCallback: (owner: Partial<Owner>) => {
+              const ownerEntity = e.diagram?.selection?.first();
+              ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
+            },
+          };
+          setSidebar(props);
+          return;
+
+        case "Beneficiary":
+          setSidebar({
+            entity: {
+              name: node.data?.key,
+              category: node.data?.category,
+              birthYear: node.data?.birthYear,
+            },
+            updateCallback: (beneficiary) => {
+              const beneficiaryEntity = e.diagram?.selection?.first();
+              beneficiaryEntity &&
+                updateBeneficiaryEntity(
+                  e.diagram,
+                  beneficiaryEntity,
+                  beneficiary
+                );
+            },
+          });
+          return;
       }
     }
   }

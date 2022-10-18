@@ -1,7 +1,8 @@
 import * as go from "gojs";
-import type { Owner } from "../planForms/OwnerForm";
+import type { Owner } from "../planSidebars/OwnerSidebar";
 
 function addGift(e: go.InputEvent, button: go.GraphObject) {
+  //@ts-ignore
   var node: go.Part = button.part.adornedPart;
   e.diagram.clearSelection();
 
@@ -15,6 +16,8 @@ function addGift(e: go.InputEvent, button: go.GraphObject) {
     estimatedValue: "49,000",
   };
   tool.startObject = node.findObject("outport");
+
+  //@ts-ignore
   node.diagram.currentTool = tool;
   tool.doActivate();
 }
@@ -59,23 +62,6 @@ export const OwnerEntity = new go.Node("Vertical", {
         )
     ),
 })
-  .add(
-    new go.Shape("Circle", {
-      fill: "gray",
-      stroke: "white",
-      desiredSize: new go.Size(12, 12),
-      toLinkable: true,
-      toSpot: go.Spot.TopSide,
-      portId: "IN",
-      mouseEnter: (e, port: go.GraphObject) => {
-        // the PORT argument will be this Shape
-        if (!e.diagram.isReadOnly) port.fill = "#66F";
-      },
-      mouseLeave: (e, port) => {
-        port.fill = "gray";
-      },
-    })
-  )
   .add(new go.Shape("Ellipse", { width: 120, height: 180, fill: "gray" }))
   .add(
     new go.TextBlock("default", {
@@ -113,11 +99,14 @@ export const OwnerEntity = new go.Node("Vertical", {
       fromSpot: go.Spot.BottomSide,
       portId: "OUT",
       mouseEnter: (e, port: go.GraphObject) => {
-        // the PORT argument will be this Shape
-        if (!e.diagram.isReadOnly) port.fill = "#66F";
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        if (!e.diagram.isReadOnly) shapePort.fill = "#66F";
       },
       mouseLeave: (e, port) => {
-        port.fill = "gray";
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        shapePort.fill = "gray";
       },
     })
   );

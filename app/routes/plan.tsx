@@ -1,7 +1,6 @@
 import React from "react";
-import OwnerForm from "~/components/planForms/OwnerForm";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
-import OwnerSidebar from "~/components/planSidebars/ownerSidebar";
+import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 
 export default function PlanPage() {
   const [diagram, setDiagram] = React.useState<go.Diagram | undefined>(

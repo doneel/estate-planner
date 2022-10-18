@@ -1,7 +1,7 @@
 import type { FormEvent } from "react";
 import { useEffect } from "react";
 import React from "react";
-import type { Owner } from "../planSidebars/ownerSidebar";
+import type { Owner } from "../planSidebars/OwnerSidebar";
 
 export type Props = {
   owner: Partial<Owner>;

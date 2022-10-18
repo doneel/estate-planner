@@ -30,11 +30,14 @@ export const BeneficiaryEntity = new go.Node("Vertical", {
       toSpot: go.Spot.TopSide,
       portId: "IN",
       mouseEnter: (e, port: go.GraphObject) => {
-        // the PORT argument will be this Shape
-        if (!e.diagram.isReadOnly) port.fill = "#66F";
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        if (!e.diagram.isReadOnly) shapePort.fill = "#66F";
       },
       mouseLeave: (e, port) => {
-        port.fill = "gray";
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        shapePort.fill = "gray";
       },
     })
   )
