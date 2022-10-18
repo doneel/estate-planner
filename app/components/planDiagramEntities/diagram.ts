@@ -1,11 +1,17 @@
 import React from "react";
 import { e } from "vitest/dist/index-6e18a03a";
-import { updateOwnerEntity } from "~/components/planDiagramEntities/owner";
-import type { Owner } from "../planForms/OwnerForm";
+import {
+  OwnerEntity,
+  updateOwnerEntity,
+} from "~/components/planDiagramEntities/owner";
+import * as go from "gojs";
+import { BeneficiaryEntity, updateBeneficiaryEntity } from "./beneficiary";
+import type { Owner } from "../planSidebars/ownerSidebar";
+import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
 
 export type SetSidebarProps = {
-  entity: Owner;
-  updateCallback: (entity: Partial<Owner>) => void;
+  entity: Owner | Beneficiary;
+  updateCallback: (entity: Partial<Owner> | Partial<Beneficiary>) => void;
 };
 export type Props = {
   setSidebar: (props: SetSidebarProps) => void;
@@ -21,6 +27,7 @@ export async function initDiagram({ setSidebar }: Props) {
         setSidebar({
           entity: {
             name: node.data?.key,
+            category: node.data?.category,
             birthYear: node.data?.birthYear,
             netWorth: node.data?.netWorth,
             expectedLifeSpan: node.data?.expectedLifeSpan,
@@ -30,13 +37,27 @@ export async function initDiagram({ setSidebar }: Props) {
             ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
           },
         });
+      } else if (node.data.category === "Beneficiary") {
+        setSidebar({
+          entity: {
+            name: node.data?.key,
+            category: node.data?.category,
+          },
+          updateCallback: (beneficiary: Partial<Beneficiary>) => {
+            const beneficiaryEntity = e.diagram?.selection?.first();
+            beneficiaryEntity &&
+              updateBeneficiaryEntity(
+                e.diagram,
+                beneficiaryEntity,
+                beneficiary
+              );
+          },
+        });
       }
     }
   }
 
   console.log("running");
-  const go = await import("gojs");
-  const OwnerEntity = await import("~/components/planDiagramEntities/owner");
   const diagram = new go.Diagram("myDiagramDiv", {
     layout: new go.LayeredDigraphLayout({
       direction: 90,
@@ -44,11 +65,11 @@ export async function initDiagram({ setSidebar }: Props) {
       columnSpacing: 100,
       initializeOption: go.LayeredDigraphLayout.InitNaive,
     }),
-    //model: new go.GraphLinksModel({ linkKeyProperty: "key" }),
   });
 
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
-  diagram.nodeTemplateMap.add("Owner", OwnerEntity.OwnerEntity);
+  diagram.nodeTemplateMap.add("Owner", OwnerEntity);
+  diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryEntity);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
   diagram.linkTemplateMap.add(
     "gift",

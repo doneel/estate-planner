@@ -1,22 +1,12 @@
 import type { FormEvent } from "react";
 import { useEffect } from "react";
 import React from "react";
-
-export type Owner = {
-  name: string;
-  birthYear: number;
-  netWorth: number;
-  expectedLifeSpan: number;
-};
+import type { Owner } from "../planSidebars/ownerSidebar";
 
 export type Props = {
   owner: Partial<Owner>;
   setOwner: (owner: Partial<Owner>) => void;
 };
-
-function undefinedIfNan(n?: number) {
-  return n ? (isNaN(n) ? undefined : n) : undefined;
-}
 
 export default function OwnerForm({ owner, setOwner }: Props) {
   const [name, setName] = React.useState(owner.name);
