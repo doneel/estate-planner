@@ -2,7 +2,7 @@ import type { FormEvent } from "react";
 import { useEffect } from "react";
 import React from "react";
 
-export type Person = {
+export type Owner = {
   name: string;
   birthYear: number;
   netWorth: number;
@@ -10,39 +10,38 @@ export type Person = {
 };
 
 export type Props = {
-  person: Partial<Person>;
-  setPerson: (person: Partial<Person>) => void;
+  owner: Partial<Owner>;
+  setOwner: (owner: Partial<Owner>) => void;
 };
 
 function undefinedIfNan(n?: number) {
   return n ? (isNaN(n) ? undefined : n) : undefined;
 }
 
-export default function PersonForm({ person, setPerson }: Props) {
-  const [name, setName] = React.useState(person.name);
-  useEffect(() => setName(person.name), [person]);
+export default function OwnerForm({ owner, setOwner }: Props) {
+  const [name, setName] = React.useState(owner.name);
+  useEffect(() => setName(owner.name), [owner]);
 
-  const [netWorth, setNetWorth] = React.useState(person.netWorth);
-  useEffect(() => setNetWorth(person.netWorth), [person]);
+  const [netWorth, setNetWorth] = React.useState(owner.netWorth);
+  useEffect(() => setNetWorth(owner.netWorth), [owner]);
 
-  const [birthYear, setBirthYear] = React.useState(person.birthYear);
-  useEffect(() => setBirthYear(person.birthYear), [person]);
+  const [birthYear, setBirthYear] = React.useState(owner.birthYear);
+  useEffect(() => setBirthYear(owner.birthYear), [owner]);
 
   const [expectedLifeSpan, setExpectedLifeSpan] = React.useState(
-    person.expectedLifeSpan
+    owner.expectedLifeSpan
   );
-  useEffect(() => setExpectedLifeSpan(person.expectedLifeSpan), [person]);
+  useEffect(() => setExpectedLifeSpan(owner.expectedLifeSpan), [owner]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setPerson({
+    setOwner({
       name: name,
       birthYear: birthYear,
       netWorth: netWorth,
       expectedLifeSpan: expectedLifeSpan,
     });
   }
-  console.log("render form with net worth", netWorth, person.netWorth);
   return (
     <form>
       <div className="group relative z-0 mb-6 w-full">
@@ -54,7 +53,6 @@ export default function PersonForm({ person, setPerson }: Props) {
           onChange={(e) => setName(e.target.value)}
           className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
           placeholder=" "
-          defaultValue={person.name}
         />
         <label
           htmlFor="Name"
@@ -73,7 +71,6 @@ export default function PersonForm({ person, setPerson }: Props) {
           onChange={(e) => setNetWorth(e.target.valueAsNumber)}
           className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
           placeholder=" "
-          defaultValue={person.netWorth?.toString()}
         />
         <label
           htmlFor="netWorth"
@@ -92,7 +89,6 @@ export default function PersonForm({ person, setPerson }: Props) {
             onChange={(e) => setBirthYear(e.target.valueAsNumber)}
             className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
             placeholder=" "
-            defaultValue={person.birthYear}
           />
           <label
             htmlFor="birthYear"
@@ -110,7 +106,6 @@ export default function PersonForm({ person, setPerson }: Props) {
             onChange={(e) => setExpectedLifeSpan(e.target.valueAsNumber)}
             className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
             placeholder=" "
-            defaultValue={person.birthYear}
           />
           <label
             htmlFor="birthYear"
