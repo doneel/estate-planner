@@ -35,6 +35,8 @@
     "@remix-run/serve": "^1.7.2",
     "@remix-run/server-runtime": "^1.7.2",
     "bcryptjs": "^2.4.3",
+    "flowbite": "^1.5.3",
+    "flowbite-react": "^0.2.0",
     "gojs": "^2.2.16",
     "isbot": "^3.5.3",
     "react": "^18.2.0",

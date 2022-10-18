@@ -1,17 +1,27 @@
 import React from "react";
+import type {
+  Person,
+  Props as PersonProps,
+} from "~/components/planForms/PersonForm";
+import PersonForm from "~/components/planForms/PersonForm";
 
 export default function PlanPage() {
   const [diagram, setDiagram] = React.useState<go.Diagram | undefined>(
     undefined
   );
+
+  const [selectedPerson, setSelectedPerson] = React.useState<
+    Person | undefined
+  >(undefined);
   React.useEffect(() => {
     if (diagram === undefined) {
       initDiagram();
     }
   });
 
+  const [selectedItemForm, setSelectedItemForm] = React.useState(<>ok</>);
+
   function addPerson() {
-    console.log("Adding new person");
     if (diagram !== undefined) {
       diagram.model.commit(function (m: go.Model) {
         m.addNodeData({ key: "New Person", category: "Person" });
@@ -19,7 +29,60 @@ export default function PlanPage() {
     }
   }
 
-  function addGift(e: go.InputEvent, button: go.GraphObject) {}
+  function addGift(e: go.InputEvent, button: go.GraphObject) {
+    var node: go.Part = button.part.adornedPart;
+    e.diagram.clearSelection();
+
+    var tool = e.diagram.toolManager.linkingTool;
+    tool.archetypeLinkData = {
+      fromPort: "OUT",
+      toPort: "IN",
+      category: "gift",
+      when: "On death",
+      valueType: "All remaining assets",
+      estimatedValue: "49,000",
+    };
+    tool.startObject = node.findObject("outport");
+    node.diagram.currentTool = tool;
+    tool.doActivate();
+  }
+
+  function onSelectChange(e: go.DiagramEvent) {
+    const node = e.diagram.selection.first();
+    if (node instanceof go.Node) {
+      if (node.data.category === "Person") {
+        setSelectedPerson({ ...node.data, name: node.data.key });
+        console.log("Should trigger re-render", node.data);
+
+        setSelectedItemForm(
+          <PersonForm
+            person={{
+              name: node.data?.key,
+              birthYear: node.data?.birthYear,
+              netWorth: node.data?.netWorth,
+              expectedLifeSpan: node.data?.expectedLifeSpan,
+            }}
+            setPerson={(person) => {
+              diagram?.startTransaction(`Update ${person.name}`);
+              const selection = e.diagram?.selection.first();
+              Object.entries(person).forEach(([key, value]) => {
+                console.log("trying to change", key, value);
+                e.diagram?.model.setDataProperty(selection?.data, key, value);
+              });
+              e.diagram?.model.setDataProperty(
+                selection?.data,
+                "key",
+                person.name
+              );
+              console.log("setting", person);
+              diagram?.commitTransaction(`Update ${person.name}`);
+            }}
+          />
+        );
+        console.log(selectedItemForm);
+      }
+    }
+  }
 
   async function initDiagram() {
     console.log("running");
@@ -33,6 +96,8 @@ export default function PlanPage() {
       }),
       //model: new go.GraphLinksModel({ linkKeyProperty: "key" }),
     });
+
+    diagram.addDiagramListener("ChangedSelection", onSelectChange);
 
     diagram.nodeTemplateMap.add(
       "Person",
@@ -49,32 +114,7 @@ export default function PlanPage() {
                   "Button",
                   {
                     margin: 8,
-                    click: (e: go.InputEvent, button: go.GraphObject) => {
-                      var node: go.Part = button.part.adornedPart;
-                      e.diagram.clearSelection();
-
-                      var tool = e.diagram.toolManager.linkingTool;
-                      tool.archetypeLinkData = {
-                        fromPort: "OUT",
-                        toPort: "IN",
-                        category: "gift",
-                        when: "On death",
-                        valueType: "All remaining assets",
-                        estimatedValue: "49,000",
-                      };
-                      tool.startObject = node.findObject("outport");
-                      node.diagram.currentTool = tool;
-                      tool.doActivate();
-                      console.log(
-                        tool.canStart(),
-                        e.diagram.allowLink,
-                        e.diagram.isModelReadOnly,
-                        tool.isEnabled,
-                        tool.isActive,
-                        node,
-                        tool.startObject
-                      );
-                    },
+                    click: addGift,
                   },
                   new go.TextBlock("Add gift", { margin: 8 })
                 )
@@ -188,9 +228,9 @@ export default function PlanPage() {
       linkFromPortIdProperty: "fromPort",
       linkToPortIdProperty: "toPort",
       nodeDataArray: [
-        { key: "Mary", category: "Person" },
-        { key: "Tom", category: "Person" },
-        { key: "Tom Jr.", category: "Person" },
+        { key: "Mary", category: "Person", netWorth: null },
+        { key: "Tom", category: "Person", netWorth: null },
+        { key: "Tom Jr.", category: "Person", netWorth: null },
       ],
       linkDataArray: [
         {
@@ -203,6 +243,16 @@ export default function PlanPage() {
           valueType: "All remaining assets",
           estimatedValue: "49,000",
         },
+        {
+          from: "Mary",
+          fromPort: "OUT",
+          toPort: "IN",
+          to: "Tom Jr.",
+          category: "gift",
+          when: new Date(2024, 1, 17),
+          valueType: "Fixed",
+          estimatedValue: "19,000",
+        },
       ],
     });
     diagram.undoManager.isEnabled = true;
@@ -214,10 +264,13 @@ export default function PlanPage() {
     <main className="flex h-full flex-col">
       <h1 className="mx-auto text-4xl">New estate plan</h1>
       <button onClick={addPerson}>Add person</button>
-      <div
-        id="myDiagramDiv"
-        className=" h-full w-full border border-gray-700"
-      ></div>
+      <div className="flex h-full w-full">
+        <div className="h-full w-1/3 px-8">{selectedItemForm}</div>
+        <div
+          id="myDiagramDiv"
+          className=" h-full w-full border border-gray-700"
+        ></div>
+      </div>
     </main>
   );
 }
