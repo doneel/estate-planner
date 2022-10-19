@@ -6,7 +6,10 @@ import * as go from "gojs";
 import { BeneficiaryEntity, updateBeneficiaryEntity } from "./beneficiary";
 import type { Owner } from "../planSidebars/OwnerSidebar";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
-export type ModelType = Owner | Beneficiary;
+import { TransferEntity, updateTransferEntity } from "./transfer";
+import type { Transfer } from "../planSidebars/TransferSidebar";
+
+export type ModelType = Owner | Beneficiary | Transfer;
 
 export type SetSidebarProps<T extends ModelType> = {
   entity: T;
@@ -16,22 +19,32 @@ export type Props = {
   setSidebar: (props: SetSidebarProps<ModelType>) => void;
 };
 
-export function addOwner() {}
+class FixedLayout extends go.LayeredDigraphLayout {
+  doLayout(coll: go.Diagram | go.Group | go.Iterable<go.Part>) {
+    super.doLayout(coll);
+    if (coll instanceof go.Diagram) {
+      const diagram: go.Diagram = coll;
+      diagram.model.commit(function (m: go.Model) {
+        diagram.nodes.each((n) => n.moveTo(n.location.x + 1, n.location.y));
+      }, "");
+    }
+  }
+}
 
 export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
-    const node = e.diagram.selection.first();
-    if (node instanceof go.Node) {
-      const data: Owner | Beneficiary = node.data;
+    const selected = e.diagram.selection.first();
+    if (selected instanceof go.Node) {
+      const data: Owner | Beneficiary = selected.data;
       switch (data.category) {
         case "Owner":
           const props: SetSidebarProps<Owner> = {
             entity: {
-              name: node.data?.key,
-              category: node.data?.category,
-              birthYear: node.data?.birthYear,
-              netWorth: node.data?.netWorth,
-              expectedLifeSpan: node.data?.expectedLifeSpan,
+              name: selected.data?.key,
+              category: selected.data?.category,
+              birthYear: selected.data?.birthYear,
+              netWorth: selected.data?.netWorth,
+              expectedLifeSpan: selected.data?.expectedLifeSpan,
             },
             updateCallback: (owner: Partial<Owner>) => {
               const ownerEntity = e.diagram?.selection?.first();
@@ -44,9 +57,9 @@ export async function initDiagram({ setSidebar }: Props) {
         case "Beneficiary":
           setSidebar({
             entity: {
-              name: node.data?.key,
-              category: node.data?.category,
-              birthYear: node.data?.birthYear,
+              name: selected.data?.key,
+              category: selected.data?.category,
+              birthYear: selected.data?.birthYear,
             },
             updateCallback: (beneficiary) => {
               const beneficiaryEntity = e.diagram?.selection?.first();
@@ -60,81 +73,71 @@ export async function initDiagram({ setSidebar }: Props) {
           });
           return;
       }
+    } else if (selected instanceof go.Link) {
+      switch (selected.data.category) {
+        case "transfer":
+          setSidebar({
+            entity: {
+              category: selected.data?.category,
+              date: selected.data?.date,
+              isGift: selected.data?.isGift,
+              fixedValue: selected.data?.fixedValue,
+            },
+            updateCallback: (transfer) => {
+              const transferEntity = e.diagram?.selection?.first();
+              transferEntity &&
+                updateTransferEntity(e.diagram, transferEntity, transfer);
+            },
+          });
+          return;
+      }
     }
   }
 
-  console.log("running");
   const diagram = new go.Diagram("myDiagramDiv", {
-    layout: new go.LayeredDigraphLayout({
+    layout: new FixedLayout({
       direction: 90,
       layerSpacing: 150,
-      columnSpacing: 100,
-      initializeOption: go.LayeredDigraphLayout.InitNaive,
+      columnSpacing: 200,
+      setsPortSpots: false,
     }),
   });
+  diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelZoom;
 
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
   diagram.nodeTemplateMap.add("Owner", OwnerEntity);
   diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryEntity);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
-  diagram.linkTemplateMap.add(
-    "gift",
-    new go.Link({
-      fromEndSegmentLength: 100,
-      toEndSegmentLength: 100,
-      routing: go.Link.Orthogonal,
-      corner: 12,
-      relinkableFrom: true,
-      relinkableTo: true,
-      selectionAdorned: false,
-    })
-      .add(new go.Shape({ strokeWidth: 2 }))
-      .add(new go.Shape({ toArrow: "Standard" }))
-      .add(
-        new go.Panel("Auto")
-          .add(
-            new go.Shape("RoundedRectangle", {
-              stroke: "black",
-              fill: "lightgray",
-            })
-          )
-          .add(
-            new go.Panel("Vertical", { margin: 12 }).add(
-              new go.TextBlock("").bind("text", "when"),
-              new go.TextBlock("").bind("text", "valueType"),
-              new go.TextBlock("").bind("text", "estimatedValue")
-            )
-          )
-      )
-  );
+  diagram.linkTemplateMap.add("transfer", TransferEntity);
   diagram.model = new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
     linkToPortIdProperty: "toPort",
     nodeDataArray: [
       { key: "Mary", category: "Owner", netWorth: null },
       { key: "Tom", category: "Owner", netWorth: null },
-      { key: "Tom Jr.", category: "Owner", netWorth: null },
+      { key: "Tom Jr.", category: "Beneficiary", birthYear: 1992 },
     ],
     linkDataArray: [
       {
         from: "Tom",
-        fromPort: "OUT",
-        toPort: "IN",
         to: "Tom Jr.",
-        category: "gift",
-        when: "On death",
-        valueType: "All remaining assets",
-        estimatedValue: "49,000",
+        category: "transfer",
+        date: new Date("01/01/2023"),
+        fixedValue: 1000000,
+      },
+      {
+        from: "Tom",
+        to: "Tom Jr.",
+        category: "transfer",
+        date: new Date("01/01/2030"),
+        fixedValue: 200000,
       },
       {
         from: "Mary",
-        fromPort: "OUT",
-        toPort: "IN",
         to: "Tom Jr.",
-        category: "gift",
-        when: new Date(2024, 1, 17),
-        valueType: "Fixed",
-        estimatedValue: "19,000",
+        category: "transfer",
+        date: new Date(2024, 1, 17),
+        fixedValue: 7,
       },
     ],
   });

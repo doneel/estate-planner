@@ -1,21 +1,18 @@
 import * as go from "gojs";
 import type { Owner } from "../planSidebars/OwnerSidebar";
 
-function addGift(e: go.InputEvent, button: go.GraphObject) {
+function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
-  var node: go.Part = button.part.adornedPart;
+  var node: go.Node = button.part.adornedPart;
   e.diagram.clearSelection();
 
   var tool = e.diagram.toolManager.linkingTool;
   tool.archetypeLinkData = {
-    fromPort: "OUT",
-    toPort: "IN",
-    category: "gift",
-    when: "On death",
-    valueType: "All remaining assets",
-    estimatedValue: "49,000",
+    category: "transfer",
+    date: undefined,
+    fixedValue: 0,
   };
-  tool.startObject = node.findObject("outport");
+  tool.startObject = node.port;
 
   //@ts-ignore
   node.diagram.currentTool = tool;
@@ -48,21 +45,27 @@ export const OwnerEntity = new go.Node("Vertical", {
             "Button",
             {
               margin: 8,
-              click: addGift,
+              click: addTransfer,
             },
-            new go.TextBlock("Add gift", { margin: 8 })
+            new go.TextBlock("Add transfer", { margin: 8 })
           )
         )
         .add(
           go.GraphObject.make(
             "Button",
-            { margin: 8, click: addGift },
+            { margin: 8, click: addTransfer },
             new go.TextBlock("On death", { margin: 8 })
           )
         )
     ),
 })
-  .add(new go.Shape("Ellipse", { width: 120, height: 180, fill: "gray" }))
+  .add(
+    new go.Shape("Ellipse", {
+      width: 120,
+      height: 180,
+      fill: "gray",
+    })
+  )
   .add(
     new go.TextBlock("default", {
       stroke: "red",
@@ -70,34 +73,15 @@ export const OwnerEntity = new go.Node("Vertical", {
       editable: true,
     }).bind("text", "key")
   )
-  /*
-        .add(
-          new go.Panel("Horizontal")
-            .add(
-              go.GraphObject.make(
-                "Button",
-                { margin: 8, click: addPerson },
-                new go.TextBlock("Add gift", { margin: 8 })
-              )
-            )
-            .add(
-              go.GraphObject.make(
-                "Button",
-                { margin: 8, click: addGift },
-                new go.TextBlock("On death", { margin: 8 })
-              )
-            )
-        )
-        */
   .add(
     new go.Shape("Circle", {
       name: "outport",
       fill: "gray",
       stroke: "white",
-      desiredSize: new go.Size(12, 12),
+      desiredSize: new go.Size(20, 20),
+      portId: "",
       fromLinkable: true,
-      fromSpot: go.Spot.BottomSide,
-      portId: "OUT",
+      fromLinkableDuplicates: true,
       mouseEnter: (e, port: go.GraphObject) => {
         //@ts-ignore
         const shapePort: go.Shape = port;
