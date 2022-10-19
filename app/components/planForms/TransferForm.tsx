@@ -26,14 +26,12 @@ export default function TransferForm({ transfer, setTransfer }: Props) {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    console.log("setting to", dateAsString);
     setTransfer({
       date: dateAsString ? new Date(Date.parse(dateAsString)) : undefined,
       fixedValue,
       isGift,
     });
   }
-  console.log(fixedValue);
   return (
     <form>
       <div className="group relative z-0 mb-6 w-full">

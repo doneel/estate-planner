@@ -76,7 +76,6 @@ export async function initDiagram({ setSidebar }: Props) {
     } else if (selected instanceof go.Link) {
       switch (selected.data.category) {
         case "transfer":
-          console.log(selected.data);
           setSidebar({
             entity: {
               category: selected.data?.category,
