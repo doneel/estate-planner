@@ -18,7 +18,7 @@ export function updateBeneficiaryEntity(
   diagram?.commitTransaction(`Update ${beneficiary.name}`);
 }
 
-export const BeneficiaryEntity = new go.Node("Vertical", {
+export const BeneficiaryDiagram = new go.Node("Vertical", {
   selectable: true,
 })
   .add(

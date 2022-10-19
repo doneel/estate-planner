@@ -1,13 +1,17 @@
 import {
-  OwnerEntity,
+  OwnerDiagram,
   updateOwnerEntity,
-} from "~/components/planDiagramEntities/owner";
+} from "~/components/planDiagramEntities/ownerDiagram";
 import * as go from "gojs";
-import { BeneficiaryEntity, updateBeneficiaryEntity } from "./beneficiary";
+import {
+  BeneficiaryDiagram,
+  updateBeneficiaryEntity,
+} from "./beneficiaryDiagram";
 import type { Owner } from "../planSidebars/OwnerSidebar";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
-import { TransferEntity, updateTransferEntity } from "./transfer";
+import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Transfer } from "../planSidebars/TransferSidebar";
+import { defaultSerializer, Model } from "../dataModels/model";
 
 export type ModelType = Owner | Beneficiary | Transfer;
 
@@ -33,6 +37,13 @@ class FixedLayout extends go.LayeredDigraphLayout {
 
 export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
+    console.log(e.diagram.model.toJson());
+    const dataModel = defaultSerializer.deserialize(
+      //e.diagram.model.modelData,
+      e.diagram.model.toJson(),
+      Model
+    );
+    console.log(dataModel);
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
       const data: Owner | Beneficiary = selected.data;
@@ -105,10 +116,10 @@ export async function initDiagram({ setSidebar }: Props) {
   diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelZoom;
 
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
-  diagram.nodeTemplateMap.add("Owner", OwnerEntity);
-  diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryEntity);
+  diagram.nodeTemplateMap.add("Owner", OwnerDiagram);
+  diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
-  diagram.linkTemplateMap.add("transfer", TransferEntity);
+  diagram.linkTemplateMap.add("transfer", TransferDiagram);
   diagram.model = new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
     linkToPortIdProperty: "toPort",

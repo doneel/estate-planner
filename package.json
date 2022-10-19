@@ -41,7 +41,8 @@
     "isbot": "^3.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tiny-invariant": "^1.2.0"
+    "tiny-invariant": "^1.2.0",
+    "typescript-json-serializer": "^5.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.5.0",

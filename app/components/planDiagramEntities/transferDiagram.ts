@@ -12,7 +12,7 @@ export function updateTransferEntity(
   });
   diagram?.commitTransaction(`Update ${transferData}`);
 }
-export const TransferEntity = new go.Link({
+export const TransferDiagram = new go.Link({
   fromEndSegmentLength: 60,
   toEndSegmentLength: 60,
   curve: go.Link.Bezier,

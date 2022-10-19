@@ -32,7 +32,7 @@ export function updateOwnerEntity(
   diagram?.commitTransaction(`Update ${owner.name}`);
 }
 
-export const OwnerEntity = new go.Node("Vertical", {
+export const OwnerDiagram = new go.Node("Vertical", {
   selectable: true,
   selectionAdornmentTemplate: new go.Adornment("Spot", {
     layerName: "Tool",
