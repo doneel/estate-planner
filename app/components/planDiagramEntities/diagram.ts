@@ -6,8 +6,10 @@ import * as go from "gojs";
 import { BeneficiaryEntity, updateBeneficiaryEntity } from "./beneficiary";
 import type { Owner } from "../planSidebars/OwnerSidebar";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
-import { TransferEntity } from "./transfer";
-export type ModelType = Owner | Beneficiary;
+import { TransferEntity, updateTransferEntity } from "./transfer";
+import type { Transfer } from "../planSidebars/TransferSidebar";
+
+export type ModelType = Owner | Beneficiary | Transfer;
 
 export type SetSidebarProps<T extends ModelType> = {
   entity: T;
@@ -31,18 +33,18 @@ class FixedLayout extends go.LayeredDigraphLayout {
 
 export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
-    const node = e.diagram.selection.first();
-    if (node instanceof go.Node) {
-      const data: Owner | Beneficiary = node.data;
+    const selected = e.diagram.selection.first();
+    if (selected instanceof go.Node) {
+      const data: Owner | Beneficiary = selected.data;
       switch (data.category) {
         case "Owner":
           const props: SetSidebarProps<Owner> = {
             entity: {
-              name: node.data?.key,
-              category: node.data?.category,
-              birthYear: node.data?.birthYear,
-              netWorth: node.data?.netWorth,
-              expectedLifeSpan: node.data?.expectedLifeSpan,
+              name: selected.data?.key,
+              category: selected.data?.category,
+              birthYear: selected.data?.birthYear,
+              netWorth: selected.data?.netWorth,
+              expectedLifeSpan: selected.data?.expectedLifeSpan,
             },
             updateCallback: (owner: Partial<Owner>) => {
               const ownerEntity = e.diagram?.selection?.first();
@@ -55,9 +57,9 @@ export async function initDiagram({ setSidebar }: Props) {
         case "Beneficiary":
           setSidebar({
             entity: {
-              name: node.data?.key,
-              category: node.data?.category,
-              birthYear: node.data?.birthYear,
+              name: selected.data?.key,
+              category: selected.data?.category,
+              birthYear: selected.data?.birthYear,
             },
             updateCallback: (beneficiary) => {
               const beneficiaryEntity = e.diagram?.selection?.first();
@@ -67,6 +69,24 @@ export async function initDiagram({ setSidebar }: Props) {
                   beneficiaryEntity,
                   beneficiary
                 );
+            },
+          });
+          return;
+      }
+    } else if (selected instanceof go.Link) {
+      switch (selected.data.category) {
+        case "transfer":
+          console.log(selected.data);
+          setSidebar({
+            entity: {
+              category: selected.data?.category,
+              date: selected.data?.date,
+              isGift: selected.data?.isGift,
+            },
+            updateCallback: (transfer) => {
+              const transferEntity = e.diagram?.selection?.first();
+              transferEntity &&
+                updateTransferEntity(e.diagram, transferEntity, transfer);
             },
           });
           return;

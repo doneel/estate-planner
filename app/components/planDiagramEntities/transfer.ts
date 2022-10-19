@@ -1,16 +1,24 @@
 import * as go from "gojs";
+import type { Transfer } from "../planSidebars/TransferSidebar";
 
+export function updateTransferEntity(
+  diagram: go.Diagram,
+  transferEntity: go.Part,
+  transferData: Partial<Transfer>
+) {
+  diagram?.startTransaction(`Update ${transferData}`);
+  Object.entries(transferData).forEach(([key, value]) => {
+    diagram.model.setDataProperty(transferEntity?.data, key, value);
+  });
+  diagram?.commitTransaction(`Update ${transferData}`);
+}
 export const TransferEntity = new go.Link({
   fromEndSegmentLength: 60,
   toEndSegmentLength: 60,
-  //routing: go.Link.AvoidsNodes,
   curve: go.Link.Bezier,
-  //routing: go.Link.Bezier,
-  //corner: 12,
   relinkableFrom: true,
   relinkableTo: true,
   selectionAdorned: true,
-  reshapable: true,
 })
   .add(new go.Shape({ strokeWidth: 2 }))
   .add(new go.Shape({ toArrow: "Standard" }))

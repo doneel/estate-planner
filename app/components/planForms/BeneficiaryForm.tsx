@@ -20,6 +20,7 @@ export default function BeneficiaryForm({
     e.preventDefault();
     setBeneficiary({
       name,
+      birthYear,
     });
   }
 
