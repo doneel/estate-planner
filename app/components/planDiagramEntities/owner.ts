@@ -60,15 +60,13 @@ export const OwnerEntity = new go.Node("Vertical", {
     ),
 })
   .add(
-    new go.Shape("Ellipse", {
-      width: 120,
-      height: 180,
-      fill: "gray",
+    new go.Picture("images/person.svg", {
+      desiredSize: new go.Size(180, 180),
     })
   )
   .add(
     new go.TextBlock("default", {
-      stroke: "red",
+      stroke: "black",
       font: "bold 24pt sans-serif",
       editable: true,
     }).bind("text", "key")

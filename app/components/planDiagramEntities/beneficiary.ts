@@ -41,11 +41,15 @@ export const BeneficiaryEntity = new go.Node("Vertical", {
       },
     })
   )
-  .add(new go.Shape("Ellipse", { width: 120, height: 180, fill: "gray" }))
+  .add(
+    new go.Picture("images/person.svg", {
+      desiredSize: new go.Size(120, 120),
+    })
+  )
   .add(
     new go.TextBlock("default", {
-      stroke: "red",
-      font: "bold 24pt sans-serif",
+      stroke: "gray",
+      font: "bold 20pt sans-serif",
       editable: true,
     }).bind("text", "key")
   );
