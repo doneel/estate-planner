@@ -3,15 +3,14 @@ import type { Owner } from "../planSidebars/OwnerSidebar";
 
 function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
-  var node: go.Part = button.part.adornedPart;
+  var node: go.Node = button.part.adornedPart;
   e.diagram.clearSelection();
 
   var tool = e.diagram.toolManager.linkingTool;
   tool.archetypeLinkData = {
     category: "transfer",
-    when: "On death",
-    valueType: "All remaining assets",
-    estimatedValue: "49,000",
+    date: undefined,
+    fixedValue: 0,
   };
   tool.startObject = node.port;
 

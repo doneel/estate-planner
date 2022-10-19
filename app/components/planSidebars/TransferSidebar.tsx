@@ -4,6 +4,7 @@ export type Transfer = {
   category: "transfer";
   date: Date;
   isGift: boolean;
+  fixedValue: number;
 };
 
 export type Props = {
