@@ -9,14 +9,10 @@ export type Props = {
 
 export default function TransferForm({ transfer, setTransfer }: Props) {
   const [dateAsString, setDateAsString] = useState(
-    transfer.date?.toLocaleDateString()
+    transfer.date?.toLocaleString()
   );
   useEffect(() => {
-    if (transfer.date instanceof Date) {
-      setDateAsString(transfer.date?.toLocaleDateString());
-    } else {
-      setDateAsString(transfer.date);
-    }
+    setDateAsString(transfer.date?.toLocaleDateString());
   }, [transfer]);
   const [fixedValue, setFixedValue] = useState(transfer.fixedValue);
   useEffect(() => setFixedValue(transfer.fixedValue), [transfer]);

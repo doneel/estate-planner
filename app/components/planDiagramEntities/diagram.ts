@@ -11,7 +11,6 @@ import type { Owner } from "../planSidebars/OwnerSidebar";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
 import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Transfer } from "../planSidebars/TransferSidebar";
-import { defaultSerializer, Model } from "../dataModels/model";
 
 export type ModelType = Owner | Beneficiary | Transfer;
 
@@ -37,13 +36,6 @@ class FixedLayout extends go.LayeredDigraphLayout {
 
 export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
-    console.log(e.diagram.model.toJson());
-    const dataModel = defaultSerializer.deserialize(
-      //e.diagram.model.modelData,
-      e.diagram.model.toJson(),
-      Model
-    );
-    console.log(dataModel);
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
       const data: Owner | Beneficiary = selected.data;

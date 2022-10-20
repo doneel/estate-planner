@@ -1,4 +1,5 @@
 import React from "react";
+import { defaultSerializer, Model } from "~/components/dataModels/Model";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
 import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 import TransferSidebar from "~/components/planSidebars/TransferSidebar";
@@ -76,6 +77,21 @@ export default function PlanPage() {
     }
   }
 
+  async function recalculate() {
+    const go = await import("gojs");
+    if (diagram !== undefined) {
+      const dataModel = defaultSerializer.deserialize(
+        //e.diagram.model.modelData,
+        diagram.model.toJson(),
+        Model
+      );
+      if (dataModel !== undefined && dataModel !== null) {
+        dataModel.calculateAll();
+        diagram.model = go.Model.fromJson(JSON.stringify(dataModel));
+      }
+    }
+  }
+
   return (
     <main className="flex h-full flex-col">
       <h1 className="mx-auto text-4xl">New estate plan</h1>
@@ -91,6 +107,12 @@ export default function PlanPage() {
           onClick={addBeneficiary}
         >
           Add beneficiary
+        </button>
+        <button
+          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+          onClick={recalculate}
+        >
+          Recalculate
         </button>
         <button
           className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
