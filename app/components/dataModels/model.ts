@@ -5,7 +5,11 @@ import {
   throwError,
 } from "typescript-json-serializer";
 import { d } from "vitest/dist/index-6e18a03a";
-import { ANNUAL_GIFT_EXCLUSIONS } from "./constants";
+import {
+  ANNUAL_GIFT_EXCLUSIONS,
+  GIFT_TAX_RATE,
+  LIFETIME_GIFT_EXCLUSIONS,
+} from "./constants";
 import type { Link, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
 import type { Node, Owner, RecipientMap } from "./Node";
@@ -62,11 +66,13 @@ export class Model {
     this.nodeDataArray
       .filter((n) => n.category === NodeType.Owner)
       .forEach((owner: Owner) => {
-        const lifetimeExclusionUsed = 0;
+        let lifetimeExclusionUsed = 0;
         owner.annualGiftSummaries = Object.entries(owner.giftMap).map(
           ([yearU, giftsByRecipientU]) => {
             const year: number = yearU;
             const annualExclusion = ANNUAL_GIFT_EXCLUSIONS(year);
+            const lifetimeExclusionAsOfThisYear =
+              LIFETIME_GIFT_EXCLUSIONS(year);
             const giftsByRecipient: RecipientMap = giftsByRecipientU;
             const totalGifts = Object.values(giftsByRecipient).reduce(
               (sum: number, gift: number) => sum + gift,
@@ -78,10 +84,22 @@ export class Model {
                   .filter((excess) => excess > 0)
                   .reduce((sum, n) => sum + n, 0)
               : 0;
-            console.log(
-              new AnnualGiftSummary(year, totalGifts, 0, excessOverLimit)
+            let taxesOwed = 0;
+            if (lifetimeExclusionAsOfThisYear) {
+              const headroom =
+                lifetimeExclusionAsOfThisYear - lifetimeExclusionUsed;
+              const taxable = Math.max(excessOverLimit - headroom, 0);
+              const tax_rate = GIFT_TAX_RATE(year);
+              console.log(taxable, tax_rate);
+              taxesOwed = taxable * (tax_rate ?? 0);
+            }
+            lifetimeExclusionUsed += excessOverLimit;
+            return new AnnualGiftSummary(
+              year,
+              totalGifts,
+              taxesOwed,
+              excessOverLimit
             );
-            return new AnnualGiftSummary(year, totalGifts, 0, excessOverLimit);
           }
         );
       });
@@ -91,11 +109,10 @@ export class Model {
     const allEvents = this.getAllEvents();
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
-    console.log(
-      this.nodeDataArray
-        .filter((n) => n.category === NodeType.Owner)
-        .map((n) => n.annualGiftSummaries)
-    );
+    const summaries = this.nodeDataArray
+      .filter((n) => n.category === NodeType.Owner)
+      .map((o: Owner) => o.annualGiftSummaries);
+    console.log(summaries);
   }
 
   private getAllEvents(): Event[] {
