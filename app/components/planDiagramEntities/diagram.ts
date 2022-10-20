@@ -1,13 +1,20 @@
 import {
-  OwnerEntity,
+  OwnerDiagram,
   updateOwnerEntity,
-} from "~/components/planDiagramEntities/owner";
+} from "~/components/planDiagramEntities/ownerDiagram";
 import * as go from "gojs";
-import { BeneficiaryEntity, updateBeneficiaryEntity } from "./beneficiary";
-import type { Owner } from "../planSidebars/OwnerSidebar";
+import {
+  BeneficiaryDiagram,
+  updateBeneficiaryEntity,
+} from "./beneficiaryDiagram";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
-import { TransferEntity, updateTransferEntity } from "./transfer";
+import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Transfer } from "../planSidebars/TransferSidebar";
+import type { Owner } from "../dataModels/Node";
+import { isBeneficiary } from "../dataModels/Node";
+import { isOwner } from "../dataModels/Node";
+import { Node } from "../dataModels/Node";
+import { defaultSerializer } from "../dataModels/Model";
 
 export type ModelType = Owner | Beneficiary | Transfer;
 
@@ -35,43 +42,42 @@ export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
-      const data: Owner | Beneficiary = selected.data;
-      switch (data.category) {
-        case "Owner":
-          const props: SetSidebarProps<Owner> = {
-            entity: {
-              name: selected.data?.key,
-              category: selected.data?.category,
-              birthYear: selected.data?.birthYear,
-              netWorth: selected.data?.netWorth,
-              expectedLifeSpan: selected.data?.expectedLifeSpan,
-            },
-            updateCallback: (owner: Partial<Owner>) => {
-              const ownerEntity = e.diagram?.selection?.first();
-              ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
-            },
-          };
-          setSidebar(props);
-          return;
-
-        case "Beneficiary":
-          setSidebar({
-            entity: {
-              name: selected.data?.key,
-              category: selected.data?.category,
-              birthYear: selected.data?.birthYear,
-            },
-            updateCallback: (beneficiary) => {
-              const beneficiaryEntity = e.diagram?.selection?.first();
-              beneficiaryEntity &&
-                updateBeneficiaryEntity(
-                  e.diagram,
-                  beneficiaryEntity,
-                  beneficiary
-                );
-            },
-          });
-          return;
+      const nodeEntity = defaultSerializer.deserialize(selected.data, Node);
+      if (
+        nodeEntity === undefined ||
+        nodeEntity === null ||
+        nodeEntity instanceof Array
+      ) {
+        console.error("Couldn't deserialize selected node data", selected.data);
+        return;
+      }
+      if (isOwner(nodeEntity)) {
+        const props: SetSidebarProps<Owner> = {
+          entity: nodeEntity,
+          updateCallback: (owner: Partial<Owner>) => {
+            const ownerEntity = e.diagram?.selection?.first();
+            ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
+          },
+        };
+        setSidebar(props);
+      }
+      if (isBeneficiary(nodeEntity)) {
+        setSidebar({
+          entity: {
+            name: selected.data?.key,
+            category: selected.data?.category,
+            birthYear: selected.data?.birthYear,
+          },
+          updateCallback: (beneficiary) => {
+            const beneficiaryEntity = e.diagram?.selection?.first();
+            beneficiaryEntity &&
+              updateBeneficiaryEntity(
+                e.diagram,
+                beneficiaryEntity,
+                beneficiary
+              );
+          },
+        });
       }
     } else if (selected instanceof go.Link) {
       switch (selected.data.category) {
@@ -105,10 +111,10 @@ export async function initDiagram({ setSidebar }: Props) {
   diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelZoom;
 
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
-  diagram.nodeTemplateMap.add("Owner", OwnerEntity);
-  diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryEntity);
+  diagram.nodeTemplateMap.add("Owner", OwnerDiagram);
+  diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
-  diagram.linkTemplateMap.add("transfer", TransferEntity);
+  diagram.linkTemplateMap.add("transfer", TransferDiagram);
   diagram.model = new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
     linkToPortIdProperty: "toPort",
@@ -124,6 +130,7 @@ export async function initDiagram({ setSidebar }: Props) {
         category: "transfer",
         date: new Date("01/01/2023"),
         fixedValue: 1000000,
+        isGift: true,
       },
       {
         from: "Tom",
@@ -131,6 +138,7 @@ export async function initDiagram({ setSidebar }: Props) {
         category: "transfer",
         date: new Date("01/01/2030"),
         fixedValue: 200000,
+        isGift: true,
       },
       {
         from: "Mary",
@@ -138,6 +146,7 @@ export async function initDiagram({ setSidebar }: Props) {
         category: "transfer",
         date: new Date(2024, 1, 17),
         fixedValue: 7,
+        isGift: true,
       },
     ],
   });

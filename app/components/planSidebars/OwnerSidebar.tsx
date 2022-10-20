@@ -1,12 +1,6 @@
+import type { Owner } from "../dataModels/Node";
 import OwnerForm from "../planForms/OwnerForm";
-
-export type Owner = {
-  category: "Owner";
-  name: string;
-  birthYear: number;
-  netWorth: number;
-  expectedLifeSpan: number;
-};
+import OwnerGiftSummaryTable from "./OwnerGiftSummaryTable";
 
 export type Props = {
   owner: Partial<Owner>;
@@ -18,6 +12,7 @@ export default function OwnerSidebar({ owner, setOwner }: Props) {
     <div className="flex flex-col space-y-8">
       <h1 className="mx-auto text-2xl">Owner</h1>
       <OwnerForm owner={owner} setOwner={setOwner} />
+      <OwnerGiftSummaryTable owner={owner} />
     </div>
   );
 }

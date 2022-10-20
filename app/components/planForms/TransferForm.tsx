@@ -9,14 +9,10 @@ export type Props = {
 
 export default function TransferForm({ transfer, setTransfer }: Props) {
   const [dateAsString, setDateAsString] = useState(
-    transfer.date?.toLocaleDateString()
+    transfer.date?.toLocaleString()
   );
   useEffect(() => {
-    if (transfer.date instanceof Date) {
-      setDateAsString(transfer.date?.toLocaleDateString());
-    } else {
-      setDateAsString(transfer.date);
-    }
+    setDateAsString(transfer.date?.toLocaleDateString());
   }, [transfer]);
   const [fixedValue, setFixedValue] = useState(transfer.fixedValue);
   useEffect(() => setFixedValue(transfer.fixedValue), [transfer]);
@@ -46,7 +42,7 @@ export default function TransferForm({ transfer, setTransfer }: Props) {
         />
         <label
           htmlFor="Name"
-          className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500"
+          className="absolute top-2 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500"
         >
           {dateAsString ? "Date" : "Date (MM/DD/YY)"}
         </label>
@@ -73,7 +69,7 @@ export default function TransferForm({ transfer, setTransfer }: Props) {
           <input
             id="is_gift_checkbox"
             type="checkbox"
-            checked={isGift ?? true}
+            checked={isGift ?? false}
             name="is_gift_checkbox"
             onChange={(e) => setIsGift(e.target.checked)}
             className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
