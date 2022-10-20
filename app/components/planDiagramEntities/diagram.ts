@@ -7,10 +7,11 @@ import {
   BeneficiaryDiagram,
   updateBeneficiaryEntity,
 } from "./beneficiaryDiagram";
-import type { Owner } from "../planSidebars/OwnerSidebar";
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
 import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Transfer } from "../planSidebars/TransferSidebar";
+import { Owner } from "../dataModels/Node";
+import { defaultSerializer } from "../dataModels/Model";
 
 export type ModelType = Owner | Beneficiary | Transfer;
 
@@ -41,14 +42,9 @@ export async function initDiagram({ setSidebar }: Props) {
       const data: Owner | Beneficiary = selected.data;
       switch (data.category) {
         case "Owner":
+          const p: Owner = defaultSerializer.deserialize(data, Owner);
           const props: SetSidebarProps<Owner> = {
-            entity: {
-              name: selected.data?.key,
-              category: selected.data?.category,
-              birthYear: selected.data?.birthYear,
-              netWorth: selected.data?.netWorth,
-              expectedLifeSpan: selected.data?.expectedLifeSpan,
-            },
+            entity: p || {},
             updateCallback: (owner: Partial<Owner>) => {
               const ownerEntity = e.diagram?.selection?.first();
               ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
@@ -127,6 +123,7 @@ export async function initDiagram({ setSidebar }: Props) {
         category: "transfer",
         date: new Date("01/01/2023"),
         fixedValue: 1000000,
+        isGift: true,
       },
       {
         from: "Tom",
@@ -134,6 +131,7 @@ export async function initDiagram({ setSidebar }: Props) {
         category: "transfer",
         date: new Date("01/01/2030"),
         fixedValue: 200000,
+        isGift: true,
       },
       {
         from: "Mary",
@@ -141,6 +139,7 @@ export async function initDiagram({ setSidebar }: Props) {
         category: "transfer",
         date: new Date(2024, 1, 17),
         fixedValue: 7,
+        isGift: true,
       },
     ],
   });

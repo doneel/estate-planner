@@ -28,6 +28,7 @@ export class Transfer extends Link {
     type: (s) => GoDate,
   })
   date: GoDate;
+
   @JsonProperty() isGift: boolean;
   @JsonProperty() fixedValue: number;
 }

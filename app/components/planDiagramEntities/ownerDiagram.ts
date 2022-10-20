@@ -1,5 +1,5 @@
 import * as go from "gojs";
-import type { Owner } from "../planSidebars/OwnerSidebar";
+import type { Owner } from "../dataModels/Node";
 
 function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
@@ -11,6 +11,7 @@ function addTransfer(e: go.InputEvent, button: go.GraphObject) {
     category: "transfer",
     date: undefined,
     fixedValue: 0,
+    isGift: true,
   };
   tool.startObject = node.port;
 
@@ -24,12 +25,12 @@ export function updateOwnerEntity(
   ownerEntity: go.Part,
   owner: Partial<Owner>
 ) {
-  diagram?.startTransaction(`Update ${owner.name}`);
+  diagram?.startTransaction(`Update ${owner.key}`);
   Object.entries(owner).forEach(([key, value]) => {
     diagram.model.setDataProperty(ownerEntity?.data, key, value);
   });
-  diagram.model.setDataProperty(ownerEntity?.data, "key", owner.name);
-  diagram?.commitTransaction(`Update ${owner.name}`);
+  //diagram.model.setDataProperty(ownerEntity?.data, "key", owner.key);
+  diagram?.commitTransaction(`Update ${owner.key}`);
 }
 
 export const OwnerDiagram = new go.Node("Vertical", {

@@ -1,7 +1,7 @@
 import type { FormEvent } from "react";
 import { useEffect } from "react";
 import React from "react";
-import type { Owner } from "../planSidebars/OwnerSidebar";
+import type { Owner } from "../dataModels/Node";
 
 export type Props = {
   owner: Partial<Owner>;
@@ -9,8 +9,8 @@ export type Props = {
 };
 
 export default function OwnerForm({ owner, setOwner }: Props) {
-  const [name, setName] = React.useState(owner.name);
-  useEffect(() => setName(owner.name), [owner]);
+  const [name, setName] = React.useState(owner.key);
+  useEffect(() => setName(owner.key), [owner]);
 
   const [netWorth, setNetWorth] = React.useState(owner.netWorth);
   useEffect(() => setNetWorth(owner.netWorth), [owner]);
@@ -26,7 +26,7 @@ export default function OwnerForm({ owner, setOwner }: Props) {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setOwner({
-      name: name,
+      key: name,
       birthYear: birthYear,
       netWorth: netWorth,
       expectedLifeSpan: expectedLifeSpan,

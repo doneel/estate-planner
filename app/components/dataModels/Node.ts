@@ -36,10 +36,10 @@ export class AnnualGiftSummary {
     this.expectedTax = expectedTax;
     this.lifetimeExclusionUsed = lifetimeExclusionUsed;
   }
-  @JsonObject() year: number;
-  @JsonObject() totalGiftValue: number;
-  @JsonObject() expectedTax: number;
-  @JsonObject() lifetimeExclusionUsed: number;
+  @JsonProperty() year: number;
+  @JsonProperty() totalGiftValue: number;
+  @JsonProperty() expectedTax: number;
+  @JsonProperty() lifetimeExclusionUsed: number;
 }
 
 export interface RecipientMap {
@@ -56,6 +56,7 @@ export class Owner extends Node {
   @JsonProperty({ type: AnnualGiftSummary })
   annualGiftSummaries: Array<AnnualGiftSummary>;
 
+  @JsonProperty() expectedLifeSpan: number;
   public giftMap: GiftMap = {};
 }
 

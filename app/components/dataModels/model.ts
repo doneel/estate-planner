@@ -42,24 +42,27 @@ export class Model {
   linkFromPortIdProperty: string;
 
   public sumUpGifts(allEvents: Event[]) {
-    allEvents.forEach((event) => {
-      switch (event.from?.category) {
-        case NodeType.Owner:
-          // @ts-ignore
-          const owner: Owner = event.from;
-          if (owner.giftMap[event.date.getFullYear()] === undefined) {
-            owner.giftMap[event.date.getFullYear()] = {};
-          }
-          if (
-            owner.giftMap[event.date.getFullYear()][event?.to?.key ?? ""] ===
-            undefined
-          ) {
-            owner.giftMap[event.date.getFullYear()][event?.to?.key ?? ""] = 0;
-          }
-          owner.giftMap[event.date.getFullYear()][event?.to?.key ?? ""] +=
-            event.value;
-      }
-    });
+    allEvents
+      .filter((e) => e.parent.category === LinkType.Transfer)
+      .filter((e) => e.parent.isGift)
+      .forEach((event) => {
+        switch (event.from?.category) {
+          case NodeType.Owner:
+            // @ts-ignore
+            const owner: Owner = event.from;
+            if (owner.giftMap[event.date.getFullYear()] === undefined) {
+              owner.giftMap[event.date.getFullYear()] = {};
+            }
+            if (
+              owner.giftMap[event.date.getFullYear()][event?.to?.key ?? ""] ===
+              undefined
+            ) {
+              owner.giftMap[event.date.getFullYear()][event?.to?.key ?? ""] = 0;
+            }
+            owner.giftMap[event.date.getFullYear()][event?.to?.key ?? ""] +=
+              event.value;
+        }
+      });
   }
 
   public calculateGiftSummaries() {
@@ -69,7 +72,7 @@ export class Model {
         let lifetimeExclusionUsed = 0;
         owner.annualGiftSummaries = Object.entries(owner.giftMap).map(
           ([yearU, giftsByRecipientU]) => {
-            const year: number = yearU;
+            const year: number = Number(yearU);
             const annualExclusion = ANNUAL_GIFT_EXCLUSIONS(year);
             const lifetimeExclusionAsOfThisYear =
               LIFETIME_GIFT_EXCLUSIONS(year);
@@ -90,7 +93,6 @@ export class Model {
                 lifetimeExclusionAsOfThisYear - lifetimeExclusionUsed;
               const taxable = Math.max(excessOverLimit - headroom, 0);
               const tax_rate = GIFT_TAX_RATE(year);
-              console.log(taxable, tax_rate);
               taxesOwed = taxable * (tax_rate ?? 0);
             }
             lifetimeExclusionUsed += excessOverLimit;
@@ -98,7 +100,7 @@ export class Model {
               year,
               totalGifts,
               taxesOwed,
-              excessOverLimit
+              lifetimeExclusionUsed
             );
           }
         );
@@ -122,7 +124,6 @@ export class Model {
           case LinkType.Transfer:
             // @ts-ignore
             const transfer: Transfer = link;
-            //console.log(typeof transfer.date.value, transfer.date.value);
             return [
               {
                 parent: transfer,
