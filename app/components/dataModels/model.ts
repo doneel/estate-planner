@@ -4,7 +4,6 @@ import {
   JsonSerializer,
   throwError,
 } from "typescript-json-serializer";
-import { d } from "vitest/dist/index-6e18a03a";
 import {
   ANNUAL_GIFT_EXCLUSIONS,
   GIFT_TAX_RATE,
