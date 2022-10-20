@@ -7,6 +7,10 @@ export enum LinkType {
 
 export type LinkTypesUnion = Transfer;
 
+export function isTransfer(node: Link): node is Transfer {
+  return node.category === LinkType.Transfer;
+}
+
 export const linkTypeDiscriminatorFn = (link: Link) => {
   switch (link.category) {
     case LinkType.Transfer:
@@ -16,9 +20,9 @@ export const linkTypeDiscriminatorFn = (link: Link) => {
 
 @JsonObject()
 export class Link {
-  @JsonProperty() from: string;
-  @JsonProperty() to: string;
-  @JsonProperty() category: LinkType;
+  @JsonProperty({ required: true }) from: string = "";
+  @JsonProperty({ required: true }) to: string = "";
+  @JsonProperty({ required: true }) category: LinkType = LinkType.Transfer;
 }
 
 @JsonObject()
@@ -27,8 +31,8 @@ export class Transfer extends Link {
   @JsonProperty({
     type: (s) => GoDate,
   })
-  date: GoDate;
+  date: GoDate | undefined;
 
-  @JsonProperty() isGift: boolean;
-  @JsonProperty() fixedValue: number;
+  @JsonProperty() isGift: boolean | undefined;
+  @JsonProperty() fixedValue: number | undefined;
 }

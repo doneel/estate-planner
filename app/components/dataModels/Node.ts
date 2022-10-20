@@ -7,11 +7,30 @@ export enum NodeType {
 
 export type NodeTypesUnion = Beneficiary | Owner;
 
+export interface NodeInterface {
+  category: NodeType;
+}
+
+export interface OwnerInterface {
+  category: NodeType.Owner;
+}
+
+export interface BeneficiaryInterface {
+  category: NodeType.Beneficiary;
+}
+
+export function isOwner(node: Node | Owner | Beneficiary): node is Owner {
+  return node.category === NodeType.Owner;
+}
+
+export function isBeneficiary(node: Node | Owner | Beneficiary): node is Owner {
+  return node.category === NodeType.Beneficiary;
+}
+
 @JsonObject()
-export class Node {
-  @JsonProperty({ required: true }) key: string;
-  @JsonProperty() category: NodeType;
-  @JsonProperty() newField: string;
+export class Node implements NodeInterface {
+  @JsonProperty({ required: true }) key: string = "";
+  @JsonProperty({ required: true }) category: NodeType = NodeType.Beneficiary;
 }
 
 export const nodeType = (node: Node) => {
@@ -50,17 +69,20 @@ export interface GiftMap {
 }
 
 @JsonObject()
-export class Owner extends Node {
-  @JsonProperty() birthYear: number;
-  @JsonProperty() netWorth: number;
+export class Owner extends Node implements OwnerInterface {
+  @JsonProperty({ required: true }) category: NodeType.Owner = NodeType.Owner;
+  @JsonProperty() birthYear: number | undefined;
+  @JsonProperty() netWorth: number | undefined;
   @JsonProperty({ type: AnnualGiftSummary })
-  annualGiftSummaries: Array<AnnualGiftSummary>;
+  annualGiftSummaries: Array<AnnualGiftSummary> = [];
 
-  @JsonProperty() expectedLifeSpan: number;
+  @JsonProperty() expectedLifeSpan: number | undefined;
   public giftMap: GiftMap = {};
 }
 
 @JsonObject()
-export class Beneficiary extends Node {
-  @JsonProperty() birthYear: number;
+export class Beneficiary extends Node implements BeneficiaryInterface {
+  @JsonProperty({ required: true }) category: NodeType.Beneficiary =
+    NodeType.Beneficiary;
+  @JsonProperty() birthYear: number | undefined;
 }

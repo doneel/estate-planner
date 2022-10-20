@@ -81,13 +81,19 @@ export default function PlanPage() {
     const go = await import("gojs");
     if (diagram !== undefined) {
       const dataModel = defaultSerializer.deserialize(
-        //e.diagram.model.modelData,
         diagram.model.toJson(),
         Model
       );
-      if (dataModel !== undefined && dataModel !== null) {
+      //console.log(diagram.model.toJson());
+
+      if (
+        dataModel !== undefined &&
+        dataModel !== null &&
+        !(dataModel instanceof Array)
+      ) {
         dataModel.calculateAll();
         diagram.model = go.Model.fromJson(JSON.stringify(dataModel));
+        //console.log(JSON.stringify(dataModel));
       }
     }
   }

@@ -10,7 +10,10 @@ import {
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
 import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Transfer } from "../planSidebars/TransferSidebar";
-import { Owner } from "../dataModels/Node";
+import type { Owner } from "../dataModels/Node";
+import { isBeneficiary } from "../dataModels/Node";
+import { isOwner } from "../dataModels/Node";
+import { Node } from "../dataModels/Node";
 import { defaultSerializer } from "../dataModels/Model";
 
 export type ModelType = Owner | Beneficiary | Transfer;
@@ -39,38 +42,42 @@ export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
-      const data: Owner | Beneficiary = selected.data;
-      switch (data.category) {
-        case "Owner":
-          const p: Owner = defaultSerializer.deserialize(data, Owner);
-          const props: SetSidebarProps<Owner> = {
-            entity: p || {},
-            updateCallback: (owner: Partial<Owner>) => {
-              const ownerEntity = e.diagram?.selection?.first();
-              ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
-            },
-          };
-          setSidebar(props);
-          return;
-
-        case "Beneficiary":
-          setSidebar({
-            entity: {
-              name: selected.data?.key,
-              category: selected.data?.category,
-              birthYear: selected.data?.birthYear,
-            },
-            updateCallback: (beneficiary) => {
-              const beneficiaryEntity = e.diagram?.selection?.first();
-              beneficiaryEntity &&
-                updateBeneficiaryEntity(
-                  e.diagram,
-                  beneficiaryEntity,
-                  beneficiary
-                );
-            },
-          });
-          return;
+      const nodeEntity = defaultSerializer.deserialize(selected.data, Node);
+      if (
+        nodeEntity === undefined ||
+        nodeEntity === null ||
+        nodeEntity instanceof Array
+      ) {
+        console.error("Couldn't deserialize selected node data", selected.data);
+        return;
+      }
+      if (isOwner(nodeEntity)) {
+        const props: SetSidebarProps<Owner> = {
+          entity: nodeEntity,
+          updateCallback: (owner: Partial<Owner>) => {
+            const ownerEntity = e.diagram?.selection?.first();
+            ownerEntity && updateOwnerEntity(e.diagram, ownerEntity, owner);
+          },
+        };
+        setSidebar(props);
+      }
+      if (isBeneficiary(nodeEntity)) {
+        setSidebar({
+          entity: {
+            name: selected.data?.key,
+            category: selected.data?.category,
+            birthYear: selected.data?.birthYear,
+          },
+          updateCallback: (beneficiary) => {
+            const beneficiaryEntity = e.diagram?.selection?.first();
+            beneficiaryEntity &&
+              updateBeneficiaryEntity(
+                e.diagram,
+                beneficiaryEntity,
+                beneficiary
+              );
+          },
+        });
       }
     } else if (selected instanceof go.Link) {
       switch (selected.data.category) {

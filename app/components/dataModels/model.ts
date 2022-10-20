@@ -9,15 +9,23 @@ import {
   GIFT_TAX_RATE,
   LIFETIME_GIFT_EXCLUSIONS,
 } from "./constants";
-import type { Link, Transfer } from "./Link";
+import type { Link, LinkTypesUnion, Transfer } from "./Link";
+import { isTransfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
-import type { Node, Owner, RecipientMap } from "./Node";
+import type {
+  Beneficiary,
+  Node,
+  NodeTypesUnion,
+  Owner,
+  RecipientMap,
+} from "./Node";
+import { isOwner } from "./Node";
 import { AnnualGiftSummary } from "./Node";
 import { NodeType } from "./Node";
 import { nodeType } from "./Node";
 
 type Event = {
-  parent: Link;
+  parent: LinkTypesUnion;
   from?: Node;
   to?: Node;
   date: Date;
@@ -26,23 +34,23 @@ type Event = {
 
 @JsonObject()
 export class Model {
-  @JsonProperty() class: string;
+  @JsonProperty() class: string = "";
 
   @JsonProperty({ type: nodeType })
-  nodeDataArray: Array<Node>;
+  nodeDataArray: Array<Beneficiary | Owner> = [];
 
   @JsonProperty({ type: linkTypeDiscriminatorFn })
-  linkDataArray: Array<Link>;
+  linkDataArray: Array<LinkTypesUnion> = [];
 
   @JsonProperty()
-  linkToPortIdProperty: string;
+  linkToPortIdProperty: string | undefined;
 
   @JsonProperty()
-  linkFromPortIdProperty: string;
+  linkFromPortIdProperty: string | undefined;
 
   public sumUpGifts(allEvents: Event[]) {
     allEvents
-      .filter((e) => e.parent.category === LinkType.Transfer)
+      .filter((e) => isTransfer(e.parent))
       .filter((e) => e.parent.isGift)
       .forEach((event) => {
         switch (event.from?.category) {
@@ -65,45 +73,51 @@ export class Model {
   }
 
   public calculateGiftSummaries() {
-    this.nodeDataArray
-      .filter((n) => n.category === NodeType.Owner)
-      .forEach((owner: Owner) => {
-        let lifetimeExclusionUsed = 0;
-        owner.annualGiftSummaries = Object.entries(owner.giftMap).map(
-          ([yearU, giftsByRecipientU]) => {
-            const year: number = Number(yearU);
-            const annualExclusion = ANNUAL_GIFT_EXCLUSIONS(year);
-            const lifetimeExclusionAsOfThisYear =
-              LIFETIME_GIFT_EXCLUSIONS(year);
-            const giftsByRecipient: RecipientMap = giftsByRecipientU;
-            const totalGifts = Object.values(giftsByRecipient).reduce(
-              (sum: number, gift: number) => sum + gift,
-              0
-            );
-            const excessOverLimit = annualExclusion
-              ? Object.values(giftsByRecipient)
-                  .map((giftValue) => giftValue - annualExclusion)
-                  .filter((excess) => excess > 0)
-                  .reduce((sum, n) => sum + n, 0)
-              : 0;
-            let taxesOwed = 0;
-            if (lifetimeExclusionAsOfThisYear) {
-              const headroom =
-                lifetimeExclusionAsOfThisYear - lifetimeExclusionUsed;
-              const taxable = Math.max(excessOverLimit - headroom, 0);
-              const tax_rate = GIFT_TAX_RATE(year);
-              taxesOwed = taxable * (tax_rate ?? 0);
-            }
-            lifetimeExclusionUsed += excessOverLimit;
-            return new AnnualGiftSummary(
-              year,
-              totalGifts,
-              taxesOwed,
-              lifetimeExclusionUsed
-            );
+    const nodes: NodeTypesUnion[] = this.nodeDataArray;
+    const n = nodes[0];
+    switch (n.category) {
+      case NodeType.Beneficiary:
+        break;
+      case NodeType.Owner:
+        break;
+    }
+    nodes.filter((n) => n.category === NodeType.Owner).map((n) => n);
+    this.nodeDataArray.filter(isOwner).forEach((owner) => {
+      let lifetimeExclusionUsed = 0;
+      owner.annualGiftSummaries = Object.entries(owner.giftMap).map(
+        ([yearU, giftsByRecipientU]) => {
+          const year: number = Number(yearU);
+          const annualExclusion = ANNUAL_GIFT_EXCLUSIONS(year);
+          const lifetimeExclusionAsOfThisYear = LIFETIME_GIFT_EXCLUSIONS(year);
+          const giftsByRecipient: RecipientMap = giftsByRecipientU;
+          const totalGifts = Object.values(giftsByRecipient).reduce(
+            (sum: number, gift: number) => sum + gift,
+            0
+          );
+          const excessOverLimit = annualExclusion
+            ? Object.values(giftsByRecipient)
+                .map((giftValue) => giftValue - annualExclusion)
+                .filter((excess) => excess > 0)
+                .reduce((sum, n) => sum + n, 0)
+            : 0;
+          let taxesOwed = 0;
+          if (lifetimeExclusionAsOfThisYear) {
+            const headroom =
+              lifetimeExclusionAsOfThisYear - lifetimeExclusionUsed;
+            const taxable = Math.max(excessOverLimit - headroom, 0);
+            const tax_rate = GIFT_TAX_RATE(year);
+            taxesOwed = taxable * (tax_rate ?? 0);
           }
-        );
-      });
+          lifetimeExclusionUsed += excessOverLimit;
+          return new AnnualGiftSummary(
+            year,
+            totalGifts,
+            taxesOwed,
+            lifetimeExclusionUsed
+          );
+        }
+      );
+    });
   }
 
   public calculateAll() {
@@ -111,8 +125,8 @@ export class Model {
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
     const summaries = this.nodeDataArray
-      .filter((n) => n.category === NodeType.Owner)
-      .map((o: Owner) => o.annualGiftSummaries);
+      .filter(isOwner)
+      .map((o) => o.annualGiftSummaries);
     console.log(summaries);
   }
 
@@ -121,8 +135,11 @@ export class Model {
       .flatMap((link) => {
         switch (link.category) {
           case LinkType.Transfer:
-            // @ts-ignore
-            const transfer: Transfer = link;
+            const transfer = link;
+            if (transfer.date?.value === undefined) {
+              //HIGHLIGHT ERRORS HERE
+              return [];
+            }
             return [
               {
                 parent: transfer,
@@ -130,8 +147,8 @@ export class Model {
                   (node) => node.key === transfer.from
                 ),
                 to: this.nodeDataArray.find((node) => node.key === transfer.to),
-                date: transfer.date.value,
-                value: transfer.fixedValue,
+                date: transfer?.date?.value,
+                value: transfer.fixedValue ?? 0,
               },
             ];
         }
