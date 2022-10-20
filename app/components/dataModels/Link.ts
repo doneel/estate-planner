@@ -1,8 +1,5 @@
-import {
-  JsonObject,
-  JsonProperty,
-  throwError,
-} from "typescript-json-serializer";
+import { JsonObject, JsonProperty } from "typescript-json-serializer";
+import { GoDate } from "./utilities";
 
 export enum LinkType {
   Transfer = "transfer",
@@ -10,7 +7,7 @@ export enum LinkType {
 
 export type LinkTypesUnion = Transfer;
 
-export const linkType = (link: Link) => {
+export const linkTypeDiscriminatorFn = (link: Link) => {
   switch (link.category) {
     case LinkType.Transfer:
       return Transfer;
@@ -27,7 +24,10 @@ export class Link {
 @JsonObject()
 export class Transfer extends Link {
   @JsonProperty() category: LinkType = LinkType.Transfer;
-  @JsonProperty() date: GoDate;
+  @JsonProperty({
+    type: (s) => GoDate,
+  })
+  date: GoDate;
   @JsonProperty() isGift: boolean;
   @JsonProperty() fixedValue: number;
 }

@@ -24,9 +24,39 @@ export const nodeType = (node: Node) => {
 };
 
 @JsonObject()
+export class AnnualGiftSummary {
+  constructor(
+    year: number,
+    totalGiftValue: number,
+    expectedTax: number,
+    lifetimeExclusionUsed: number
+  ) {
+    this.year = year;
+    this.totalGiftValue = totalGiftValue;
+    this.expectedTax = expectedTax;
+    this.lifetimeExclusionUsed = lifetimeExclusionUsed;
+  }
+  @JsonObject() year: number;
+  @JsonObject() totalGiftValue: number;
+  @JsonObject() expectedTax: number;
+  @JsonObject() lifetimeExclusionUsed: number;
+}
+
+export interface RecipientMap {
+  [to: string]: number;
+}
+export interface GiftMap {
+  [year: number]: RecipientMap;
+}
+
+@JsonObject()
 export class Owner extends Node {
   @JsonProperty() birthYear: number;
   @JsonProperty() netWorth: number;
+  @JsonProperty({ type: AnnualGiftSummary })
+  annualGiftSummaries: Array<AnnualGiftSummary>;
+
+  public giftMap: GiftMap = {};
 }
 
 @JsonObject()
