@@ -10,7 +10,8 @@ import {
 import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
 import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Transfer } from "../planSidebars/TransferSidebar";
-import type { Owner } from "../dataModels/Node";
+import type { JointEstate, Owner } from "../dataModels/Node";
+import { NodeType } from "../dataModels/Node";
 import { isBeneficiary } from "../dataModels/Node";
 import { isOwner } from "../dataModels/Node";
 import { Node } from "../dataModels/Node";
@@ -119,40 +120,39 @@ export async function initDiagram({ setSidebar }: Props) {
   diagram.nodeTemplateMap.add("JointEstate", JointEstateDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
   diagram.linkTemplateMap.add("transfer", TransferDiagram);
+
+  const wife: Owner = {
+    key: "Wife",
+    category: NodeType.Owner,
+    birthYear: undefined,
+    expectedLifeSpan: undefined,
+    annualGiftSummaries: [],
+    giftMap: undefined,
+  };
+
+  const husband: Owner = {
+    key: "Husband",
+    category: NodeType.Owner,
+    birthYear: undefined,
+    expectedLifeSpan: undefined,
+    annualGiftSummaries: [],
+    giftMap: undefined,
+  };
+
+  const startData: Partial<JointEstate> = {
+    key: "JointEstateKey",
+    category: NodeType.JointEstate,
+    wife,
+    husband,
+    commonPropertyValue: 12_361_000,
+    husbandExtraValue: undefined,
+    wifeExtraValue: undefined,
+  };
   diagram.model = new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
     linkToPortIdProperty: "toPort",
-    nodeDataArray: [
-      { key: "Mary", category: "Owner", netWorth: null },
-      { key: "Tom", category: "Owner", netWorth: null },
-      { key: "Tom Jr.", category: "Beneficiary", birthYear: 1992 },
-    ],
-    linkDataArray: [
-      {
-        from: "Tom",
-        to: "Tom Jr.",
-        category: "transfer",
-        date: new Date("01/01/2023"),
-        fixedValue: 1000000,
-        isGift: true,
-      },
-      {
-        from: "Tom",
-        to: "Tom Jr.",
-        category: "transfer",
-        date: new Date("01/01/2030"),
-        fixedValue: 200000,
-        isGift: true,
-      },
-      {
-        from: "Mary",
-        to: "Tom Jr.",
-        category: "transfer",
-        date: new Date(2024, 1, 17),
-        fixedValue: 7,
-        isGift: true,
-      },
-    ],
+    nodeDataArray: [wife, husband, startData],
+    linkDataArray: [],
   });
   diagram.undoManager.isEnabled = true;
   return diagram;
