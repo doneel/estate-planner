@@ -14,7 +14,13 @@ import type { Owner } from "../dataModels/Node";
 import { isBeneficiary } from "../dataModels/Node";
 import { isOwner } from "../dataModels/Node";
 import { Node } from "../dataModels/Node";
-import { defaultSerializer } from "../dataModels/Model";
+import {
+  defaultSerializer,
+  deserializeLink,
+  deserializeNode,
+} from "../dataModels/Model";
+import { JointEstateDiagram } from "./JointEstateDiagram";
+import { isTransfer } from "../dataModels/Link";
 
 export type ModelType = Owner | Beneficiary | Transfer;
 
@@ -42,13 +48,8 @@ export async function initDiagram({ setSidebar }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
-      const nodeEntity = defaultSerializer.deserialize(selected.data, Node);
-      if (
-        nodeEntity === undefined ||
-        nodeEntity === null ||
-        nodeEntity instanceof Array
-      ) {
-        console.error("Couldn't deserialize selected node data", selected.data);
+      const nodeEntity = deserializeNode(selected.data);
+      if (nodeEntity === undefined) {
         return;
       }
       if (isOwner(nodeEntity)) {
@@ -80,22 +81,24 @@ export async function initDiagram({ setSidebar }: Props) {
         });
       }
     } else if (selected instanceof go.Link) {
-      switch (selected.data.category) {
-        case "transfer":
-          setSidebar({
-            entity: {
-              category: selected.data?.category,
-              date: selected.data?.date,
-              isGift: selected.data?.isGift,
-              fixedValue: selected.data?.fixedValue,
-            },
-            updateCallback: (transfer) => {
-              const transferEntity = e.diagram?.selection?.first();
-              transferEntity &&
-                updateTransferEntity(e.diagram, transferEntity, transfer);
-            },
-          });
-          return;
+      const linkEntity = deserializeLink(selected.data);
+      if (linkEntity === undefined) {
+        return;
+      }
+      if (isTransfer(linkEntity)) {
+        setSidebar({
+          entity: {
+            category: selected.data?.category,
+            date: selected.data?.date,
+            isGift: selected.data?.isGift,
+            fixedValue: selected.data?.fixedValue,
+          },
+          updateCallback: (transfer) => {
+            const transferEntity = e.diagram?.selection?.first();
+            transferEntity &&
+              updateTransferEntity(e.diagram, transferEntity, transfer);
+          },
+        });
       }
     }
   }
@@ -113,6 +116,7 @@ export async function initDiagram({ setSidebar }: Props) {
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
   diagram.nodeTemplateMap.add("Owner", OwnerDiagram);
   diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryDiagram);
+  diagram.nodeTemplateMap.add("JointEstate", JointEstateDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
   diagram.linkTemplateMap.add("transfer", TransferDiagram);
   diagram.model = new go.GraphLinksModel({
