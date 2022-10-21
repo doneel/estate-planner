@@ -11,5 +11,5 @@ export function withSuffix(count: number): string {
 
   return `${(count / Math.pow(1000, exp)).toLocaleString("en-US", {
     maximumFractionDigits: 1,
-  })} ${"kMGTPE".charAt(exp - 1)}`;
+  })}${"kMBTPE".charAt(exp - 1)}`;
 }

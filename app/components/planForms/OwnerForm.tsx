@@ -32,6 +32,7 @@ export default function OwnerForm({ owner, setOwner }: Props) {
       expectedLifeSpan: expectedLifeSpan,
     });
   }
+  console.log(birthYear);
   return (
     <form>
       <div className="group relative z-0 mb-6 w-full">

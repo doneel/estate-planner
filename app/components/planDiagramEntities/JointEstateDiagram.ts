@@ -1,7 +1,54 @@
 import * as go from "gojs";
 import { withSuffix } from "../dataModels/utilities";
+import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
+
+export function updateJointEstateEntity(
+  diagram: go.Diagram,
+  jointEstateEntity: go.Part,
+  updateParams: JointEstateUpdateProps
+) {
+  diagram?.startTransaction(`Update ${jointEstateEntity.key}`);
+  const husbandDiagramEntity = diagram.findNodeForKey(
+    jointEstateEntity.data.husband.key
+  );
+  const wifeDiagramEntity = diagram.findNodeForKey(
+    jointEstateEntity.data.wife.key
+  );
+
+  if (updateParams.husbandName) {
+    diagram.model.setDataProperty(
+      husbandDiagramEntity?.data,
+      "key",
+      updateParams.husbandName
+    );
+    diagram.model.setDataProperty(
+      jointEstateEntity.data,
+      "husband.key",
+      updateParams.husbandName
+    );
+  }
+  if (updateParams.wifeName) {
+    diagram.model.setDataProperty(
+      wifeDiagramEntity?.data,
+      "key",
+      updateParams.wifeName
+    );
+    diagram.model.setDataProperty(
+      jointEstateEntity.data,
+      "wife.key",
+      updateParams.wifeName
+    );
+
+    Object.entries(updateParams)
+      .filter(([k, v]) => ["husbandName", "wifeName"].includes(k))
+      .forEach(([key, value]) => {
+        diagram.model.setDataProperty(jointEstateEntity.data, key, value);
+      });
+  }
+
+  diagram?.commitTransaction(`Update ${jointEstateEntity.name}`);
+}
 function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
-  console.log("trying to create on husband death");
   var node: go.Node = button.part.adornedPart;
   e.diagram.clearSelection();
 
@@ -61,8 +108,8 @@ export const JointEstateDiagram = new go.Node("Vertical", {
       editable: true,
     }).bind("text", "", (data, node) =>
       data.commonPropertyValue
-        ? `(~${withSuffix(data.commonPropertyValue)})`
-        : ""
+        ? `Joint Estate (~$${withSuffix(data.commonPropertyValue)})`
+        : "Joint Estate"
     )
   )
   .add(

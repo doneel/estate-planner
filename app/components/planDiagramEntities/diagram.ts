@@ -11,6 +11,7 @@ import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
 import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Transfer } from "../planSidebars/TransferSidebar";
 import type { JointEstate, Owner } from "../dataModels/Node";
+import { isJointEstate } from "../dataModels/Node";
 import { NodeType } from "../dataModels/Node";
 import { isBeneficiary } from "../dataModels/Node";
 import { isOwner } from "../dataModels/Node";
@@ -20,10 +21,13 @@ import {
   deserializeLink,
   deserializeNode,
 } from "../dataModels/Model";
-import { JointEstateDiagram } from "./JointEstateDiagram";
+import {
+  JointEstateDiagram,
+  updateJointEstateEntity,
+} from "./JointEstateDiagram";
 import { isTransfer } from "../dataModels/Link";
 
-export type ModelType = Owner | Beneficiary | Transfer;
+export type ModelType = Owner | Beneficiary | Transfer | JointEstate;
 
 export type SetSidebarProps<T extends ModelType> = {
   entity: T;
@@ -77,6 +81,20 @@ export async function initDiagram({ setSidebar }: Props) {
                 e.diagram,
                 beneficiaryEntity,
                 beneficiary
+              );
+          },
+        });
+      }
+      if (isJointEstate(nodeEntity)) {
+        setSidebar({
+          entity: nodeEntity,
+          updateCallback: (updateProps) => {
+            const jointEstateEntity = e.diagram?.selection?.first();
+            jointEstateEntity &&
+              updateJointEstateEntity(
+                e.diagram,
+                jointEstateEntity,
+                updateProps
               );
           },
         });

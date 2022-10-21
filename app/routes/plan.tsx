@@ -4,6 +4,7 @@ import type { JointEstate, Owner } from "~/components/dataModels/Node";
 import { nodeType } from "~/components/dataModels/Node";
 import { NodeType } from "~/components/dataModels/Node";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
+import JointEstateSidebar from "~/components/planSidebars/JointEstateSidebar";
 import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 import TransferSidebar from "~/components/planSidebars/TransferSidebar";
 
@@ -32,6 +33,14 @@ export default function PlanPage() {
                     <BeneficiarySidebar
                       beneficiary={entity}
                       setBeneficiary={updateCallback}
+                    />
+                  );
+                  return;
+                case "JointEstate":
+                  setSelectedItemForm(
+                    <JointEstateSidebar
+                      jointEstate={entity}
+                      setJointEstate={updateCallback}
                     />
                   );
                   return;
