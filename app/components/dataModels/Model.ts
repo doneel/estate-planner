@@ -4,13 +4,12 @@ import {
   JsonSerializer,
   throwError,
 } from "typescript-json-serializer";
-import { DefaultDeserializer } from "v8";
 import {
   ANNUAL_GIFT_EXCLUSIONS,
   GIFT_TAX_RATE,
   LIFETIME_GIFT_EXCLUSIONS,
 } from "./constants";
-import type { Link, LinkTypesUnion } from "./Link";
+import type { LinkTypesUnion } from "./Link";
 import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
 import type { Node, NodeTypesUnion, RecipientMap } from "./Node";
@@ -55,6 +54,9 @@ export class Model {
           case NodeType.Owner:
             // @ts-ignore
             const owner: Owner = event.from;
+            if (owner.giftMap === undefined) {
+              owner.giftMap = {};
+            }
             if (owner.giftMap[event.date.getFullYear()] === undefined) {
               owner.giftMap[event.date.getFullYear()] = {};
             }
@@ -82,7 +84,7 @@ export class Model {
     nodes.filter((n) => n.category === NodeType.Owner).map((n) => n);
     this.nodeDataArray.filter(isOwner).forEach((owner) => {
       let lifetimeExclusionUsed = 0;
-      owner.annualGiftSummaries = Object.entries(owner.giftMap).map(
+      owner.annualGiftSummaries = Object.entries(owner.giftMap || {}).map(
         ([yearU, giftsByRecipientU]) => {
           const year: number = Number(yearU);
           const annualExclusion = ANNUAL_GIFT_EXCLUSIONS(year);

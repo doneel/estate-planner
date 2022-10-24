@@ -49,6 +49,7 @@ export function updateJointEstateEntity(
   diagram?.commitTransaction(`Update ${jointEstateEntity.name}`);
 }
 function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
+  //@ts-ignore
   var node: go.Node = button.part.adornedPart;
   e.diagram.clearSelection();
 
