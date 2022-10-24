@@ -1,14 +1,5 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
 
-@JsonObject()
-export class GoDate {
-  @JsonProperty() class: string = "";
-  @JsonProperty() value: Date = new Date();
-
-  constructor(date: Date) {
-    this.value = date;
-  }
-}
 export function withSuffix(count: number): string {
   if (count < 1000) return "" + count;
   const exp = Math.trunc(Math.log(count) / Math.log(1000));

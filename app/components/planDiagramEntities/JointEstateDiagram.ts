@@ -1,6 +1,6 @@
 import * as go from "gojs";
 import { LinkType } from "../dataModels/Link";
-import { withSuffix } from "../dataModels/utilities";
+import { ValueTypes, withSuffix } from "../dataModels/utilities";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 
 export function updateJointEstateEntity(
@@ -59,6 +59,7 @@ function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
     category: LinkType.OnDeath,
     personKey: node.data.husband.key,
     value: {
+      type: ValueTypes.Fixed,
       fixedValue: 0,
     },
   };

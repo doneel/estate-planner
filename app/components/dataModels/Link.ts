@@ -7,7 +7,7 @@ export enum LinkType {
   OnDeath = "onDeath",
 }
 
-export type LinkTypesUnion = Transfer;
+export type LinkTypesUnion = Transfer | OnDeath;
 
 export function isTransfer(node: Link): node is Transfer {
   return node.category === LinkType.Transfer;

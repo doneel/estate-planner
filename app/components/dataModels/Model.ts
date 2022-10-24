@@ -10,6 +10,8 @@ import {
   LIFETIME_GIFT_EXCLUSIONS,
 } from "./constants";
 import type { LinkTypesUnion } from "./Link";
+import { OnDeath } from "./Link";
+import { isOnDeath } from "./Link";
 import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
 import type { Node, NodeTypesUnion, RecipientMap } from "./Node";
@@ -202,6 +204,8 @@ export function deserializeLink(blob: any): LinkTypesUnion | undefined {
 
   if (isTransfer(blob)) {
     link = defaultSerializer.deserialize(blob, Transfer);
+  } else if (isOnDeath(blob)) {
+    link = defaultSerializer.deserialize(blob, OnDeath);
   }
 
   if (link === undefined || link === null || link instanceof Array) {

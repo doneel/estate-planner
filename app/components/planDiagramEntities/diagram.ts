@@ -20,6 +20,7 @@ import {
 } from "./JointEstateDiagram";
 import type { OnDeath, Transfer } from "../dataModels/Link";
 import { isOnDeath, isTransfer } from "../dataModels/Link";
+import { updateOnDeathEntity } from "./OnDeathDiagram";
 
 export type ModelType = Owner | Beneficiary | Transfer | JointEstate | OnDeath;
 
@@ -108,7 +109,8 @@ export async function initDiagram({ setSidebar }: Props) {
           entity: linkEntity,
           updateCallback: (updateProps) => {
             const linkEntity = e.diagram?.selection.first();
-            linkEntity && updateOwnerEntity(e.diagram, linkEntity, updateProps);
+            linkEntity &&
+              updateOnDeathEntity(e.diagram, linkEntity, updateProps);
           },
         });
       }
