@@ -34,9 +34,11 @@ export class Model {
   @JsonProperty() class: string = "";
 
   @JsonProperty({ type: nodeType })
-  nodeDataArray: Array<Beneficiary | Owner> = [];
+  nodeDataArray: Array<NodeTypesUnion> = [];
 
-  @JsonProperty({ type: linkTypeDiscriminatorFn })
+  @JsonProperty({
+    type: linkTypeDiscriminatorFn,
+  })
   linkDataArray: Array<LinkTypesUnion> = [];
 
   @JsonProperty()
@@ -124,10 +126,12 @@ export class Model {
     const allEvents = this.getAllEvents();
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
+    /*
     const summaries = this.nodeDataArray
       .filter(isOwner)
       .map((o) => o.annualGiftSummaries);
     console.log(summaries);
+    */
   }
 
   private getAllEvents(): Event[] {
@@ -151,7 +155,6 @@ export class Model {
               value: transfer.fixedValue ?? 0,
             };
         }
-        return [];
       })
       .filter((e) => e !== undefined)
       .sort((e1, e2) => e1.date.getTime() - e2.date.getTime());

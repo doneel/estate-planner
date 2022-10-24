@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import React, { useEffect, useState } from "react";
-import type { Transfer } from "../planSidebars/TransferSidebar";
+import type { Transfer } from "../dataModels/Link";
 
 export type Props = {
   transfer: Partial<Transfer>;
@@ -12,7 +12,9 @@ export default function TransferForm({ transfer, setTransfer }: Props) {
     transfer.date?.toLocaleString()
   );
   useEffect(() => {
-    setDateAsString(transfer.date?.toLocaleDateString());
+    setDateAsString(
+      transfer.date instanceof Date ? transfer.date.toLocaleDateString() : ""
+    );
   }, [transfer]);
   const [fixedValue, setFixedValue] = useState(transfer.fixedValue);
   useEffect(() => setFixedValue(transfer.fixedValue), [transfer]);

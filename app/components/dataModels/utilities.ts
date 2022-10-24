@@ -1,10 +1,13 @@
-import { RemixBrowser } from "@remix-run/react";
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
 
 @JsonObject()
 export class GoDate {
   @JsonProperty() class: string = "";
   @JsonProperty() value: Date = new Date();
+
+  constructor(date: Date) {
+    this.value = date;
+  }
 }
 export function withSuffix(count: number): string {
   if (count < 1000) return "" + count;
@@ -28,6 +31,8 @@ export interface AssetHolder {
 
 interface Value {
   value(assetHolder: AssetHolder, date: Date | undefined): number;
+  description: string;
+  expectedValue: number | undefined;
 }
 
 export enum ValueTypes {
@@ -57,6 +62,9 @@ export class Fixed implements Value {
     () => {
       return this.fixedValue;
     };
+
+  @JsonProperty({}) description: string = "";
+  @JsonProperty({}) expectedValue: number | undefined;
 }
 
 @JsonObject()
@@ -70,6 +78,8 @@ export class Portion implements Value {
   ) => {
     return assetHolder.currentValue(date) * this.portion;
   };
+  @JsonProperty({}) description: string = "";
+  @JsonProperty({}) expectedValue: number | undefined;
 }
 
 @JsonObject()
@@ -81,4 +91,6 @@ export class Remainder implements Value {
   ) => {
     return assetHolder.currentValue(date);
   };
+  @JsonProperty({}) description: string = "";
+  @JsonProperty({}) expectedValue: number | undefined;
 }

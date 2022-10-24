@@ -19,7 +19,6 @@ export default function JointEstateForm({
   jointEstate,
   setJointEstate,
 }: Props) {
-  console.log(jointEstate);
   const [wifeName, setWifeName] = useState(jointEstate.wife?.key);
   useEffect(() => setWifeName(jointEstate.wife?.key), [jointEstate]);
 
@@ -46,7 +45,6 @@ export default function JointEstateForm({
     () => setCommonPropertyValue(jointEstate.commonPropertyValue),
     [jointEstate]
   );
-  console.log(husbandExtraValue);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
