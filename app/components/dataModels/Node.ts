@@ -3,9 +3,10 @@ import { JsonObject, JsonProperty } from "typescript-json-serializer";
 export enum NodeType {
   Owner = "Owner",
   Beneficiary = "Beneficiary",
+  JointEstate = "JointEstate",
 }
 
-export type NodeTypesUnion = Beneficiary | Owner;
+export type NodeTypesUnion = Beneficiary | Owner | JointEstate;
 
 export interface NodeInterface {
   category: NodeType;
@@ -25,6 +26,12 @@ export function isOwner(node: Node | Owner | Beneficiary): node is Owner {
 
 export function isBeneficiary(node: Node | Owner | Beneficiary): node is Owner {
   return node.category === NodeType.Beneficiary;
+}
+
+export function isJointEstate(
+  node: Node | Owner | Beneficiary | JointEstate
+): node is Owner {
+  return node.category === NodeType.JointEstate;
 }
 
 @JsonObject()
@@ -72,12 +79,16 @@ export interface GiftMap {
 export class Owner extends Node implements OwnerInterface {
   @JsonProperty({ required: true }) category: NodeType.Owner = NodeType.Owner;
   @JsonProperty() birthYear: number | undefined;
-  @JsonProperty() netWorth: number | undefined;
   @JsonProperty({ type: AnnualGiftSummary })
   annualGiftSummaries: Array<AnnualGiftSummary> = [];
 
   @JsonProperty() expectedLifeSpan: number | undefined;
-  public giftMap: GiftMap = {};
+  public giftMap: GiftMap | undefined = {};
+
+  constructor(name: string) {
+    super();
+    this.key = name;
+  }
 }
 
 @JsonObject()
@@ -85,4 +96,19 @@ export class Beneficiary extends Node implements BeneficiaryInterface {
   @JsonProperty({ required: true }) category: NodeType.Beneficiary =
     NodeType.Beneficiary;
   @JsonProperty() birthYear: number | undefined;
+}
+
+@JsonObject()
+export class JointEstate extends Node {
+  @JsonProperty({ required: true }) category: NodeType.JointEstate =
+    NodeType.JointEstate;
+  @JsonProperty({ type: Owner, required: true }) husband: Owner = new Owner(
+    "Husband"
+  );
+  @JsonProperty({ type: Owner, required: true }) wife: Owner = new Owner(
+    "Wife"
+  );
+  @JsonProperty() commonPropertyValue: number = 0;
+  @JsonProperty() husbandExtraValue: number = 0;
+  @JsonProperty() wifeExtraValue: number = 0;
 }

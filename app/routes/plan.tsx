@@ -1,6 +1,10 @@
 import React from "react";
 import { defaultSerializer, Model } from "~/components/dataModels/Model";
+import type { JointEstate, Owner } from "~/components/dataModels/Node";
+import { nodeType } from "~/components/dataModels/Node";
+import { NodeType } from "~/components/dataModels/Node";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
+import JointEstateSidebar from "~/components/planSidebars/JointEstateSidebar";
 import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 import TransferSidebar from "~/components/planSidebars/TransferSidebar";
 
@@ -32,6 +36,14 @@ export default function PlanPage() {
                     />
                   );
                   return;
+                case "JointEstate":
+                  setSelectedItemForm(
+                    <JointEstateSidebar
+                      jointEstate={entity}
+                      setJointEstate={updateCallback}
+                    />
+                  );
+                  return;
                 case "transfer":
                   setSelectedItemForm(
                     <TransferSidebar
@@ -55,6 +67,42 @@ export default function PlanPage() {
       diagram.model.commit(function (m: go.Model) {
         m.addNodeData({ key: "New Owner", category: "Owner" });
       }, "Add a new owner");
+    }
+  }
+
+  function addJointEstate() {
+    if (diagram !== undefined) {
+      diagram.model.commit(function (m: go.Model) {
+        const wife: Owner = {
+          key: "Wife",
+          category: NodeType.Owner,
+          birthYear: undefined,
+          expectedLifeSpan: undefined,
+          annualGiftSummaries: [],
+          giftMap: undefined,
+        };
+
+        const husband: Owner = {
+          key: "Husband",
+          category: NodeType.Owner,
+          birthYear: undefined,
+          expectedLifeSpan: undefined,
+          annualGiftSummaries: [],
+          giftMap: undefined,
+        };
+
+        const startData: Partial<JointEstate> = {
+          key: "JointEstateKey",
+          category: NodeType.JointEstate,
+          wife,
+          husband,
+          commonPropertyValue: undefined,
+          husbandExtraValue: undefined,
+          wifeExtraValue: undefined,
+        };
+
+        m.addNodeDataCollection([wife, husband, startData]);
+      }, "Create a new joint estate");
     }
   }
 
@@ -104,9 +152,9 @@ export default function PlanPage() {
       <div className="mx-auto my-4 space-x-8">
         <button
           className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          onClick={addOwner}
+          onClick={addJointEstate}
         >
-          Add owner
+          Add Joint Estate
         </button>
         <button
           className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"

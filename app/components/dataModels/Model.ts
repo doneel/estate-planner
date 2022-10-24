@@ -9,17 +9,14 @@ import {
   GIFT_TAX_RATE,
   LIFETIME_GIFT_EXCLUSIONS,
 } from "./constants";
-import type { Link, LinkTypesUnion, Transfer } from "./Link";
-import { isTransfer } from "./Link";
+import type { LinkTypesUnion } from "./Link";
+import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
-import type {
-  Beneficiary,
-  Node,
-  NodeTypesUnion,
-  Owner,
-  RecipientMap,
-} from "./Node";
-import { isOwner } from "./Node";
+import type { Node, NodeTypesUnion, RecipientMap } from "./Node";
+import { isJointEstate } from "./Node";
+import { JointEstate } from "./Node";
+import { Beneficiary, isBeneficiary } from "./Node";
+import { isOwner, Owner } from "./Node";
 import { AnnualGiftSummary } from "./Node";
 import { NodeType } from "./Node";
 import { nodeType } from "./Node";
@@ -57,6 +54,9 @@ export class Model {
           case NodeType.Owner:
             // @ts-ignore
             const owner: Owner = event.from;
+            if (owner.giftMap === undefined) {
+              owner.giftMap = {};
+            }
             if (owner.giftMap[event.date.getFullYear()] === undefined) {
               owner.giftMap[event.date.getFullYear()] = {};
             }
@@ -84,7 +84,7 @@ export class Model {
     nodes.filter((n) => n.category === NodeType.Owner).map((n) => n);
     this.nodeDataArray.filter(isOwner).forEach((owner) => {
       let lifetimeExclusionUsed = 0;
-      owner.annualGiftSummaries = Object.entries(owner.giftMap).map(
+      owner.annualGiftSummaries = Object.entries(owner.giftMap || {}).map(
         ([yearU, giftsByRecipientU]) => {
           const year: number = Number(yearU);
           const annualExclusion = ANNUAL_GIFT_EXCLUSIONS(year);
@@ -167,3 +167,42 @@ export const defaultSerializer = new JsonSerializer({
     null: "allow",
   },
 });
+
+export function deserializeNode(blob: any): NodeTypesUnion | undefined {
+  let node:
+    | NodeTypesUnion
+    | Array<NodeTypesUnion | undefined | null>
+    | undefined
+    | null;
+  if (isOwner(blob)) {
+    node = defaultSerializer.deserialize(blob, Owner);
+  } else if (isBeneficiary(blob)) {
+    node = defaultSerializer.deserialize(blob, Beneficiary);
+  } else if (isJointEstate(blob)) {
+    node = defaultSerializer.deserialize(blob, JointEstate);
+  }
+
+  if (node === undefined || node === null || node instanceof Array) {
+    console.error("Couldn't deserialize selected node data", blob);
+    return undefined;
+  }
+  return node;
+}
+
+export function deserializeLink(blob: any): LinkTypesUnion | undefined {
+  let link:
+    | LinkTypesUnion
+    | Array<LinkTypesUnion | undefined | null>
+    | undefined
+    | null;
+
+  if (isTransfer(blob)) {
+    link = defaultSerializer.deserialize(blob, Transfer);
+  }
+
+  if (link === undefined || link === null || link instanceof Array) {
+    console.error("Couldn't deserialize selected node data", blob);
+    return undefined;
+  }
+  return link;
+}

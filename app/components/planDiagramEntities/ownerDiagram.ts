@@ -29,7 +29,6 @@ export function updateOwnerEntity(
   Object.entries(owner).forEach(([key, value]) => {
     diagram.model.setDataProperty(ownerEntity?.data, key, value);
   });
-  //diagram.model.setDataProperty(ownerEntity?.data, "key", owner.key);
   diagram?.commitTransaction(`Update ${owner.key}`);
 }
 
