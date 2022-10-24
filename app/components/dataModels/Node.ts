@@ -6,6 +6,11 @@ export enum NodeType {
   JointEstate = "JointEstate",
 }
 
+export enum FirstDeath {
+  Husband = "Husband",
+  Wife = "Wife",
+}
+
 export type NodeTypesUnion = Beneficiary | Owner | JointEstate;
 
 export interface NodeInterface {
@@ -113,4 +118,5 @@ export class JointEstate extends Node {
   @JsonProperty() commonPropertyValue: number = 0;
   @JsonProperty() husbandExtraValue: number = 0;
   @JsonProperty() wifeExtraValue: number = 0;
+  @JsonProperty() firstDeath: FirstDeath | undefined;
 }

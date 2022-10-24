@@ -5,7 +5,6 @@ function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
   var node: go.Node = button.part.adornedPart;
   e.diagram.clearSelection();
-
   var tool = e.diagram.toolManager.linkingTool;
   tool.archetypeLinkData = {
     category: "transfer",
@@ -34,6 +33,9 @@ export function updateOwnerEntity(
 
 export const OwnerDiagram = new go.Node("Vertical", {
   selectable: true,
+  toLinkable: true,
+  fromLinkable: false,
+  portId: "in",
   selectionAdornmentTemplate: new go.Adornment("Spot", {
     layerName: "Tool",
   })
@@ -59,6 +61,13 @@ export const OwnerDiagram = new go.Node("Vertical", {
         )
     ),
 })
+  .bind(
+    "visible",
+    "",
+    (data, node) =>
+      node.diagram.model.findNodeDataForKey("JointEstateKey").firstDeath !==
+      data.key
+  )
   .add(
     new go.Picture("images/person.svg", {
       desiredSize: new go.Size(180, 180),

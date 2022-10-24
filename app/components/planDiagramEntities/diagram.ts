@@ -9,6 +9,7 @@ import {
 } from "./beneficiaryDiagram";
 import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
 import type { Beneficiary, JointEstate, Owner } from "../dataModels/Node";
+import { FirstDeath } from "../dataModels/Node";
 import { isJointEstate } from "../dataModels/Node";
 import { NodeType } from "../dataModels/Node";
 import { isBeneficiary } from "../dataModels/Node";
@@ -160,6 +161,7 @@ export async function initDiagram({ setSidebar }: Props) {
     commonPropertyValue: 12_361_000,
     husbandExtraValue: undefined,
     wifeExtraValue: undefined,
+    firstDeath: FirstDeath.Husband,
   };
   diagram.model = new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
