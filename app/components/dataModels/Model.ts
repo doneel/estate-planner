@@ -10,6 +10,8 @@ import {
   LIFETIME_GIFT_EXCLUSIONS,
 } from "./constants";
 import type { LinkTypesUnion } from "./Link";
+import { OnDeath } from "./Link";
+import { isOnDeath } from "./Link";
 import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
 import type { Node, NodeTypesUnion, RecipientMap } from "./Node";
@@ -34,9 +36,11 @@ export class Model {
   @JsonProperty() class: string = "";
 
   @JsonProperty({ type: nodeType })
-  nodeDataArray: Array<Beneficiary | Owner> = [];
+  nodeDataArray: Array<NodeTypesUnion> = [];
 
-  @JsonProperty({ type: linkTypeDiscriminatorFn })
+  @JsonProperty({
+    type: linkTypeDiscriminatorFn,
+  })
   linkDataArray: Array<LinkTypesUnion> = [];
 
   @JsonProperty()
@@ -48,6 +52,7 @@ export class Model {
   public sumUpGifts(allEvents: Event[]) {
     allEvents
       .filter((e) => isTransfer(e.parent))
+      // @ts-ignore
       .filter((e) => e.parent.isGift)
       .forEach((event) => {
         switch (event.from?.category) {
@@ -124,10 +129,12 @@ export class Model {
     const allEvents = this.getAllEvents();
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
+    /*
     const summaries = this.nodeDataArray
       .filter(isOwner)
       .map((o) => o.annualGiftSummaries);
     console.log(summaries);
+    */
   }
 
   private getAllEvents(): Event[] {
@@ -136,23 +143,24 @@ export class Model {
         switch (link.category) {
           case LinkType.Transfer:
             const transfer = link;
-            if (transfer.date?.value === undefined) {
+            if (transfer.date === undefined) {
               //HIGHLIGHT ERRORS HERE
-              return [];
+              const empty: Event[] = [];
+              return empty;
             }
-            return [
-              {
-                parent: transfer,
-                from: this.nodeDataArray.find(
-                  (node) => node.key === transfer.from
-                ),
-                to: this.nodeDataArray.find((node) => node.key === transfer.to),
-                date: transfer?.date?.value,
-                value: transfer.fixedValue ?? 0,
-              },
-            ];
+            return {
+              parent: transfer,
+              from: this.nodeDataArray.find(
+                (node) => node.key === transfer.from
+              ),
+              to: this.nodeDataArray.find((node) => node.key === transfer.to),
+              date: transfer?.date,
+              value: transfer.fixedValue ?? 0,
+            };
         }
+        return [];
       })
+      .filter((e) => e !== undefined)
       .sort((e1, e2) => e1.date.getTime() - e2.date.getTime());
   }
 }
@@ -198,6 +206,8 @@ export function deserializeLink(blob: any): LinkTypesUnion | undefined {
 
   if (isTransfer(blob)) {
     link = defaultSerializer.deserialize(blob, Transfer);
+  } else if (isOnDeath(blob)) {
+    link = defaultSerializer.deserialize(blob, OnDeath);
   }
 
   if (link === undefined || link === null || link instanceof Array) {

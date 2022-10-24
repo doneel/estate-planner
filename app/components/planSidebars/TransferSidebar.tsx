@@ -1,11 +1,5 @@
+import type { Transfer } from "../dataModels/Link";
 import TransferForm from "../planForms/TransferForm";
-
-export type Transfer = {
-  category: "transfer";
-  date: Date;
-  isGift: boolean;
-  fixedValue: number;
-};
 
 export type Props = {
   transfer: Partial<Transfer>;

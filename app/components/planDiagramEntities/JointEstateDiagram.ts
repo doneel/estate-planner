@@ -1,5 +1,6 @@
 import * as go from "gojs";
-import { withSuffix } from "../dataModels/utilities";
+import { LinkType } from "../dataModels/Link";
+import { ValueTypes, withSuffix } from "../dataModels/utilities";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 
 export function updateJointEstateEntity(
@@ -55,10 +56,12 @@ function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
 
   var tool = e.diagram.toolManager.linkingTool;
   tool.archetypeLinkData = {
-    category: "transfer",
-    date: undefined,
-    fixedValue: 0,
-    isGift: true,
+    category: LinkType.OnDeath,
+    personKey: node.data.husband.key,
+    value: {
+      type: ValueTypes.Fixed,
+      fixedValue: 0,
+    },
   };
   tool.startObject = node.port;
 

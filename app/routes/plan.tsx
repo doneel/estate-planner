@@ -5,6 +5,7 @@ import { nodeType } from "~/components/dataModels/Node";
 import { NodeType } from "~/components/dataModels/Node";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
 import JointEstateSidebar from "~/components/planSidebars/JointEstateSidebar";
+import OnDeathSidebar from "~/components/planSidebars/OnDeathSidebar";
 import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 import TransferSidebar from "~/components/planSidebars/TransferSidebar";
 
@@ -51,6 +52,15 @@ export default function PlanPage() {
                       setTransfer={updateCallback}
                     />
                   );
+                  return;
+                case "onDeath":
+                  setSelectedItemForm(
+                    <OnDeathSidebar
+                      onDeath={entity}
+                      setOnDeath={updateCallback}
+                    />
+                  );
+                  return;
               }
             },
           })
@@ -128,11 +138,12 @@ export default function PlanPage() {
   async function recalculate() {
     const go = await import("gojs");
     if (diagram !== undefined) {
+      //console.log("BEFORE DESERIALIZING", diagram.model.toJson());
       const dataModel = defaultSerializer.deserialize(
         diagram.model.toJson(),
         Model
       );
-      //console.log(diagram.model.toJson());
+      //console.log("DESIERIALIZED", dataModel);
 
       if (
         dataModel !== undefined &&
@@ -140,8 +151,9 @@ export default function PlanPage() {
         !(dataModel instanceof Array)
       ) {
         dataModel.calculateAll();
-        diagram.model = go.Model.fromJson(JSON.stringify(dataModel));
-        //console.log(JSON.stringify(dataModel));
+        diagram.model = go.Model.fromJson(
+          JSON.stringify(defaultSerializer.serialize(dataModel))
+        );
       }
     }
   }

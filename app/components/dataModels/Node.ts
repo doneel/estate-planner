@@ -46,6 +46,8 @@ export const nodeType = (node: Node) => {
       return Owner;
     case NodeType.Beneficiary:
       return Beneficiary;
+    case NodeType.JointEstate:
+      return JointEstate;
   }
 };
 

@@ -1,25 +1,21 @@
 import * as go from "gojs";
-import type { Transfer } from "../dataModels/Link";
+import type { OnDeath } from "../dataModels/Link";
+import type { ValueType } from "../dataModels/utilities";
+import { withSuffix } from "../dataModels/utilities";
 
-export function updateTransferEntity(
+export function updateOnDeathEntity(
   diagram: go.Diagram,
-  transferEntity: go.Part,
-  transferData: Partial<Transfer>
+  onDeathDiagram: go.Part,
+  updateParams: Partial<ValueType>
 ) {
-  diagram?.startTransaction(`Update ${transferData}`);
-  Object.entries(transferData).forEach(([key, value]) => {
-    diagram.model.setDataProperty(transferEntity?.data, key, value);
+  diagram?.startTransaction(`Update ${onDeathDiagram.data.to}`);
+  Object.entries(updateParams).forEach(([key, value]) => {
+    diagram.model.setDataProperty(onDeathDiagram?.data.value, `${key}`, value);
   });
-  /*
-  diagram.model.setDataProperty(
-    transferEntity?.data,
-    "date",
-    transferData.date?.value
-  );
-  */
-  diagram?.commitTransaction(`Update ${transferData}`);
+  diagram?.commitTransaction(`Update ${onDeathDiagram.data.to}`);
 }
-export const TransferDiagram = new go.Link({
+
+export const OnDeathDiagram = new go.Link({
   fromEndSegmentLength: 60,
   toEndSegmentLength: 60,
   curve: go.Link.Bezier,
@@ -30,6 +26,7 @@ export const TransferDiagram = new go.Link({
     e.isHighlighted = !e.isHighlighted;
   },
 })
+
   .add(new go.Shape({ strokeWidth: 2 }))
   .add(new go.Shape({ toArrow: "Standard" }))
   .add(
@@ -59,26 +56,17 @@ export const TransferDiagram = new go.Link({
           )
       )
       .add(
-        new go.Picture("images/gift.svg", {
-          alignment: go.Spot.TopRight,
-          desiredSize: new go.Size(24, 24),
-          opacity: 0.4,
-        }).bind("opacity", "isGift", (isGift) => (isGift ? 0.4 : 0))
-      )
-      .add(
         new go.Panel("Vertical", { margin: 4, alignment: go.Spot.Left }).add(
           new go.TextBlock("", {
             alignment: go.Spot.Left,
             font: "12pt sans-serif",
-          }).bind("text", "date", (d) => d.toLocaleDateString()),
+          }).bind("text", "description"),
           new go.TextBlock("", {
             font: "10pt sans-serif",
             alignment: go.Spot.Left,
-          }).bind("text", "fixedValue", (v) => `$${v.toLocaleString()}`),
-          new go.TextBlock("", {
-            alignment: go.Spot.Left,
-            font: "10pt sans-serif",
-          }).bind("text", "estimatedValue")
+          }).bind("text", "expectedValue", (v) =>
+            v ? `($${withSuffix(v)})` : ""
+          )
         )
       )
   );
