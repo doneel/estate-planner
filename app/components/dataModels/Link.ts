@@ -41,6 +41,8 @@ export const linkTypeDiscriminatorFn = (link: Link) => {
 export class Link {
   @JsonProperty({ required: true }) from: string = "";
   @JsonProperty({ required: true }) to: string = "";
+
+  // @ts-ignore
   @JsonProperty({ required: true }) category: LinkType;
 }
 
@@ -59,7 +61,7 @@ export class Transfer extends Link implements LinkInterface {
       return { class: "Date", value: prop };
     },
   })
-  date: Date;
+  date: Date | undefined;
 
   @JsonProperty() isGift: boolean | undefined;
   @JsonProperty({

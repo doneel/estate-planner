@@ -52,6 +52,7 @@ export class Model {
   public sumUpGifts(allEvents: Event[]) {
     allEvents
       .filter((e) => isTransfer(e.parent))
+      // @ts-ignore
       .filter((e) => e.parent.isGift)
       .forEach((event) => {
         switch (event.from?.category) {
@@ -142,7 +143,7 @@ export class Model {
         switch (link.category) {
           case LinkType.Transfer:
             const transfer = link;
-            if (transfer.date?.value === undefined) {
+            if (transfer.date === undefined) {
               //HIGHLIGHT ERRORS HERE
               const empty: Event[] = [];
               return empty;
@@ -153,10 +154,11 @@ export class Model {
                 (node) => node.key === transfer.from
               ),
               to: this.nodeDataArray.find((node) => node.key === transfer.to),
-              date: transfer?.date?.value,
+              date: transfer?.date,
               value: transfer.fixedValue ?? 0,
             };
         }
+        return [];
       })
       .filter((e) => e !== undefined)
       .sort((e1, e2) => e1.date.getTime() - e2.date.getTime());
