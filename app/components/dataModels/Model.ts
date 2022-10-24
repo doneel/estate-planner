@@ -138,21 +138,22 @@ export class Model {
             const transfer = link;
             if (transfer.date?.value === undefined) {
               //HIGHLIGHT ERRORS HERE
-              return [];
+              const empty: Event[] = [];
+              return empty;
             }
-            return [
-              {
-                parent: transfer,
-                from: this.nodeDataArray.find(
-                  (node) => node.key === transfer.from
-                ),
-                to: this.nodeDataArray.find((node) => node.key === transfer.to),
-                date: transfer?.date?.value,
-                value: transfer.fixedValue ?? 0,
-              },
-            ];
+            return {
+              parent: transfer,
+              from: this.nodeDataArray.find(
+                (node) => node.key === transfer.from
+              ),
+              to: this.nodeDataArray.find((node) => node.key === transfer.to),
+              date: transfer?.date?.value,
+              value: transfer.fixedValue ?? 0,
+            };
         }
+        return [];
       })
+      .filter((e) => e !== undefined)
       .sort((e1, e2) => e1.date.getTime() - e2.date.getTime());
   }
 }
