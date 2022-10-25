@@ -33,9 +33,6 @@ export function updateOwnerEntity(
 
 export const OwnerDiagram = new go.Node("Vertical", {
   selectable: true,
-  toLinkable: true,
-  fromLinkable: false,
-  portId: "in",
   selectionAdornmentTemplate: new go.Adornment("Spot", {
     layerName: "Tool",
   })
@@ -61,12 +58,27 @@ export const OwnerDiagram = new go.Node("Vertical", {
         )
     ),
 })
-  .bind(
-    "visible",
-    "",
-    (data, node) =>
-      node.diagram.model.findNodeDataForKey("JointEstateKey").firstDeath !==
-      data.key
+  .bind(new go.Binding("visible", "visible").ofObject())
+  .add(
+    new go.Shape("Circle", {
+      name: "inport",
+      fill: "white",
+      stroke: "gray",
+      desiredSize: new go.Size(20, 20),
+      portId: "in",
+      toLinkable: true,
+      toLinkableDuplicates: true,
+      mouseEnter: (e, port: go.GraphObject) => {
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        if (!e.diagram.isReadOnly) shapePort.fill = "#66F";
+      },
+      mouseLeave: (e, port) => {
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        shapePort.fill = "white";
+      },
+    })
   )
   .add(
     new go.Picture("images/person.svg", {

@@ -129,12 +129,25 @@ export class Model {
     const allEvents = this.getAllEvents();
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
+    this.generateDescriptions();
     /*
     const summaries = this.nodeDataArray
       .filter(isOwner)
       .map((o) => o.annualGiftSummaries);
     console.log(summaries);
     */
+  }
+
+  private generateDescriptions(): void {
+    this.linkDataArray.filter(isOnDeath).forEach((onDeath) => {
+      const assetHolder = this.nodeDataArray.find(
+        (n) => n.key === onDeath.from
+      );
+
+      if (assetHolder && (isJointEstate(assetHolder) || isOwner(assetHolder))) {
+        onDeath.value?.generateDescription(assetHolder, undefined);
+      }
+    });
   }
 
   private getAllEvents(): Event[] {

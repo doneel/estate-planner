@@ -1,7 +1,7 @@
 import React from "react";
 import { defaultSerializer, Model } from "~/components/dataModels/Model";
-import type { JointEstate, Owner } from "~/components/dataModels/Node";
-import { nodeType } from "~/components/dataModels/Node";
+import type { JointEstate } from "~/components/dataModels/Node";
+import { nodeType, Owner } from "~/components/dataModels/Node";
 import { NodeType } from "~/components/dataModels/Node";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
 import JointEstateSidebar from "~/components/planSidebars/JointEstateSidebar";
@@ -83,23 +83,8 @@ export default function PlanPage() {
   function addJointEstate() {
     if (diagram !== undefined) {
       diagram.model.commit(function (m: go.Model) {
-        const wife: Owner = {
-          key: "Wife",
-          category: NodeType.Owner,
-          birthYear: undefined,
-          expectedLifeSpan: undefined,
-          annualGiftSummaries: [],
-          giftMap: undefined,
-        };
-
-        const husband: Owner = {
-          key: "Husband",
-          category: NodeType.Owner,
-          birthYear: undefined,
-          expectedLifeSpan: undefined,
-          annualGiftSummaries: [],
-          giftMap: undefined,
-        };
+        const wife = new Owner("Wife");
+        const husband = new Owner("Husband");
 
         const startData: Partial<JointEstate> = {
           key: "JointEstateKey",

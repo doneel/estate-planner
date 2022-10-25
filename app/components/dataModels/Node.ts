@@ -1,4 +1,5 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
+import type { AssetHolder } from "./utilities";
 
 export enum NodeType {
   Owner = "Owner",
@@ -83,7 +84,7 @@ export interface GiftMap {
 }
 
 @JsonObject()
-export class Owner extends Node implements OwnerInterface {
+export class Owner extends Node implements OwnerInterface, AssetHolder {
   @JsonProperty({ required: true }) category: NodeType.Owner = NodeType.Owner;
   @JsonProperty() birthYear: number | undefined;
   @JsonProperty({ type: AnnualGiftSummary })
@@ -92,9 +93,15 @@ export class Owner extends Node implements OwnerInterface {
   @JsonProperty() expectedLifeSpan: number | undefined;
   public giftMap: GiftMap | undefined = {};
 
-  constructor(name: string) {
+  constructor(name: string, birthYear?: number, expectedLifeSpan?: number) {
     super();
     this.key = name;
+    this.birthYear = birthYear;
+    this.expectedLifeSpan = expectedLifeSpan;
+  }
+
+  currentValue(date: Date | undefined): number {
+    return 0;
   }
 }
 
@@ -106,7 +113,11 @@ export class Beneficiary extends Node implements BeneficiaryInterface {
 }
 
 @JsonObject()
-export class JointEstate extends Node {
+export class JointEstate extends Node implements AssetHolder {
+  currentValue(date: Date | undefined): number {
+    return this.commonPropertyValue;
+  }
+
   @JsonProperty({ required: true }) category: NodeType.JointEstate =
     NodeType.JointEstate;
   @JsonProperty({ type: Owner, required: true }) husband: Owner = new Owner(

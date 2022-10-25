@@ -41,6 +41,8 @@ export const linkTypeDiscriminatorFn = (link: Link) => {
 export class Link {
   @JsonProperty({ required: true }) from: string = "";
   @JsonProperty({ required: true }) to: string = "";
+  @JsonProperty({ required: true }) fromPort: string = "";
+  @JsonProperty({ required: true }) toPort: string = "";
 
   // @ts-ignore
   @JsonProperty({ required: true }) category: LinkType;

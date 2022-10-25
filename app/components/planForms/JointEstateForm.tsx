@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import type { JointEstate } from "../dataModels/Node";
+import { FirstDeath } from "../dataModels/Node";
 
 export type JointEstateUpdateProps = {
   wifeName?: string;
@@ -8,6 +9,7 @@ export type JointEstateUpdateProps = {
   commonPropertyValue?: number;
   husbandExtraValue?: number;
   wifeExtraValue?: number;
+  firstDeath?: FirstDeath;
 };
 
 export type Props = {
@@ -46,6 +48,9 @@ export default function JointEstateForm({
     [jointEstate]
   );
 
+  const [firstDeath, setFirstDeath] = useState(jointEstate.firstDeath);
+  useEffect(() => setFirstDeath(jointEstate.firstDeath), [jointEstate]);
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setJointEstate({
@@ -54,6 +59,7 @@ export default function JointEstateForm({
       commonPropertyValue,
       husbandExtraValue,
       wifeExtraValue,
+      firstDeath,
     });
   }
   return (
@@ -146,6 +152,52 @@ export default function JointEstateForm({
             Husband property value
           </label>
         </div>
+      </div>
+
+      <div className="group relative z-0 mb-6 w-full">
+        <h3 className="mb-4 font-semibold text-gray-900 dark:text-white">
+          Who to plan for passing fist?
+        </h3>
+        <ul className="w-full items-center rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:flex">
+          <li className="w-full border-b border-gray-200 dark:border-gray-600 sm:border-b-0 sm:border-r">
+            <div className="flex items-center px-3">
+              <input
+                id="horizontal-list-radio-license"
+                type="radio"
+                value={FirstDeath.Husband}
+                name="list-radio"
+                className="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-500 dark:bg-gray-600 dark:ring-offset-gray-700 dark:focus:ring-blue-600"
+                checked={firstDeath === FirstDeath.Husband}
+                onChange={(e) => setFirstDeath(FirstDeath.Husband)}
+              />
+              <label
+                htmlFor="horizontal-list-radio-license"
+                className="ml-2 w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                {jointEstate?.husband?.key ?? "Husband"}
+              </label>
+            </div>
+          </li>
+          <li className="w-full border-b border-gray-200 dark:border-gray-600 sm:border-b-0 sm:border-r">
+            <div className="flex items-center pl-3">
+              <input
+                id="horizontal-list-radio-id"
+                type="radio"
+                value={FirstDeath.Wife}
+                name="list-radio"
+                className="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-500 dark:bg-gray-600 dark:ring-offset-gray-700 dark:focus:ring-blue-600"
+                checked={firstDeath === FirstDeath.Wife}
+                onChange={(e) => setFirstDeath(FirstDeath.Wife)}
+              />
+              <label
+                htmlFor="horizontal-list-radio-id"
+                className="ml-2 w-full py-3 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                {jointEstate?.wife?.key ?? "Wife"}
+              </label>
+            </div>
+          </li>
+        </ul>
       </div>
       <button
         onClick={handleSubmit}

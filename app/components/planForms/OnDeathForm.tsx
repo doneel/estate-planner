@@ -79,7 +79,7 @@ export default function OnDeathForm({ onDeath, setOnDeath }: Props) {
               <input
                 id="horizontal-list-radio-id"
                 type="radio"
-                value=""
+                value={ValueTypes.Portion}
                 name="list-radio"
                 className="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-500 dark:bg-gray-600 dark:ring-offset-gray-700 dark:focus:ring-blue-600"
                 checked={type === ValueTypes.Portion}
@@ -98,7 +98,7 @@ export default function OnDeathForm({ onDeath, setOnDeath }: Props) {
               <input
                 id="horizontal-list-radio-millitary"
                 type="radio"
-                value=""
+                value={ValueTypes.Remainder}
                 name="list-radio"
                 className="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-500 dark:bg-gray-600 dark:ring-offset-gray-700 dark:focus:ring-blue-600"
                 checked={type === ValueTypes.Remainder}

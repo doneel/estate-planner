@@ -1,5 +1,6 @@
 import * as go from "gojs";
 import { LinkType } from "../dataModels/Link";
+import { FirstDeath } from "../dataModels/Node";
 import { ValueTypes, withSuffix } from "../dataModels/utilities";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 
@@ -43,13 +44,25 @@ export function updateJointEstateEntity(
     Object.entries(updateParams)
       .filter(([k, v]) => !["husbandName", "wifeName"].includes(k))
       .forEach(([key, value]) => {
-        console.log(key, value);
         diagram.model.setDataProperty(jointEstateEntity.data, key, value);
       });
+  }
+  const wife = diagram?.findNodeForKey(jointEstateEntity.data.wife.key);
+  if (wife !== null) {
+    wife.visible = updateParams.firstDeath !== FirstDeath.Wife;
+  } else {
+    console.error("Could not hide wife node, no wife found.");
+  }
+  const husband = diagram?.findNodeForKey(jointEstateEntity.data.husband.key);
+  if (husband !== null) {
+    husband.visible = updateParams.firstDeath !== FirstDeath.Husband;
+  } else {
+    console.error("Could not hide wife node, no husband found.");
   }
 
   diagram?.commitTransaction(`Update ${jointEstateEntity.name}`);
 }
+
 function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
   var node: go.Node = button.part.adornedPart;
