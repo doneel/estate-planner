@@ -31,6 +31,7 @@ export type SetSidebarProps<T extends ModelType> = {
 };
 export type Props = {
   setSidebar: (props: SetSidebarProps<ModelType>) => void;
+  modelJson?: string;
 };
 
 class FixedLayout extends go.LayeredDigraphLayout {
@@ -45,7 +46,29 @@ class FixedLayout extends go.LayeredDigraphLayout {
   }
 }
 
-export async function initDiagram({ setSidebar }: Props) {
+function defaultModel() {
+  const wife = new Owner("Wife");
+  const husband = new Owner("Husband");
+
+  const startData: Partial<JointEstate> = {
+    key: "JointEstate",
+    category: NodeType.JointEstate,
+    wife,
+    husband,
+    commonPropertyValue: 12_361_000,
+    husbandExtraValue: undefined,
+    wifeExtraValue: undefined,
+    firstDeath: FirstDeath.Husband,
+  };
+  return new go.GraphLinksModel({
+    linkFromPortIdProperty: "fromPort",
+    linkToPortIdProperty: "toPort",
+    nodeDataArray: [wife, husband, startData],
+    linkDataArray: [],
+  });
+}
+
+export async function initDiagram({ setSidebar, modelJson }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
@@ -137,25 +160,11 @@ export async function initDiagram({ setSidebar }: Props) {
   diagram.linkTemplateMap.add("transfer", TransferDiagram);
   diagram.linkTemplateMap.add("onDeath", OnDeathDiagram);
 
-  const wife = new Owner("Wife");
-  const husband = new Owner("Husband");
-
-  const startData: Partial<JointEstate> = {
-    key: "JointEstate",
-    category: NodeType.JointEstate,
-    wife,
-    husband,
-    commonPropertyValue: 12_361_000,
-    husbandExtraValue: undefined,
-    wifeExtraValue: undefined,
-    firstDeath: FirstDeath.Husband,
-  };
-  diagram.model = new go.GraphLinksModel({
-    linkFromPortIdProperty: "fromPort",
-    linkToPortIdProperty: "toPort",
-    nodeDataArray: [wife, husband, startData],
-    linkDataArray: [],
-  });
+  if (modelJson) {
+    diagram.model = go.Model.fromJson(modelJson);
+  } else {
+    diagram.model = defaultModel();
+  }
   diagram.undoManager.isEnabled = true;
   return diagram;
 }
