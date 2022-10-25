@@ -3,6 +3,7 @@ import { defaultSerializer, Model } from "~/components/dataModels/Model";
 import type { JointEstate } from "~/components/dataModels/Node";
 import { Owner } from "~/components/dataModels/Node";
 import { NodeType } from "~/components/dataModels/Node";
+import { defaultModel } from "~/components/planDiagramEntities/diagram";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
 import JointEstateSidebar from "~/components/planSidebars/JointEstateSidebar";
 import OnDeathSidebar from "~/components/planSidebars/OnDeathSidebar";
@@ -126,6 +127,13 @@ export default function Plan() {
     }
   }
 
+  function newDiagram() {
+    if (diagram !== undefined) {
+      setSavedPlan(undefined);
+      diagram.model = defaultModel();
+    }
+  }
+
   async function recalculate() {
     const go = await import("gojs");
     if (diagram !== undefined) {
@@ -147,6 +155,7 @@ export default function Plan() {
           JSON.stringify(defaultSerializer.serialize(dataModel))
         );
         setSavedPlan(JSON.stringify(defaultSerializer.serialize(dataModel)));
+        console.log(dataModel);
 
         diagram.select(diagram.findPartForKey(selectedKey));
       }
@@ -177,9 +186,9 @@ export default function Plan() {
         </button>
         <button
           className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          onClick={resetLayout}
+          onClick={newDiagram}
         >
-          Rearrange
+          Start over
         </button>
       </div>
       <div className="flex h-full w-full">

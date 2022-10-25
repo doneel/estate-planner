@@ -5,6 +5,7 @@ export enum NodeType {
   Owner = "Owner",
   Beneficiary = "Beneficiary",
   JointEstate = "JointEstate",
+  Bands = "Bands",
 }
 
 export enum FirstDeath {
@@ -12,7 +13,7 @@ export enum FirstDeath {
   Wife = "Wife",
 }
 
-export type NodeTypesUnion = Beneficiary | Owner | JointEstate;
+export type NodeTypesUnion = Beneficiary | Owner | JointEstate | Bands;
 
 export interface NodeInterface {
   category: NodeType;
@@ -43,7 +44,20 @@ export function isJointEstate(
 @JsonObject()
 export class Node implements NodeInterface {
   @JsonProperty({ required: true }) key: string = "";
-  @JsonProperty({ required: true }) category: NodeType = NodeType.Beneficiary;
+  // @ts-ignore
+  @JsonProperty({ required: true }) category: NodeType;
+}
+
+@JsonObject()
+export class BandItem {
+  @JsonProperty({ required: true }) text: string = "";
+}
+
+@JsonObject()
+export class Bands extends Node {
+  @JsonProperty({ required: true }) key: string = "_BANDS";
+  @JsonProperty({ required: true }) category: NodeType.Bands = NodeType.Bands;
+  @JsonProperty({ type: BandItem }) itemArray: Array<BandItem> = [];
 }
 
 export const nodeType = (node: Node) => {
@@ -54,6 +68,8 @@ export const nodeType = (node: Node) => {
       return Beneficiary;
     case NodeType.JointEstate:
       return JointEstate;
+    case NodeType.Bands:
+      return Bands;
   }
 };
 
