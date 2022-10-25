@@ -22,6 +22,8 @@ import {
 import type { OnDeath, Transfer } from "../dataModels/Link";
 import { isOnDeath, isTransfer } from "../dataModels/Link";
 import { OnDeathDiagram, updateOnDeathEntity } from "./OnDeathDiagram";
+import BandedLayerLayout from "./layout/BandedLayerLayout";
+import { BandsDiagram } from "./layout/Bands";
 
 export type ModelType = Owner | Beneficiary | Transfer | JointEstate | OnDeath;
 
@@ -34,19 +36,7 @@ export type Props = {
   modelJson?: string;
 };
 
-class FixedLayout extends go.LayeredDigraphLayout {
-  doLayout(coll: go.Diagram | go.Group | go.Iterable<go.Part>) {
-    super.doLayout(coll);
-    if (coll instanceof go.Diagram) {
-      const diagram: go.Diagram = coll;
-      diagram.model.commit(function (m: go.Model) {
-        diagram.nodes.each((n) => n.moveTo(n.location.x + 1, n.location.y));
-      }, "");
-    }
-  }
-}
-
-function defaultModel() {
+export function defaultModel() {
   const wife = new Owner("Wife");
   const husband = new Owner("Husband");
 
@@ -60,10 +50,21 @@ function defaultModel() {
     wifeExtraValue: undefined,
     firstDeath: FirstDeath.Husband,
   };
+
+  const bands = {
+    // this is the information needed for the headers of the bands
+    key: "_BANDS",
+    category: "Bands",
+    itemArray: [
+      { text: "" },
+      { text: "After husband passes" },
+      { text: "After wife passes" },
+    ],
+  };
   return new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
     linkToPortIdProperty: "toPort",
-    nodeDataArray: [wife, husband, startData],
+    nodeDataArray: [wife, husband, startData, bands],
     linkDataArray: [],
   });
 }
@@ -143,7 +144,7 @@ export async function initDiagram({ setSidebar, modelJson }: Props) {
   }
 
   const diagram = new go.Diagram("myDiagramDiv", {
-    layout: new FixedLayout({
+    layout: new BandedLayerLayout({
       direction: 90,
       layerSpacing: 150,
       columnSpacing: 200,
@@ -156,6 +157,7 @@ export async function initDiagram({ setSidebar, modelJson }: Props) {
   diagram.nodeTemplateMap.add("Owner", OwnerDiagram);
   diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryDiagram);
   diagram.nodeTemplateMap.add("JointEstate", JointEstateDiagram);
+  diagram.nodeTemplateMap.add("Bands", BandsDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
   diagram.linkTemplateMap.add("transfer", TransferDiagram);
   diagram.linkTemplateMap.add("onDeath", OnDeathDiagram);
