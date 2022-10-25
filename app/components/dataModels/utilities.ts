@@ -15,13 +15,15 @@ export type Outflow = {
 };
 
 export interface AssetHolder {
-  growthRate: number;
+  key: string;
+  //growthRate: number;
   currentValue(date: Date | undefined): number;
-  outFlows: []; //TODO
+  //outFlows: []; //TODO
 }
 
 interface Value {
   value(assetHolder: AssetHolder, date: Date | undefined): number;
+  generateDescription(assetHolder: AssetHolder, date: Date | undefined): void;
   description: string;
   expectedValue: number | undefined;
 }
@@ -46,6 +48,9 @@ export const valueTypeDiscriminatorFn = (value: ValueType) => {
 
 @JsonObject()
 export class Fixed implements Value {
+  generateDescription(assetHolder: AssetHolder, date: Date | undefined): void {
+    this.description = `$${withSuffix(this.value(assetHolder, date))}`;
+  }
   @JsonProperty({}) type: ValueTypes = ValueTypes.Fixed;
   @JsonProperty({ required: true }) fixedValue: number = 0;
 
@@ -60,6 +65,11 @@ export class Fixed implements Value {
 
 @JsonObject()
 export class Portion implements Value {
+  generateDescription(assetHolder: AssetHolder, date: Date | undefined): void {
+    this.description = `${this.portion * 100}% of ${
+      assetHolder.key
+    } ($${withSuffix(this.value(assetHolder, date))})`;
+  }
   @JsonProperty({}) type: ValueTypes = ValueTypes.Portion;
   @JsonProperty({ required: true }) portion: number = 0;
 
@@ -75,6 +85,11 @@ export class Portion implements Value {
 
 @JsonObject()
 export class Remainder implements Value {
+  generateDescription(assetHolder: AssetHolder, date: Date | undefined): void {
+    this.description = `Remainder of ${assetHolder.key} ($${withSuffix(
+      this.value(assetHolder, date)
+    )})`;
+  }
   @JsonProperty({}) type: ValueTypes = ValueTypes.Remainder;
   public value: (assetHolder: AssetHolder, date: Date | undefined) => number = (
     assetHolder,

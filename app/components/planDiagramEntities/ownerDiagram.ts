@@ -5,7 +5,6 @@ function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
   var node: go.Node = button.part.adornedPart;
   e.diagram.clearSelection();
-
   var tool = e.diagram.toolManager.linkingTool;
   tool.archetypeLinkData = {
     category: "transfer",
@@ -59,6 +58,28 @@ export const OwnerDiagram = new go.Node("Vertical", {
         )
     ),
 })
+  .bind(new go.Binding("visible", "visible").ofObject())
+  .add(
+    new go.Shape("Circle", {
+      name: "inport",
+      fill: "white",
+      stroke: "gray",
+      desiredSize: new go.Size(20, 20),
+      portId: "in",
+      toLinkable: true,
+      toLinkableDuplicates: true,
+      mouseEnter: (e, port: go.GraphObject) => {
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        if (!e.diagram.isReadOnly) shapePort.fill = "#66F";
+      },
+      mouseLeave: (e, port) => {
+        //@ts-ignore
+        const shapePort: go.Shape = port;
+        shapePort.fill = "white";
+      },
+    })
+  )
   .add(
     new go.Picture("images/person.svg", {
       desiredSize: new go.Size(180, 180),

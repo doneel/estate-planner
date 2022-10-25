@@ -1,5 +1,6 @@
 import * as go from "gojs";
 import { LinkType } from "../dataModels/Link";
+import { FirstDeath } from "../dataModels/Node";
 import { ValueTypes, withSuffix } from "../dataModels/utilities";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 
@@ -41,14 +42,27 @@ export function updateJointEstateEntity(
     );
 
     Object.entries(updateParams)
-      .filter(([k, v]) => ["husbandName", "wifeName"].includes(k))
+      .filter(([k, v]) => !["husbandName", "wifeName"].includes(k))
       .forEach(([key, value]) => {
         diagram.model.setDataProperty(jointEstateEntity.data, key, value);
       });
   }
+  const wife = diagram?.findNodeForKey(jointEstateEntity.data.wife.key);
+  if (wife !== null) {
+    wife.visible = updateParams.firstDeath !== FirstDeath.Wife;
+  } else {
+    console.error("Could not hide wife node, no wife found.");
+  }
+  const husband = diagram?.findNodeForKey(jointEstateEntity.data.husband.key);
+  if (husband !== null) {
+    husband.visible = updateParams.firstDeath !== FirstDeath.Husband;
+  } else {
+    console.error("Could not hide wife node, no husband found.");
+  }
 
   diagram?.commitTransaction(`Update ${jointEstateEntity.name}`);
 }
+
 function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
   var node: go.Node = button.part.adornedPart;
@@ -70,22 +84,54 @@ function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
   tool.doActivate();
 }
 
+function makeGiftFromPort(partName: string) {
+  return function (e: go.InputEvent, button: go.GraphObject) {
+    //@ts-ignore
+    var node: go.Node = button.part.adornedPart;
+    e.diagram.clearSelection();
+
+    var tool = e.diagram.toolManager.linkingTool;
+    tool.archetypeLinkData = {
+      category: LinkType.OnDeath,
+      personKey: node.data.husband.key,
+      value: {
+        type: ValueTypes.Fixed,
+        fixedValue: 0,
+      },
+    };
+    tool.startObject = node.findPort(partName);
+
+    //@ts-ignore
+    node.diagram.currentTool = tool;
+    tool.doActivate();
+  };
+}
+
 export const JointEstateDiagram = new go.Node("Vertical", {
   selectable: true,
   selectionAdornmentTemplate: new go.Adornment("Spot", {
     layerName: "Tool",
+    alignment: go.Spot.Bottom,
   })
     .add(new go.Placeholder({ padding: 10 }))
     .add(
-      new go.Panel("Horizontal", {}).add(
-        go.GraphObject.make(
-          "Button",
-          {
-            margin: 8,
-            click: onHusbandDeath,
-          },
-          new go.TextBlock("On husband's passing", { margin: 8 })
-        )
+      go.GraphObject.make(
+        "Button",
+        {
+          alignment: new go.Spot(0.26, 1.05),
+          click: makeGiftFromPort("wifeport"),
+        },
+        new go.TextBlock("Move Assets", { margin: 8 })
+      )
+    )
+    .add(
+      go.GraphObject.make(
+        "Button",
+        {
+          alignment: new go.Spot(0.74, 1.05),
+          click: makeGiftFromPort("husbandport"),
+        },
+        new go.TextBlock("Move Assets", { margin: 8 })
       )
     ),
 })
@@ -98,7 +144,6 @@ export const JointEstateDiagram = new go.Node("Vertical", {
     new go.TextBlock("default", {
       stroke: "black",
       font: "bold 24pt sans-serif",
-      editable: true,
     }).bind(
       "text",
       "",
@@ -109,7 +154,6 @@ export const JointEstateDiagram = new go.Node("Vertical", {
     new go.TextBlock("Joint Estate", {
       stroke: "black",
       font: "bold 24pt sans-serif",
-      editable: true,
     }).bind("text", "", (data, node) =>
       data.commonPropertyValue
         ? `Joint Estate (~$${withSuffix(data.commonPropertyValue)})`
@@ -117,23 +161,180 @@ export const JointEstateDiagram = new go.Node("Vertical", {
     )
   )
   .add(
-    new go.Shape("Circle", {
-      name: "outport",
-      fill: "gray",
-      stroke: "white",
-      desiredSize: new go.Size(20, 20),
-      portId: "",
-      fromLinkable: true,
-      fromLinkableDuplicates: true,
-      mouseEnter: (e, port: go.GraphObject) => {
-        //@ts-ignore
-        const shapePort: go.Shape = port;
-        if (!e.diagram.isReadOnly) shapePort.fill = "#66F";
-      },
-      mouseLeave: (e, port) => {
-        //@ts-ignore
-        const shapePort: go.Shape = port;
-        shapePort.fill = "gray";
-      },
+    new go.Panel("Auto", { margin: new go.Margin(16, 0, 0, 0) })
+      .add(
+        new go.Shape("RoundedRectangle", {
+          strokeWidth: 0,
+          fill: "#f2f2f9",
+        })
+      )
+      .add(
+        new go.Panel(go.Panel.Table, {
+          margin: 16,
+          defaultColumnSeparatorStroke: "gray",
+          defaultColumnSeparatorStrokeWidth: 2,
+          defaultColumnSeparatorDashArray: [2, 2],
+          defaultRowSeparatorStroke: "gray",
+          defaultRowSeparatorStrokeWidth: 12,
+        })
+          .add(
+            new go.Panel("Horizontal", {
+              column: 0,
+              maxSize: new go.Size(550, NaN),
+              margin: new go.Margin(0, 8, 0, 0),
+            })
+              .add(
+                new go.Picture("images/coins.svg", {
+                  alignment: go.Spot.TopLeft,
+                  desiredSize: new go.Size(48, 48),
+                  opacity: 0.4,
+                  margin: 8,
+                })
+              )
+              .add(
+                new go.Panel("Vertical", {
+                  margin: 8,
+                  alignment: go.Spot.TopCenter,
+                })
+                  .add(
+                    new go.TextBlock("Wife's share", {
+                      font: "20pt sans-serif",
+                      alignment: go.Spot.Left,
+                    }).bind(
+                      "text",
+                      "",
+                      (data, node) =>
+                        `${data.wife.key}'s share ($${withSuffix(
+                          data.commonPropertyValue / 2 +
+                            (data.wifeExtraValue ?? 0)
+                        )})`
+                    )
+                  )
+                  .add(
+                    new go.TextBlock(
+                      "Including individual assets and half of shared assets",
+                      {
+                        font: "12pt sans-serif",
+                        alignment: go.Spot.Left,
+                        stroke: "gray",
+                        width: 300,
+                        wrap: go.TextBlock.WrapFit,
+                      }
+                    )
+                  )
+              )
+          )
+          .add(
+            new go.Panel("Horizontal", {
+              column: 1,
+              maxSize: new go.Size(550, NaN),
+              margin: new go.Margin(0, 0, 0, 8),
+            })
+              .add(
+                new go.Picture("images/coins.svg", {
+                  alignment: go.Spot.TopLeft,
+                  desiredSize: new go.Size(48, 48),
+                  opacity: 0.4,
+                  margin: 8,
+                })
+              )
+              .add(
+                new go.Panel("Vertical", {
+                  margin: 8,
+                  alignment: go.Spot.TopCenter,
+                })
+                  .add(
+                    new go.TextBlock("Husband's share", {
+                      font: "20pt sans-serif",
+                      alignment: go.Spot.Left,
+                    }).bind(
+                      "text",
+                      "",
+                      (data, node) =>
+                        `${data.husband.key}'s share ($${withSuffix(
+                          data.commonPropertyValue / 2 +
+                            (data.husbandExtraValue ?? 0)
+                        )})`
+                    )
+                  )
+                  .add(
+                    new go.TextBlock(
+                      "Including individual assets and half of shared assets",
+                      {
+                        font: "12pt sans-serif",
+                        alignment: go.Spot.Left,
+                        stroke: "gray",
+                        width: 300,
+                        wrap: go.TextBlock.WrapFit,
+                      }
+                    )
+                  )
+              )
+          )
+      )
+  )
+  .add(
+    new go.Panel("Spot", {
+      stretch: go.GraphObject.Horizontal,
+      margin: new go.Margin(-8, 0, 0, 0),
     })
+      .add(
+        new go.Shape("Rectangle", {
+          opacity: 0,
+          height: 0,
+        })
+      )
+      .add(
+        new go.Shape("Circle", {
+          name: "wifeport",
+          portId: "wifeport",
+          fromLinkable: true,
+          fromLinkableDuplicates: true,
+
+          fill: "pink",
+          stroke: "pink",
+          strokeWidth: 2,
+          desiredSize: new go.Size(20, 20),
+          alignment: new go.Spot(0.25, 1),
+
+          mouseEnter: (e, port: go.GraphObject) => {
+            //@ts-ignore
+            const shapePort: go.Shape = port;
+            if (!e.diagram.isReadOnly) {
+              shapePort.stroke = "black";
+            }
+          },
+          mouseLeave: (e, port) => {
+            //@ts-ignore
+            const shapePort: go.Shape = port;
+            shapePort.stroke = "pink";
+          },
+        })
+      )
+      .add(
+        new go.Shape("Circle", {
+          name: "husbandport",
+          portId: "husbandport",
+          fromLinkable: true,
+          fromLinkableDuplicates: true,
+
+          stroke: "#749ced",
+          fill: "#749ced",
+          strokeWidth: 2,
+          desiredSize: new go.Size(20, 20),
+          alignment: new go.Spot(0.75, 1),
+          mouseEnter: (e, port: go.GraphObject) => {
+            //@ts-ignore
+            const shapePort: go.Shape = port;
+            if (!e.diagram.isReadOnly) {
+              shapePort.stroke = "black";
+            }
+          },
+          mouseLeave: (e, port) => {
+            //@ts-ignore
+            const shapePort: go.Shape = port;
+            shapePort.stroke = "#749ced";
+          },
+        })
+      )
   );

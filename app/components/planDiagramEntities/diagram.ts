@@ -8,7 +8,8 @@ import {
   updateBeneficiaryEntity,
 } from "./beneficiaryDiagram";
 import { TransferDiagram, updateTransferEntity } from "./transferDiagram";
-import type { Beneficiary, JointEstate, Owner } from "../dataModels/Node";
+import type { Beneficiary, JointEstate } from "../dataModels/Node";
+import { FirstDeath, Owner } from "../dataModels/Node";
 import { isJointEstate } from "../dataModels/Node";
 import { NodeType } from "../dataModels/Node";
 import { isBeneficiary } from "../dataModels/Node";
@@ -20,7 +21,7 @@ import {
 } from "./JointEstateDiagram";
 import type { OnDeath, Transfer } from "../dataModels/Link";
 import { isOnDeath, isTransfer } from "../dataModels/Link";
-import { updateOnDeathEntity } from "./OnDeathDiagram";
+import { OnDeathDiagram, updateOnDeathEntity } from "./OnDeathDiagram";
 
 export type ModelType = Owner | Beneficiary | Transfer | JointEstate | OnDeath;
 
@@ -92,6 +93,7 @@ export async function initDiagram({ setSidebar }: Props) {
       }
     } else if (selected instanceof go.Link) {
       const linkEntity = deserializeLink(selected.data);
+      console.log(linkEntity);
       if (linkEntity === undefined) {
         return;
       }
@@ -133,33 +135,20 @@ export async function initDiagram({ setSidebar }: Props) {
   diagram.nodeTemplateMap.add("JointEstate", JointEstateDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
   diagram.linkTemplateMap.add("transfer", TransferDiagram);
+  diagram.linkTemplateMap.add("onDeath", OnDeathDiagram);
 
-  const wife: Owner = {
-    key: "Wife",
-    category: NodeType.Owner,
-    birthYear: undefined,
-    expectedLifeSpan: undefined,
-    annualGiftSummaries: [],
-    giftMap: undefined,
-  };
-
-  const husband: Owner = {
-    key: "Husband",
-    category: NodeType.Owner,
-    birthYear: undefined,
-    expectedLifeSpan: undefined,
-    annualGiftSummaries: [],
-    giftMap: undefined,
-  };
+  const wife = new Owner("Wife");
+  const husband = new Owner("Husband");
 
   const startData: Partial<JointEstate> = {
-    key: "JointEstateKey",
+    key: "JointEstate",
     category: NodeType.JointEstate,
     wife,
     husband,
     commonPropertyValue: 12_361_000,
     husbandExtraValue: undefined,
     wifeExtraValue: undefined,
+    firstDeath: FirstDeath.Husband,
   };
   diagram.model = new go.GraphLinksModel({
     linkFromPortIdProperty: "fromPort",
