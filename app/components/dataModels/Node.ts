@@ -90,6 +90,8 @@ export class Owner extends Node implements OwnerInterface, AssetHolder {
   @JsonProperty({ type: AnnualGiftSummary })
   annualGiftSummaries: Array<AnnualGiftSummary> = [];
 
+  @JsonProperty() visible: boolean = true;
+
   @JsonProperty() expectedLifeSpan: number | undefined;
   public giftMap: GiftMap | undefined = {};
 

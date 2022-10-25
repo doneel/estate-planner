@@ -44,17 +44,29 @@ export function updateJointEstateEntity(
     Object.entries(updateParams)
       .filter(([k, v]) => !["husbandName", "wifeName"].includes(k))
       .forEach(([key, value]) => {
+        console.log("setting", key, value);
         diagram.model.setDataProperty(jointEstateEntity.data, key, value);
       });
   }
+  console.log("Setting visibility");
   const wife = diagram?.findNodeForKey(jointEstateEntity.data.wife.key);
   if (wife !== null) {
+    diagram.model.setDataProperty(
+      wife.data,
+      "visible",
+      updateParams.firstDeath !== FirstDeath.Wife
+    );
     wife.visible = updateParams.firstDeath !== FirstDeath.Wife;
   } else {
     console.error("Could not hide wife node, no wife found.");
   }
   const husband = diagram?.findNodeForKey(jointEstateEntity.data.husband.key);
   if (husband !== null) {
+    diagram.model.setDataProperty(
+      husband.data,
+      "visible",
+      updateParams.firstDeath !== FirstDeath.Husband
+    );
     husband.visible = updateParams.firstDeath !== FirstDeath.Husband;
   } else {
     console.error("Could not hide wife node, no husband found.");

@@ -58,7 +58,7 @@ export const OwnerDiagram = new go.Node("Vertical", {
         )
     ),
 })
-  .bind(new go.Binding("visible", "visible").ofObject())
+  .bind(new go.Binding("visible", "visible"))
   .add(
     new go.Shape("Circle", {
       name: "inport",
