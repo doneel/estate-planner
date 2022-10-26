@@ -52,7 +52,6 @@ export class Link {
 export class Transfer extends Link implements LinkInterface {
   @JsonProperty() category: LinkType.Transfer = LinkType.Transfer;
   @JsonProperty({
-    //type: (s) => GoDate,
     beforeDeserialize: (prop, currentInstance) => {
       if (prop instanceof Date) {
         return prop.toISOString();
@@ -63,6 +62,7 @@ export class Transfer extends Link implements LinkInterface {
       return { class: "Date", value: prop };
     },
   })
+  // @ts-ignore
   date: Date;
 
   @JsonProperty() isGift: boolean | undefined;
