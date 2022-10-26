@@ -25,9 +25,11 @@ export const OnDeathDiagram = new go.Link({
     e.isHighlighted = !e.isHighlighted;
   },
   mouseEnter: (e, link) => {
-    link.elt(0).stroke = "rgba(0,90,156,0.3)";
+    // @ts-ignore
+    l.elt(0).stroke = "rgba(0,90,156,0.3)";
   },
   mouseLeave: (e, link) => {
+    // @ts-ignore
     link.elt(0).stroke = "transparent";
   },
 })
