@@ -21,6 +21,11 @@ export function updateBeneficiaryEntity(
 export const BeneficiaryDiagram = new go.Node("Vertical", {
   selectable: true,
 })
+  .bind(
+    new go.Binding("location", "location", go.Point.parse).makeTwoWay(
+      go.Point.stringify
+    )
+  )
   .add(
     new go.Shape("Circle", {
       fill: "gray",
