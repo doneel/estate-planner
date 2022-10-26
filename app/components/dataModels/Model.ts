@@ -1,9 +1,11 @@
+import go from "gojs";
 import {
   JsonObject,
   JsonProperty,
   JsonSerializer,
   throwError,
 } from "typescript-json-serializer";
+import { isGeneratorObject } from "util/types";
 import {
   ANNUAL_GIFT_EXCLUSIONS,
   GIFT_TAX_RATE,
@@ -15,6 +17,7 @@ import { isOnDeath } from "./Link";
 import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
 import type { Node, NodeTypesUnion, RecipientMap } from "./Node";
+import { FirstDeath } from "./Node";
 import { isJointEstate } from "./Node";
 import { JointEstate } from "./Node";
 import { Beneficiary, isBeneficiary } from "./Node";
@@ -77,6 +80,10 @@ export class Model {
       });
   }
 
+  getRoot(): JointEstate | undefined {
+    return this.nodeDataArray.find(isJointEstate);
+  }
+
   public calculateGiftSummaries() {
     const nodes: NodeTypesUnion[] = this.nodeDataArray;
     const n = nodes[0];
@@ -130,12 +137,27 @@ export class Model {
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
     this.generateDescriptions();
-    /*
-    const summaries = this.nodeDataArray
+    this.setOwnerVisibility();
+  }
+
+  private setOwnerVisibility(): void {
+    const jointEstate = this.getRoot();
+    const husbandKey = this.getRoot()?.husband.key;
+
+    this.nodeDataArray
       .filter(isOwner)
-      .map((o) => o.annualGiftSummaries);
-    console.log(summaries);
-    */
+      .filter((o) => o.key === husbandKey)
+      .forEach((husband) => {
+        husband.visible = jointEstate?.firstDeath !== FirstDeath.Husband;
+        return husband;
+      });
+    const wifeKey = this.getRoot()?.wife.key;
+    const wife = this.nodeDataArray
+      .filter(isOwner)
+      .find((o) => o.key === wifeKey);
+    if (wife) {
+      wife.visible = jointEstate?.firstDeath !== FirstDeath.Wife;
+    }
   }
 
   private generateDescriptions(): void {
@@ -228,4 +250,26 @@ export function deserializeLink(blob: any): LinkTypesUnion | undefined {
     return undefined;
   }
   return link;
+}
+
+export function recomputeDiagram(
+  diagram: go.Diagram,
+  saveDiagram?: React.Dispatch<React.SetStateAction<string | undefined>>
+) {
+  const dataModel = defaultSerializer.deserialize(
+    diagram.model.toJson(),
+    Model
+  );
+  if (
+    dataModel !== undefined &&
+    dataModel !== null &&
+    !(dataModel instanceof Array)
+  ) {
+    dataModel.calculateAll();
+    const reserializedModel = JSON.stringify(
+      defaultSerializer.serialize(dataModel)
+    );
+    diagram.model = go.Model.fromJson(reserializedModel);
+    saveDiagram && saveDiagram(reserializedModel);
+  }
 }

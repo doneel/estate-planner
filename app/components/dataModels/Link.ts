@@ -63,7 +63,7 @@ export class Transfer extends Link implements LinkInterface {
       return { class: "Date", value: prop };
     },
   })
-  date: Date | undefined;
+  date: Date;
 
   @JsonProperty() isGift: boolean | undefined;
   @JsonProperty({

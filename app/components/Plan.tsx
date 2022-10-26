@@ -1,8 +1,5 @@
 import React from "react";
-import { defaultSerializer, Model } from "~/components/dataModels/Model";
-import type { JointEstate } from "~/components/dataModels/Node";
-import { Owner } from "~/components/dataModels/Node";
-import { NodeType } from "~/components/dataModels/Node";
+import { recomputeDiagram } from "~/components/dataModels/Model";
 import { defaultModel } from "~/components/planDiagramEntities/diagram";
 import BeneficiarySidebar from "~/components/planSidebars/BeneficiarySidebar";
 import JointEstateSidebar from "~/components/planSidebars/JointEstateSidebar";
@@ -70,6 +67,7 @@ export default function Plan() {
               }
             },
             modelJson: savedPlan,
+            saveModel: setSavedPlan,
           })
         );
       }
@@ -78,35 +76,6 @@ export default function Plan() {
   });
 
   const [selectedItemForm, setSelectedItemForm] = React.useState(<></>);
-
-  function addOwner() {
-    if (diagram !== undefined) {
-      diagram.model.commit(function (m: go.Model) {
-        m.addNodeData({ key: "New Owner", category: "Owner" });
-      }, "Add a new owner");
-    }
-  }
-
-  function addJointEstate() {
-    if (diagram !== undefined) {
-      diagram.model.commit(function (m: go.Model) {
-        const wife = new Owner("Wife");
-        const husband = new Owner("Husband");
-
-        const startData: Partial<JointEstate> = {
-          key: "JointEstateKey",
-          category: NodeType.JointEstate,
-          wife,
-          husband,
-          commonPropertyValue: undefined,
-          husbandExtraValue: undefined,
-          wifeExtraValue: undefined,
-        };
-
-        m.addNodeDataCollection([wife, husband, startData]);
-      }, "Create a new joint estate");
-    }
-  }
 
   function addBeneficiary() {
     if (diagram !== undefined) {
@@ -127,38 +96,11 @@ export default function Plan() {
     }
   }
 
-  function newDiagram() {
+  async function newDiagram() {
     if (diagram !== undefined) {
-      setSavedPlan(undefined);
       diagram.model = defaultModel();
-    }
-  }
-
-  async function recalculate() {
-    const go = await import("gojs");
-    if (diagram !== undefined) {
+      recomputeDiagram(diagram, setSavedPlan);
       setSelectedItemForm(<></>);
-      const selectedKey = diagram.selection.first()?.key;
-      //console.log("BEFORE DESERIALIZING", diagram.model.toJson());
-      const dataModel = defaultSerializer.deserialize(
-        diagram.model.toJson(),
-        Model
-      );
-      //console.log("DESIERIALIZED", dataModel);
-      if (
-        dataModel !== undefined &&
-        dataModel !== null &&
-        !(dataModel instanceof Array)
-      ) {
-        dataModel.calculateAll();
-        diagram.model = go.Model.fromJson(
-          JSON.stringify(defaultSerializer.serialize(dataModel))
-        );
-        setSavedPlan(JSON.stringify(defaultSerializer.serialize(dataModel)));
-        console.log(dataModel);
-
-        diagram.select(diagram.findPartForKey(selectedKey));
-      }
     }
   }
 
@@ -168,21 +110,9 @@ export default function Plan() {
       <div className="mx-auto my-4 space-x-8">
         <button
           className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          onClick={addJointEstate}
-        >
-          Add Joint Estate
-        </button>
-        <button
-          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
           onClick={addBeneficiary}
         >
           Add beneficiary
-        </button>
-        <button
-          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          onClick={recalculate}
-        >
-          Recalculate
         </button>
         <button
           className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
