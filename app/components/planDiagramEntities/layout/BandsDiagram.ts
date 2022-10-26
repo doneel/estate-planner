@@ -32,4 +32,10 @@ export const BandsDiagram = new go.Part("Position", {
           }).bind("text", "text")
         )
     ),
-}).bind(new go.Binding("itemArray"));
+})
+  .bind(new go.Binding("itemArray"))
+  .bind(
+    new go.Binding("location", "location", go.Point.parse).makeTwoWay(
+      go.Point.stringify
+    )
+  );

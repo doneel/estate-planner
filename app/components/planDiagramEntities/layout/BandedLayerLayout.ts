@@ -3,12 +3,14 @@ import * as go from "gojs";
 export default class BandedLayerLayout extends go.LayeredDigraphLayout {
   doLayout(coll: go.Diagram | go.Group | go.Iterable<go.Part>) {
     super.doLayout(coll);
+    /*
     if (coll instanceof go.Diagram) {
       const diagram: go.Diagram = coll;
       diagram.model.commit(function (m: go.Model) {
         diagram.nodes.each((n) => n.moveTo(n.location.x + 1, n.location.y));
       }, "");
     }
+    */
   }
   assignLayers(): void {
     super.assignLayers();

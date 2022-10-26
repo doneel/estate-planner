@@ -58,6 +58,11 @@ export const OwnerDiagram = new go.Node("Vertical", {
         )
     ),
 })
+  .bind(
+    new go.Binding("location", "location", go.Point.parse).makeTwoWay(
+      go.Point.stringify
+    )
+  )
   .bind(new go.Binding("visible", "visible"))
   .add(
     new go.Shape("Circle", {

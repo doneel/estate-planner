@@ -56,6 +56,11 @@ export const TrustDiagram = new go.Node("Vertical", {
       )
     ),
 })
+  .bind(
+    new go.Binding("location", "location", go.Point.parse).makeTwoWay(
+      go.Point.stringify
+    )
+  )
   .add(
     new go.Shape("Circle", {
       name: "inport",

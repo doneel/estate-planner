@@ -68,6 +68,8 @@ export class Node implements NodeInterface {
   @JsonProperty({ required: true }) key: string = "";
   // @ts-ignore
   @JsonProperty({ required: true }) category: NodeType;
+  // @ts-ignore
+  @JsonProperty() location: string;
 }
 
 @JsonObject()

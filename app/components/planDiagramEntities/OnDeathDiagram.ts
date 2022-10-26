@@ -14,21 +14,69 @@ export function updateOnDeathEntity(
 }
 
 export const OnDeathDiagram = new go.Link({
-  fromEndSegmentLength: 60,
-  toEndSegmentLength: 60,
-  //curve: go.Link.Bezier,
+  fromEndSegmentLength: 160,
+  toEndSegmentLength: 160,
+  curve: go.Link.Bezier,
+  routing: go.Link.Normal,
   relinkableFrom: true,
   relinkableTo: true,
   selectionAdorned: false,
   selectionChanged: (e: go.Part) => {
     e.isHighlighted = !e.isHighlighted;
   },
+  mouseEnter: (e, link) => {
+    // @ts-ignore
+    l.elt(0).stroke = "rgba(0,90,156,0.3)";
+  },
+  mouseLeave: (e, link) => {
+    // @ts-ignore
+    link.elt(0).stroke = "transparent";
+  },
 })
 
-  .add(new go.Shape({ strokeWidth: 2 }))
-  .add(new go.Shape({ toArrow: "Standard" }))
   .add(
-    new go.Panel("Auto")
+    new go.Shape({ isPanelMain: true, stroke: "transparent", strokeWidth: 8 })
+  )
+  .add(
+    new go.Shape({ isPanelMain: true, strokeWidth: 2, stroke: "black" }).bind(
+      "stroke",
+      "fromPort",
+      (fromPort) => {
+        if (fromPort === "wifeport") {
+          return "pink";
+        } else if (fromPort === "husbandport") {
+          return "#749ced";
+        } else {
+          return "black";
+        }
+      }
+    )
+  )
+  .add(
+    new go.Shape({ toArrow: "Standard" })
+      .bind("fill", "fromPort", (fromPort) => {
+        if (fromPort === "wifeport") {
+          return "pink";
+        } else if (fromPort === "husbandport") {
+          return "#749ced";
+        } else {
+          return "black";
+        }
+      })
+      .bind("stroke", "fromPort", (fromPort) => {
+        if (fromPort === "wifeport") {
+          return "pink";
+        } else if (fromPort === "husbandport") {
+          return "#749ced";
+        } else {
+          return "black";
+        }
+      })
+  )
+  .add(
+    new go.Panel("Auto", {
+      //segmentOrientation: go.Link.OrientUpright,
+    })
       .add(
         new go.Shape("RoundedRectangle", {
           strokeWidth: 0,

@@ -265,6 +265,7 @@ export function recomputeDiagram(
   diagram: go.Diagram,
   saveDiagram?: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
+  console.log(diagram.model.toJson());
   const dataModel = defaultSerializer.deserialize(
     diagram.model.toJson(),
     Model
@@ -279,6 +280,7 @@ export function recomputeDiagram(
       defaultSerializer.serialize(dataModel)
     );
     diagram.model = go.Model.fromJson(reserializedModel);
+    console.log(diagram.findNodeForKey("JointEstate")?.location);
     saveDiagram && saveDiagram(reserializedModel);
   }
 }

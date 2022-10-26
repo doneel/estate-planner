@@ -105,6 +105,11 @@ export const JointEstateDiagram = new go.Node("Vertical", {
       )
     ),
 })
+  .bind(
+    new go.Binding("location", "location", go.Point.parse).makeTwoWay(
+      go.Point.stringify
+    )
+  )
   .add(
     new go.Picture("images/couple.svg", {
       desiredSize: new go.Size(180, 180),

@@ -189,8 +189,9 @@ export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
     layout: new BandedLayerLayout({
       direction: 90,
       layerSpacing: 150,
-      columnSpacing: 200,
+      columnSpacing: 100,
       setsPortSpots: false,
+      packOption: go.LayeredDigraphLayout.PackExpand,
     }),
   });
   diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelZoom;
