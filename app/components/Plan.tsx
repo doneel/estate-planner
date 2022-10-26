@@ -7,7 +7,8 @@ import OnDeathSidebar from "~/components/planSidebars/OnDeathSidebar";
 import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 import TransferSidebar from "~/components/planSidebars/TransferSidebar";
 import useLocalStorageState from "~/hooks/useLocalStorageState";
-import { NodeType } from "./dataModels/Node";
+import { nodeType, NodeType } from "./dataModels/Node";
+import TrustSidebar from "./planSidebars/TrustSideBar";
 
 export default function Plan() {
   const [diagram, setDiagram] = React.useState<go.Diagram | undefined>(
@@ -47,6 +48,11 @@ export default function Plan() {
                       jointEstate={entity}
                       setJointEstate={updateCallback}
                     />
+                  );
+                  return;
+                case "Trust":
+                  setSelectedItemForm(
+                    <TrustSidebar trust={entity} setTrust={updateCallback} />
                   );
                   return;
                 case "transfer":
