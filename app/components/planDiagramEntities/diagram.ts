@@ -14,7 +14,11 @@ import { isJointEstate } from "../dataModels/Node";
 import { NodeType } from "../dataModels/Node";
 import { isBeneficiary } from "../dataModels/Node";
 import { isOwner } from "../dataModels/Node";
-import { deserializeLink, deserializeNode } from "../dataModels/Model";
+import {
+  deserializeLink,
+  deserializeNode,
+  recomputeDiagram,
+} from "../dataModels/Model";
 import {
   JointEstateDiagram,
   updateJointEstateEntity,
@@ -24,6 +28,7 @@ import { isOnDeath, isTransfer } from "../dataModels/Link";
 import { OnDeathDiagram, updateOnDeathEntity } from "./OnDeathDiagram";
 import BandedLayerLayout from "./layout/BandedLayerLayout";
 import { BandsDiagram } from "./layout/Bands";
+import type React from "react";
 
 export type ModelType = Owner | Beneficiary | Transfer | JointEstate | OnDeath;
 
@@ -34,6 +39,7 @@ export type SetSidebarProps<T extends ModelType> = {
 export type Props = {
   setSidebar: (props: SetSidebarProps<ModelType>) => void;
   modelJson?: string;
+  saveModel: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 export function defaultModel() {
@@ -69,7 +75,7 @@ export function defaultModel() {
   });
 }
 
-export async function initDiagram({ setSidebar, modelJson }: Props) {
+export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
   function onSelectChange(e: go.DiagramEvent) {
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
@@ -143,6 +149,23 @@ export async function initDiagram({ setSidebar, modelJson }: Props) {
     }
   }
 
+  function onNodeChange(e: go.ChangedEvent) {
+    if (
+      e.change === go.ChangedEvent.Transaction &&
+      e?.object?.name !== "Move" &&
+      e?.object?.name !== "Initial Layout" &&
+      e.isTransactionFinished
+    ) {
+      const selection = diagram.selection.first();
+      const selectedKey = diagram.selection.first()?.key;
+      recomputeDiagram(diagram, saveModel);
+      const reselectable = diagram.findPartForKey(selectedKey);
+      diagram.select(
+        reselectable ? reselectable : diagram.findPartForKey("JointEstate")
+      );
+    }
+  }
+
   const diagram = new go.Diagram("myDiagramDiv", {
     layout: new BandedLayerLayout({
       direction: 90,
@@ -154,6 +177,7 @@ export async function initDiagram({ setSidebar, modelJson }: Props) {
   diagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelZoom;
 
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
+  diagram.addModelChangedListener(onNodeChange);
   diagram.nodeTemplateMap.add("Owner", OwnerDiagram);
   diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryDiagram);
   diagram.nodeTemplateMap.add("JointEstate", JointEstateDiagram);

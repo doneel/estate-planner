@@ -32,25 +32,37 @@ export const OnDeathDiagram = new go.Link({
       .add(
         new go.Shape("RoundedRectangle", {
           strokeWidth: 0,
-          stroke: "white",
+          stroke: "black",
           fill: "white",
-          opacity: 1,
-        }).bind(
-          new go.Binding("opacity", "value", (value) => {
-            return value.description === undefined ? 0 : 1;
-          })
-        )
+          opacity: 0.75,
+        })
+          .bind(
+            new go.Binding("opacity", "value", (value) => {
+              return value.description === undefined ? 0 : 0.5;
+            })
+          )
+          .bind(
+            new go.Binding("opacity", "isHighlighted", (isHighlighted) => {
+              return isHighlighted ? 1 : 0.75;
+            }).ofObject()
+          )
+          .bind(
+            new go.Binding("strokeWidth", "isHighlighted", (isHighlighted) => {
+              return isHighlighted ? 1 : 0;
+            }).ofObject()
+          )
       )
       .add(
         new go.Panel("Vertical", { margin: 4, alignment: go.Spot.Left }).add(
           new go.TextBlock("", {
             alignment: go.Spot.Left,
             font: "16pt bold sans-serif",
+            stroke: "black",
           })
             .bind("text", "", (node) => node.value.description)
             .bind(
               new go.Binding("stroke", "isHighlighted", (isHighlighted) => {
-                return isHighlighted ? "blue" : "black";
+                return isHighlighted ? "black" : "black";
               }).ofObject()
             )
         )

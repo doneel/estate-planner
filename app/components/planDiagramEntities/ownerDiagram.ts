@@ -8,7 +8,7 @@ function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   var tool = e.diagram.toolManager.linkingTool;
   tool.archetypeLinkData = {
     category: "transfer",
-    date: undefined,
+    date: new Date(),
     fixedValue: 0,
     isGift: true,
   };

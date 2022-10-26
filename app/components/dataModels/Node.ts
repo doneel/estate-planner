@@ -37,7 +37,7 @@ export function isBeneficiary(node: Node | Owner | Beneficiary): node is Owner {
 
 export function isJointEstate(
   node: Node | Owner | Beneficiary | JointEstate
-): node is Owner {
+): node is JointEstate {
   return node.category === NodeType.JointEstate;
 }
 
