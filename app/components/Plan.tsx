@@ -8,7 +8,7 @@ import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 import TransferSidebar from "~/components/planSidebars/TransferSidebar";
 import useLocalStorageState from "~/hooks/useLocalStorageState";
 import { nodeType, NodeType } from "./dataModels/Node";
-import TrustSidebar from "./planSidebars/TrustSideBar";
+import TrustSidebar from "./planSidebars/TrustSidebar";
 
 export default function Plan() {
   const [diagram, setDiagram] = React.useState<go.Diagram | undefined>(

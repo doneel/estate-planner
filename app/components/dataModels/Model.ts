@@ -168,7 +168,12 @@ export class Model {
         (n) => n.key === onDeath.from
       );
 
-      if (assetHolder && (isJointEstate(assetHolder) || isOwner(assetHolder))) {
+      if (
+        assetHolder &&
+        (isJointEstate(assetHolder) ||
+          isOwner(assetHolder) ||
+          isTrust(assetHolder))
+      ) {
         onDeath.value?.generateDescription(assetHolder, undefined);
       }
     });
