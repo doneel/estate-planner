@@ -27,8 +27,9 @@ import type { OnDeath, Transfer } from "../dataModels/Link";
 import { isOnDeath, isTransfer } from "../dataModels/Link";
 import { OnDeathDiagram, updateOnDeathEntity } from "./OnDeathDiagram";
 import BandedLayerLayout from "./layout/BandedLayerLayout";
-import { BandsDiagram } from "./layout/Bands";
+import { BandsDiagram } from "./layout/BandsDiagram";
 import type React from "react";
+import { TrustDiagram } from "./TrustDiagram";
 
 export type ModelType = Owner | Beneficiary | Transfer | JointEstate | OnDeath;
 
@@ -80,6 +81,7 @@ export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
     const selected = e.diagram.selection.first();
     if (selected instanceof go.Node) {
       const nodeEntity = deserializeNode(selected.data);
+      console.log(nodeEntity);
       if (nodeEntity === undefined) {
         return;
       }
@@ -178,10 +180,11 @@ export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
 
   diagram.addDiagramListener("ChangedSelection", onSelectChange);
   diagram.addModelChangedListener(onNodeChange);
-  diagram.nodeTemplateMap.add("Owner", OwnerDiagram);
-  diagram.nodeTemplateMap.add("Beneficiary", BeneficiaryDiagram);
-  diagram.nodeTemplateMap.add("JointEstate", JointEstateDiagram);
-  diagram.nodeTemplateMap.add("Bands", BandsDiagram);
+  diagram.nodeTemplateMap.add(NodeType.Owner, OwnerDiagram);
+  diagram.nodeTemplateMap.add(NodeType.Beneficiary, BeneficiaryDiagram);
+  diagram.nodeTemplateMap.add(NodeType.JointEstate, JointEstateDiagram);
+  diagram.nodeTemplateMap.add(NodeType.Bands, BandsDiagram);
+  diagram.nodeTemplateMap.add(NodeType.Trust, TrustDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
   diagram.linkTemplateMap.add("transfer", TransferDiagram);
   diagram.linkTemplateMap.add("onDeath", OnDeathDiagram);

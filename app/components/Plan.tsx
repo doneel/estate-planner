@@ -7,6 +7,7 @@ import OnDeathSidebar from "~/components/planSidebars/OnDeathSidebar";
 import OwnerSidebar from "~/components/planSidebars/OwnerSidebar";
 import TransferSidebar from "~/components/planSidebars/TransferSidebar";
 import useLocalStorageState from "~/hooks/useLocalStorageState";
+import { NodeType } from "./dataModels/Node";
 
 export default function Plan() {
   const [diagram, setDiagram] = React.useState<go.Diagram | undefined>(
@@ -87,6 +88,20 @@ export default function Plan() {
     }
   }
 
+  function addTrust() {
+    if (diagram !== undefined) {
+      diagram.model.commit(function (m: go.Model) {
+        const nodeData = {
+          key: "New Trust",
+          name: "New Trust",
+          category: NodeType.Trust,
+        };
+        m.addNodeData(nodeData);
+        diagram.select(diagram.findNodeForData(nodeData));
+      }, "Add a new trust");
+    }
+  }
+
   function resetLayout() {
     if (diagram !== undefined) {
       diagram.layout.invalidateLayout();
@@ -113,6 +128,12 @@ export default function Plan() {
           onClick={addBeneficiary}
         >
           Add beneficiary
+        </button>
+        <button
+          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+          onClick={addTrust}
+        >
+          Add trust
         </button>
         <button
           className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"

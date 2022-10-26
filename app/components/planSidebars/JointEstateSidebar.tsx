@@ -13,7 +13,7 @@ export default function JointEstateSidebar({
 }: Props) {
   return (
     <div className="flex flex-col space-y-8">
-      <h1 className="mx-auto text-2xl">Owner</h1>
+      <h1 className="mx-auto text-2xl">Joint Estate</h1>
       <JointEstateForm
         jointEstate={jointEstate}
         setJointEstate={setJointEstate}
