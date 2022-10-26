@@ -1,6 +1,5 @@
 import * as go from "gojs";
 import { LinkType } from "../dataModels/Link";
-import { FirstDeath } from "../dataModels/Node";
 import { ValueTypes, withSuffix } from "../dataModels/utilities";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 
@@ -9,67 +8,50 @@ export function updateJointEstateEntity(
   jointEstateEntity: go.Part,
   updateParams: JointEstateUpdateProps
 ) {
-  diagram?.startTransaction(`Update ${jointEstateEntity.key}`);
-  const husbandDiagramEntity = diagram.findNodeForKey(
-    jointEstateEntity.data.husband.key
-  );
-  const wifeDiagramEntity = diagram.findNodeForKey(
-    jointEstateEntity.data.wife.key
-  );
+  try {
+    diagram?.startTransaction(`Update ${jointEstateEntity.key}`);
+    const husbandDiagramEntity = diagram.findNodeForKey(
+      jointEstateEntity.data.husband.key
+    );
+    console.log(jointEstateEntity.data.wife.key);
+    const wifeDiagramEntity = diagram.findNodeForKey(
+      jointEstateEntity.data.wife.key
+    );
 
-  if (updateParams.husbandName) {
-    diagram.model.setDataProperty(
-      husbandDiagramEntity?.data,
-      "key",
-      updateParams.husbandName
-    );
-    diagram.model.setDataProperty(
-      jointEstateEntity.data,
-      "husband.key",
-      updateParams.husbandName
-    );
+    if (updateParams.husbandName) {
+      diagram.model.setDataProperty(
+        husbandDiagramEntity?.data,
+        "key",
+        updateParams.husbandName
+      );
+      diagram.model.setDataProperty(
+        jointEstateEntity.data.husband,
+        "key",
+        updateParams.husbandName
+      );
+    }
+    if (updateParams.wifeName) {
+      console.log(wifeDiagramEntity?.data, updateParams.wifeName);
+      diagram.model.setDataProperty(
+        wifeDiagramEntity?.data,
+        "key",
+        updateParams.wifeName
+      );
+      diagram.model.setDataProperty(
+        jointEstateEntity.data.wife,
+        "key",
+        updateParams.wifeName
+      );
+
+      Object.entries(updateParams)
+        .filter(([k, v]) => !["husbandName", "wifeName"].includes(k))
+        .forEach(([key, value]) => {
+          diagram.model.setDataProperty(jointEstateEntity.data, key, value);
+        });
+    }
+  } finally {
+    diagram?.commitTransaction(`Update ${jointEstateEntity.name}`);
   }
-  if (updateParams.wifeName) {
-    diagram.model.setDataProperty(
-      wifeDiagramEntity?.data,
-      "key",
-      updateParams.wifeName
-    );
-    diagram.model.setDataProperty(
-      jointEstateEntity.data,
-      "wife.key",
-      updateParams.wifeName
-    );
-
-    Object.entries(updateParams)
-      .filter(([k, v]) => !["husbandName", "wifeName"].includes(k))
-      .forEach(([key, value]) => {
-        diagram.model.setDataProperty(jointEstateEntity.data, key, value);
-      });
-  }
-
-  diagram?.commitTransaction(`Update ${jointEstateEntity.name}`);
-}
-
-function onHusbandDeath(e: go.InputEvent, button: go.GraphObject) {
-  //@ts-ignore
-  var node: go.Node = button.part.adornedPart;
-  e.diagram.clearSelection();
-
-  var tool = e.diagram.toolManager.linkingTool;
-  tool.archetypeLinkData = {
-    category: LinkType.OnDeath,
-    personKey: node.data.husband.key,
-    value: {
-      type: ValueTypes.Fixed,
-      fixedValue: 0,
-    },
-  };
-  tool.startObject = node.port;
-
-  //@ts-ignore
-  node.diagram.currentTool = tool;
-  tool.doActivate();
 }
 
 function makeGiftFromPort(partName: string) {

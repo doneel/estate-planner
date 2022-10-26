@@ -17,6 +17,8 @@ import { isOnDeath } from "./Link";
 import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
 import type { Node, NodeTypesUnion, RecipientMap } from "./Node";
+import { Trust } from "./Node";
+import { isTrust } from "./Node";
 import { FirstDeath } from "./Node";
 import { isJointEstate } from "./Node";
 import { JointEstate } from "./Node";
@@ -166,7 +168,12 @@ export class Model {
         (n) => n.key === onDeath.from
       );
 
-      if (assetHolder && (isJointEstate(assetHolder) || isOwner(assetHolder))) {
+      if (
+        assetHolder &&
+        (isJointEstate(assetHolder) ||
+          isOwner(assetHolder) ||
+          isTrust(assetHolder))
+      ) {
         onDeath.value?.generateDescription(assetHolder, undefined);
       }
     });
@@ -223,6 +230,8 @@ export function deserializeNode(blob: any): NodeTypesUnion | undefined {
     node = defaultSerializer.deserialize(blob, Beneficiary);
   } else if (isJointEstate(blob)) {
     node = defaultSerializer.deserialize(blob, JointEstate);
+  } else if (isTrust(blob)) {
+    node = defaultSerializer.deserialize(blob, Trust);
   }
 
   if (node === undefined || node === null || node instanceof Array) {

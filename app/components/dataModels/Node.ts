@@ -6,6 +6,7 @@ export enum NodeType {
   Beneficiary = "Beneficiary",
   JointEstate = "JointEstate",
   Bands = "Bands",
+  Trust = "Trust",
 }
 
 export enum FirstDeath {
@@ -13,7 +14,22 @@ export enum FirstDeath {
   Wife = "Wife",
 }
 
-export type NodeTypesUnion = Beneficiary | Owner | JointEstate | Bands;
+export type NodeTypesUnion = Beneficiary | Owner | JointEstate | Bands | Trust;
+
+export const nodeType = (node: Node) => {
+  switch (node.category) {
+    case NodeType.Owner:
+      return Owner;
+    case NodeType.Beneficiary:
+      return Beneficiary;
+    case NodeType.JointEstate:
+      return JointEstate;
+    case NodeType.Bands:
+      return Bands;
+    case NodeType.Trust:
+      return Trust;
+  }
+};
 
 export interface NodeInterface {
   category: NodeType;
@@ -41,6 +57,12 @@ export function isJointEstate(
   return node.category === NodeType.JointEstate;
 }
 
+export function isTrust(
+  node: Node | Owner | Beneficiary | JointEstate
+): node is Trust {
+  return node.category === NodeType.Trust;
+}
+
 @JsonObject()
 export class Node implements NodeInterface {
   @JsonProperty({ required: true }) key: string = "";
@@ -59,19 +81,6 @@ export class Bands extends Node {
   @JsonProperty({ required: true }) category: NodeType.Bands = NodeType.Bands;
   @JsonProperty({ type: BandItem }) itemArray: Array<BandItem> = [];
 }
-
-export const nodeType = (node: Node) => {
-  switch (node.category) {
-    case NodeType.Owner:
-      return Owner;
-    case NodeType.Beneficiary:
-      return Beneficiary;
-    case NodeType.JointEstate:
-      return JointEstate;
-    case NodeType.Bands:
-      return Bands;
-  }
-};
 
 @JsonObject()
 export class AnnualGiftSummary {
@@ -148,4 +157,16 @@ export class JointEstate extends Node implements AssetHolder {
   @JsonProperty() husbandExtraValue: number = 0;
   @JsonProperty() wifeExtraValue: number = 0;
   @JsonProperty() firstDeath: FirstDeath | undefined;
+}
+
+@JsonObject()
+export class Trust extends Node implements AssetHolder {
+  @JsonProperty({ required: true }) category: NodeType.Trust = NodeType.Trust;
+  currentValue(date: Date | undefined): number {
+    return 0;
+  }
+
+  @JsonProperty() name: string = "";
+  @JsonProperty() trustees: string = "";
+  @JsonProperty() notes: string = "";
 }

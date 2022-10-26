@@ -66,15 +66,7 @@ export class Transfer extends Link implements LinkInterface {
   date: Date;
 
   @JsonProperty() isGift: boolean | undefined;
-  @JsonProperty({
-    afterSerialize: (value) => {
-      return value + 1;
-    },
-    beforeSerialize: (value) => {
-      return value + 2;
-    },
-  })
-  fixedValue: number | undefined;
+  @JsonProperty() fixedValue: number | undefined;
 }
 
 @JsonObject()
