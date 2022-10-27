@@ -1,7 +1,5 @@
-import { randomUUID } from "crypto";
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
 import type { ValueType } from "./utilities";
-import { Fixed } from "./utilities";
 import { ValueTypes } from "./utilities";
 import { valueTypeDiscriminatorFn } from "./utilities";
 
