@@ -1,4 +1,4 @@
-import type { WashingtonEstateTaxSummary } from "../dataModels/calculators/cashflows";
+import type { WashingtonEstateTaxSummary } from "../dataModels/calculators/washington";
 
 export type Props = {
   taxSummary: WashingtonEstateTaxSummary;

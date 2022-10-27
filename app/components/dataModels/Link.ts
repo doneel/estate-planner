@@ -46,6 +46,7 @@ export class Link {
   @JsonProperty({ required: true }) fromPort: string = "";
   @JsonProperty({ required: true }) toPort: string = "";
 
+  // @ts-ignore
   @JsonProperty({ type: valueTypeDiscriminatorFn }) value: ValueType;
 
   // @ts-ignore

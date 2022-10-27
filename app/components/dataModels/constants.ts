@@ -106,3 +106,25 @@ export const WASHINGTON_ESTATE_TAX_RATES: { [max: number]: number } = {
   9_000_000: 0.195,
   [Number.MAX_VALUE]: 0.2,
 };
+
+export function calculateTaxFromTable(
+  amount: number,
+  taxTable: { [max: number]: number }
+): number | undefined {
+  let tax = 0;
+  let lastBracketLimit = 0;
+
+  Object.entries(taxTable).forEach(([limitString, rate]) => {
+    const limit = Number(limitString);
+    if (amount > limit) {
+      const amountInRange = limit - lastBracketLimit;
+      tax += amountInRange * rate;
+      lastBracketLimit = limit;
+    } else {
+      tax += Math.max(0, amount - lastBracketLimit) * rate;
+      lastBracketLimit = limit;
+      return;
+    }
+  });
+  return tax;
+}

@@ -1,15 +1,13 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
+import { processValues } from "./calculators/linkValues";
 import {
   calculateWashingtonTaxes,
   WashingtonEstateTaxSummary,
-} from "./calculators/cashflows";
-import type { Link, OnDeath } from "./Link";
-import { isOnDeath } from "./Link";
-import { isTransfer } from "./Link";
+} from "./calculators/washington";
+import type { Link } from "./Link";
 import type { ValueType } from "./utilities";
-import { Fixed, Portion, processValues, Remainder } from "./utilities";
-import { isPortion } from "./utilities";
-import { isFixed, isRemainder } from "./utilities";
+import { isFixed } from "./utilities";
+import { SUM } from "./utilities";
 
 export enum NodeType {
   Owner = "Owner",
@@ -74,7 +72,7 @@ export function isTrust(
 }
 
 export function isAssetHolder(node: Node): node is AssetHolder {
-  return "inflows" in Object.keys(node);
+  return node.category !== NodeType.Bands;
 }
 
 export interface ProcessesCashflows {
@@ -107,8 +105,7 @@ export class AssetHolder extends Node implements ProcessesCashflows {
 
   processCashflows(inflows: number, outflows: Link[]): string[] {
     this.inflows = inflows;
-    const transferred = this.calculateCashflowValues(inflows, outflows);
-    this.remaining = inflows - transferred;
+    this.remaining = this.calculateCashflowValues(inflows, outflows);
     return outflows.map((l) => l.to);
   }
 }
@@ -127,28 +124,48 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
   washingtonTaxes: WashingtonEstateTaxSummary;
 
   calculateCashflowValues(inflows: number, outflows: Link[]): number {
-    let currentTotal = inflows;
-    this.washingtonTaxes = calculateWashingtonTaxes(inflows, outflows);
-    const deductable = (l: Link) => l.charitable || this.isSpouseLink(l);
-
-    const nonTaxableTotal = processValues(
+    const isDeductible = (l: Link) => l.charitable || this.isSpouseLink(l);
+    /* Desired amounts with no taxes */
+    processValues(
       outflows
-        .filter(deductable)
         .map((l) => l.value)
         .filter((v): v is ValueType => v !== undefined),
       inflows
     );
-    currentTotal -= nonTaxableTotal;
-    currentTotal -= this.washingtonTaxes.washingtonEstateTax;
+    const taxableTotal = outflows
+      .filter((l) => !isDeductible(l))
+      .map((l) => l.value.expectedValue ?? 0)
+      .reduce(SUM, 0);
 
-    currentTotal -= processValues(
-      outflows
-        .filter((l) => !deductable(l))
-        .map((l) => l.value)
-        .filter((v): v is ValueType => v !== undefined),
-      currentTotal
+    const deductableTotal = outflows
+      .filter((l) => isDeductible(l))
+      .map((l) => l.value.expectedValue ?? 0)
+      .reduce(SUM, 0);
+    this.washingtonTaxes = calculateWashingtonTaxes(inflows, deductableTotal);
+
+    let taxAccountedFor = 0;
+    outflows
+      .filter((l) => !isDeductible(l))
+      .filter((l) => !isFixed(l.value))
+      .forEach((l) => {
+        const portionOfAllTaxable = (l.value.expectedValue ?? 0) / taxableTotal;
+        const shareOfTaxBurden =
+          portionOfAllTaxable * this.washingtonTaxes.washingtonEstateTax;
+        l.value.expectedValue && (l.value.expectedValue -= shareOfTaxBurden);
+        taxAccountedFor += shareOfTaxBurden;
+      });
+
+    if (taxAccountedFor < this.washingtonTaxes.washingtonEstateTax) {
+      console.error(
+        `${this.key} can only pay ${taxAccountedFor} out of the required ${this.washingtonTaxes.washingtonEstateTax}.
+        \nReduce fixed value gifts.`
+      );
+    }
+    return (
+      inflows -
+      (outflows.map((l) => l.value.expectedValue ?? 0).reduce(SUM, 0) +
+        this.washingtonTaxes.washingtonEstateTax)
     );
-    return currentTotal;
   }
 }
 
@@ -258,14 +275,14 @@ export class JointEstate extends TaxPayer {
     let husbandTotal =
       this.commonPropertyValue / 2 + (this.husbandExtraValue || 0);
 
-    this.husbandRemainder =
-      husbandTotal -
-      super.calculateCashflowValues(husbandTotal, husbandOutflows);
+    this.husbandRemainder = super.calculateCashflowValues(
+      husbandTotal,
+      husbandOutflows
+    );
 
     const wifeOutflows = outflows.filter((l) => l.fromPort === "wifeport");
     let wifeTotal = this.commonPropertyValue / 2 + (this.wifeExtraValue || 0);
-    this.wifeRemainder =
-      wifeTotal - super.calculateCashflowValues(wifeTotal, wifeOutflows);
+    this.wifeRemainder = super.calculateCashflowValues(wifeTotal, wifeOutflows);
 
     return outflows.map((l) => l.to);
   }

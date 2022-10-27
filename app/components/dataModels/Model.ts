@@ -250,9 +250,7 @@ export function deserializeLink(blob: any): LinkTypesUnion | undefined {
   if (isTransfer(blob)) {
     link = defaultSerializer.deserialize(blob, Transfer);
   } else if (isOnDeath(blob)) {
-    console.log(blob);
     link = defaultSerializer.deserialize(blob, OnDeath);
-    console.log("SUCCEEDED");
   }
 
   if (link === undefined || link === null || link instanceof Array) {
@@ -271,7 +269,6 @@ export function recomputeDiagram(
     .each((link) => {
       link.data.key = self.crypto.randomUUID();
     });
-  console.log(diagram.model.toJson());
   const dataModel = defaultSerializer.deserialize(
     diagram.model.toJson(),
     Model

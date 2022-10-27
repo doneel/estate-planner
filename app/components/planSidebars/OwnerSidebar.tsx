@@ -1,4 +1,3 @@
-import { WashingtonEstateTaxSummary } from "../dataModels/calculators/cashflows";
 import type { Owner } from "../dataModels/Node";
 import OwnerForm from "../planForms/OwnerForm";
 import OwnerGiftSummaryTable from "./OwnerGiftSummaryTable";
