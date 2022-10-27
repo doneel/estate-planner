@@ -109,24 +109,27 @@ export class Node implements NodeInterface {
       });
 
     /* Portions */
+
     const portions = onDeathWithValues
       // @ts-ignore
       .filter<[OnDeath, Portion]>(([t, v]) => isPortion(v));
-    if (
-      portions
-        .map(([t, portion]) => portion.portion)
-        .reduce((a, b) => a + b, 0) > 1
-    ) {
+    const portionsSum = portions
+      .map(([t, portion]) => portion.portion)
+      .reduce((a, b) => a + b, 0);
+    if (portionsSum > 1) {
       console.error(
-        `Portions allocated from ${this.key} add up to more than 100%`
+        `Portions allocated from ${this.key} add up to more than 100% (${
+          portionsSum * 100
+        })`
       );
     }
     portions.forEach(([t, portion]: [OnDeath, Portion]) => {
       const calculatedValue = portion.portion * currentTotal;
       t.calculatedValue = calculatedValue;
-      currentTotal -= calculatedValue;
       portion.generateDescription(calculatedValue);
     });
+    /* Only subtract portion amounts at the end, since all portions should have the same denominator */
+    currentTotal -= portionsSum * currentTotal;
 
     /* Remainders */
     const remainders = onDeathWithValues
