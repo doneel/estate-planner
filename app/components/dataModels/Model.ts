@@ -5,7 +5,7 @@ import {
   JsonSerializer,
   throwError,
 } from "typescript-json-serializer";
-import { isGeneratorObject } from "util/types";
+import { calculateCashflows } from "./calculators/cashflows";
 import {
   ANNUAL_GIFT_EXCLUSIONS,
   GIFT_TAX_RATE,
@@ -135,11 +135,27 @@ export class Model {
   }
 
   public calculateAll() {
+    /*
     const allEvents = this.getAllEvents();
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
-    this.generateDescriptions();
+    */
     this.setOwnerVisibility();
+    this.countIncomingLinks();
+    const root = this.getRoot();
+    root && calculateCashflows(root, this.nodeDataArray, this.linkDataArray);
+  }
+
+  private countIncomingLinks(): void {
+    const incomingCounts: { [key: string]: number } = {};
+    this.linkDataArray.forEach((l) =>
+      incomingCounts[l.to]
+        ? (incomingCounts[l.to] += 1)
+        : (incomingCounts[l.to] = 1)
+    );
+    this.linkDataArray.forEach(
+      (l) => (l.linksSharingTarget = incomingCounts[l.to] ?? 0)
+    );
   }
 
   private setOwnerVisibility(): void {
@@ -160,23 +176,6 @@ export class Model {
     if (wife) {
       wife.visible = jointEstate?.firstDeath !== FirstDeath.Wife;
     }
-  }
-
-  private generateDescriptions(): void {
-    this.linkDataArray.filter(isOnDeath).forEach((onDeath) => {
-      const assetHolder = this.nodeDataArray.find(
-        (n) => n.key === onDeath.from
-      );
-
-      if (
-        assetHolder &&
-        (isJointEstate(assetHolder) ||
-          isOwner(assetHolder) ||
-          isTrust(assetHolder))
-      ) {
-        onDeath.value?.generateDescription(assetHolder, undefined);
-      }
-    });
   }
 
   private getAllEvents(): Event[] {
@@ -265,7 +264,11 @@ export function recomputeDiagram(
   diagram: go.Diagram,
   saveDiagram?: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
-  console.log(diagram.model.toJson());
+  diagram.links
+    .filter((link) => link.data.key === undefined)
+    .each((link) => {
+      link.data.key = self.crypto.randomUUID();
+    });
   const dataModel = defaultSerializer.deserialize(
     diagram.model.toJson(),
     Model
@@ -280,7 +283,6 @@ export function recomputeDiagram(
       defaultSerializer.serialize(dataModel)
     );
     diagram.model = go.Model.fromJson(reserializedModel);
-    console.log(diagram.findNodeForKey("JointEstate")?.location);
     saveDiagram && saveDiagram(reserializedModel);
   }
 }

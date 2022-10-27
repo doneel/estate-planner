@@ -1,7 +1,7 @@
 import go, { Binding, Margin } from "gojs";
 import { LinkType } from "../dataModels/Link";
 import type { Trust } from "../dataModels/Node";
-import { ValueTypes } from "../dataModels/utilities";
+import { ValueTypes, withSuffix } from "../dataModels/utilities";
 
 export function updateTrustEntity(
   diagram: go.Diagram,
@@ -119,7 +119,14 @@ export const TrustDiagram = new go.Node("Vertical", {
                       alignment: go.Spot.TopCenter,
                       maxSize: new go.Size(500 - 40, NaN),
                       font: "20pt sans-serif",
-                    }).bind("text", "name")
+                    }).bind(
+                      "text",
+                      "",
+                      (o) =>
+                        `${o.key} ${
+                          o.inflows ? "($" + withSuffix(o.inflows) + ")" : ""
+                        }`
+                    )
                   )
               )
           )
@@ -161,6 +168,21 @@ export const TrustDiagram = new go.Node("Vertical", {
               margin: new Margin(0, 0, 0, 4),
               textAlign: "left",
             }).bind(new Binding("text", "notes"))
+          )
+          .add(
+            new go.TextBlock("", {
+              alignment: go.Spot.Left,
+              isMultiline: true,
+              textAlign: "left",
+              font: "bold 12pt sans-serif",
+              stroke: "black",
+              stretch: go.GraphObject.Horizontal,
+              margin: new go.Margin(8, 0, 0, 0),
+            }).bind("text", "", (n) =>
+              n.remaining && n.remaining !== n.inflows
+                ? `($${withSuffix(n.remaining)} remaining)`
+                : ""
+            )
           )
       )
   )

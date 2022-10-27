@@ -1,5 +1,10 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
-import type { AssetHolder } from "./utilities";
+import type { Link, OnDeath } from "./Link";
+import { isOnDeath } from "./Link";
+import { isTransfer } from "./Link";
+import type { Fixed, Portion, Remainder, ValueType } from "./utilities";
+import { isPortion } from "./utilities";
+import { isFixed, isRemainder } from "./utilities";
 
 export enum NodeType {
   Owner = "Owner",
@@ -70,6 +75,84 @@ export class Node implements NodeInterface {
   @JsonProperty({ required: true }) category: NodeType;
   // @ts-ignore
   @JsonProperty() location: string;
+  @JsonProperty() visible: boolean = true;
+
+  /* Process the individual links (generate their values) and calculate how much money remains. */
+  processOutflows(outflows: Link[], startingTotal: number): number {
+    let currentTotal = startingTotal;
+    /* Gift Transfers */
+    outflows.filter(isTransfer).forEach((transfer) => {
+      currentTotal -= transfer?.fixedValue || 0;
+      if (currentTotal < 0) {
+        console.error(
+          `${this.key} does not have enough assets to cover gift of ${transfer?.fixedValue} to ${transfer.to}`
+        );
+      }
+    });
+    const onDeathWithValues = outflows
+      .filter(isOnDeath)
+      .map<[OnDeath, ValueType | undefined]>((t) => [t, t.value]);
+
+    /* Fixed Values */
+    onDeathWithValues
+      // @ts-ignore
+      .filter<[OnDeath, Fixed]>(([t, v]) => isFixed(v))
+      .forEach(([t, fixed]: [OnDeath, Fixed]) => {
+        currentTotal -= fixed.fixedValue;
+        if (currentTotal < 0) {
+          console.error(
+            `${this.key} does not have enough assets to cover gift of ${fixed.fixedValue} to ${t.to}`
+          );
+        }
+        fixed.generateDescription(fixed.fixedValue);
+        t.calculatedValue = fixed.fixedValue;
+      });
+
+    /* Portions */
+
+    const portions = onDeathWithValues
+      // @ts-ignore
+      .filter<[OnDeath, Portion]>(([t, v]) => isPortion(v));
+    const portionsSum = portions
+      .map(([t, portion]) => portion.portion)
+      .reduce((a, b) => a + b, 0);
+    if (portionsSum > 1) {
+      console.error(
+        `Portions allocated from ${this.key} add up to more than 100% (${
+          portionsSum * 100
+        })`
+      );
+    }
+    portions.forEach(([t, portion]: [OnDeath, Portion]) => {
+      const calculatedValue = portion.portion * currentTotal;
+      t.calculatedValue = calculatedValue;
+      portion.generateDescription(calculatedValue);
+    });
+    /* Only subtract portion amounts at the end, since all portions should have the same denominator */
+    currentTotal -= portionsSum * currentTotal;
+
+    /* Remainders */
+    const remainders = onDeathWithValues
+      // @ts-ignore
+      .filter<[OnDeath, Remainder]>(([t, v]) => isRemainder(v));
+    if (remainders.length > 1) {
+      console.error(`Two remainders found from ${this.key}`);
+    }
+    remainders.slice(0, 1).forEach(([t, remainder]: [OnDeath, Remainder]) => {
+      const calculatedValue = Math.max(0, currentTotal);
+      currentTotal -= calculatedValue;
+      remainder.generateDescription(calculatedValue);
+      t.calculatedValue = calculatedValue;
+    });
+    remainders.slice(1).forEach(([t, remainder]: [OnDeath, Remainder]) => {
+      const calculatedValue = 0;
+      t.calculatedValue = calculatedValue;
+      currentTotal -= calculatedValue;
+      remainder.generateDescription(calculatedValue);
+    });
+
+    return currentTotal;
+  }
 }
 
 @JsonObject()
@@ -111,13 +194,14 @@ export interface GiftMap {
 }
 
 @JsonObject()
-export class Owner extends Node implements OwnerInterface, AssetHolder {
+export class Owner extends Node implements OwnerInterface {
   @JsonProperty({ required: true }) category: NodeType.Owner = NodeType.Owner;
   @JsonProperty() birthYear: number | undefined;
   @JsonProperty({ type: AnnualGiftSummary })
   annualGiftSummaries: Array<AnnualGiftSummary> = [];
 
-  @JsonProperty() visible: boolean = true;
+  @JsonProperty() inflows: number = 0;
+  @JsonProperty() remaining: number = 0;
 
   @JsonProperty() expectedLifeSpan: number | undefined;
   public giftMap: GiftMap | undefined = {};
@@ -129,8 +213,10 @@ export class Owner extends Node implements OwnerInterface, AssetHolder {
     this.expectedLifeSpan = expectedLifeSpan;
   }
 
-  currentValue(date: Date | undefined): number {
-    return 0;
+  processCashflows(inflows: number, outflows: Link[]): string[] {
+    this.inflows = inflows;
+    this.remaining = this.processOutflows(outflows, inflows);
+    return outflows.map((l) => l.to);
   }
 }
 
@@ -142,11 +228,7 @@ export class Beneficiary extends Node implements BeneficiaryInterface {
 }
 
 @JsonObject()
-export class JointEstate extends Node implements AssetHolder {
-  currentValue(date: Date | undefined): number {
-    return this.commonPropertyValue;
-  }
-
+export class JointEstate extends Node {
   @JsonProperty({ required: true }) category: NodeType.JointEstate =
     NodeType.JointEstate;
   @JsonProperty({ type: Owner, required: true }) husband: Owner = new Owner(
@@ -157,18 +239,40 @@ export class JointEstate extends Node implements AssetHolder {
   );
   @JsonProperty() commonPropertyValue: number = 0;
   @JsonProperty() husbandExtraValue: number = 0;
+  @JsonProperty() husbandRemainder: number = 0;
   @JsonProperty() wifeExtraValue: number = 0;
+  @JsonProperty() wifeRemainder: number = 0;
   @JsonProperty() firstDeath: FirstDeath | undefined;
+
+  processCashflows(inflows: number, outflows: Link[]): string[] {
+    const husbandOutflows = outflows.filter(
+      (l) => l.fromPort === "husbandport"
+    );
+    let husbandTotal =
+      this.commonPropertyValue / 2 + (this.husbandExtraValue || 0);
+    this.husbandRemainder = this.processOutflows(husbandOutflows, husbandTotal);
+
+    const wifeOutflows = outflows.filter((l) => l.fromPort === "wifeport");
+    let wifeTotal = this.commonPropertyValue / 2 + (this.wifeExtraValue || 0);
+    this.wifeRemainder = this.processOutflows(wifeOutflows, wifeTotal);
+
+    return outflows.map((l) => l.to);
+  }
 }
 
 @JsonObject()
-export class Trust extends Node implements AssetHolder {
+export class Trust extends Node {
   @JsonProperty({ required: true }) category: NodeType.Trust = NodeType.Trust;
-  currentValue(date: Date | undefined): number {
-    return 0;
-  }
 
+  @JsonProperty() inflows: number = 0;
+  @JsonProperty() remaining: number = 0;
   @JsonProperty() name: string = "";
   @JsonProperty() trustees: string = "";
   @JsonProperty() notes: string = "";
+
+  processCashflows(inflows: number, outflows: Link[]): string[] {
+    this.inflows = inflows;
+    this.remaining = this.processOutflows(outflows, inflows);
+    return outflows.map((l) => l.to);
+  }
 }

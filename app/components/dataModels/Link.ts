@@ -1,5 +1,7 @@
+import { randomUUID } from "crypto";
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
 import type { ValueType } from "./utilities";
+import { ValueTypes } from "./utilities";
 import { valueTypeDiscriminatorFn } from "./utilities";
 
 export enum LinkType {
@@ -39,6 +41,7 @@ export const linkTypeDiscriminatorFn = (link: Link) => {
 
 @JsonObject()
 export class Link {
+  @JsonProperty() key: string = "";
   @JsonProperty({ required: true }) from: string = "";
   @JsonProperty({ required: true }) to: string = "";
   @JsonProperty({ required: true }) fromPort: string = "";
@@ -46,6 +49,10 @@ export class Link {
 
   // @ts-ignore
   @JsonProperty({ required: true }) category: LinkType;
+
+  // @ts-ignore
+  @JsonProperty() calculatedValue: number;
+  @JsonProperty() linksSharingTarget: number = 0;
 }
 
 @JsonObject()
@@ -67,6 +74,26 @@ export class Transfer extends Link implements LinkInterface {
 
   @JsonProperty() isGift: boolean | undefined;
   @JsonProperty() fixedValue: number | undefined;
+  /*
+  constructor(
+    to: string,
+    from: string,
+    fromPort: string,
+    toPort: string,
+    isGift: boolean,
+    fixedValue: number
+  ) {
+    super();
+    this.category = LinkType.Transfer;
+    //this.key = randomUUID();
+    this.to = to;
+    this.from = from;
+    this.fromPort = fromPort;
+    this.toPort = toPort;
+    this.isGift = isGift;
+    this.fixedValue = fixedValue;
+  }
+  */
 }
 
 @JsonObject()
@@ -76,11 +103,34 @@ export class OnDeath extends Link implements OnDeathInterface {
   @JsonProperty({ type: valueTypeDiscriminatorFn }) value:
     | ValueType
     | undefined;
-
   /*
-  //TODO
-  public date: () => Date | undefined = () => {
-    return
+  constructor(
+    to: string,
+    from: string,
+    fromPort: string,
+    toPort: string,
+    personKey: string,
+    value: ValueType
+  ) {
+    super();
+    this.category = LinkType.OnDeath;
+    this.to = to;
+    this.from = from;
+    this.fromPort = fromPort;
+    this.toPort = toPort;
+    this.personKey = personKey;
+    this.value = value;
   }
-  */
+*/
+  public static archetypeLinkData(personKey: string) {
+    return {
+      key: self.crypto.randomUUID(),
+      category: LinkType.OnDeath,
+      personKey: personKey,
+      value: {
+        type: ValueTypes.Fixed,
+        fixedValue: 0,
+      },
+    };
+  }
 }

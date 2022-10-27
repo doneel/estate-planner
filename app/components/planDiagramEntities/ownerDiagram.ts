@@ -1,5 +1,7 @@
 import * as go from "gojs";
+import { LinkType } from "../dataModels/Link";
 import type { Owner } from "../dataModels/Node";
+import { ValueTypes, withSuffix } from "../dataModels/utilities";
 
 function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
@@ -13,6 +15,27 @@ function addTransfer(e: go.InputEvent, button: go.GraphObject) {
     isGift: true,
   };
   tool.startObject = node.port;
+
+  //@ts-ignore
+  node.diagram.currentTool = tool;
+  tool.doActivate();
+}
+
+function onDeath(e: go.InputEvent, button: go.GraphObject) {
+  //@ts-ignore
+  var node: go.Node = button.part.adornedPart;
+  e.diagram.clearSelection();
+
+  var tool = e.diagram.toolManager.linkingTool;
+  tool.archetypeLinkData = {
+    category: LinkType.OnDeath,
+    personKey: node.data.key,
+    value: {
+      type: ValueTypes.Fixed,
+      fixedValue: 0,
+    },
+  };
+  tool.startObject = node.findPort("out");
 
   //@ts-ignore
   node.diagram.currentTool = tool;
@@ -52,7 +75,7 @@ export const OwnerDiagram = new go.Node("Vertical", {
         .add(
           go.GraphObject.make(
             "Button",
-            { margin: 8, click: addTransfer },
+            { margin: 8, click: onDeath },
             new go.TextBlock("On death", { margin: 8 })
           )
         )
@@ -95,7 +118,24 @@ export const OwnerDiagram = new go.Node("Vertical", {
       stroke: "black",
       font: "bold 24pt sans-serif",
       editable: true,
-    }).bind("text", "key")
+    }).bind(
+      "text",
+      "",
+      (o) => `${o.key} ${o.inflows ? "($" + withSuffix(o.inflows) + ")" : ""}`
+    )
+  )
+  .add(
+    new go.TextBlock("", {
+      alignment: go.Spot.Left,
+      isMultiline: true,
+      textAlign: "center",
+      font: "bold 12pt sans-serif",
+      stroke: "black",
+      stretch: go.GraphObject.Horizontal,
+      margin: new go.Margin(8, 0, 0, 0),
+    }).bind("text", "", (n) =>
+      n.remaining !== undefined ? `($${withSuffix(n.remaining)} remaining)` : ""
+    )
   )
   .add(
     new go.Shape("Circle", {
