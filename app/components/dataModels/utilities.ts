@@ -14,10 +14,15 @@ export type Outflow = {
   value: Value;
 };
 
+@JsonObject()
+export class Error {
+  @JsonProperty({}) message: string = "";
+}
 interface Value {
   generateDescription(calculatedValue: number): void;
   description: string;
   expectedValue: number | undefined;
+  errors: Error[];
 }
 
 export enum ValueTypes {
@@ -58,6 +63,7 @@ export class Fixed implements Value {
 
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
+  @JsonProperty({ type: Error }) errors: Array<Error> = [];
 }
 
 @JsonObject()
@@ -72,6 +78,7 @@ export class Portion implements Value {
 
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
+  @JsonProperty({ type: Error }) errors: Array<Error> = [];
 }
 
 @JsonObject()
@@ -82,4 +89,67 @@ export class Remainder implements Value {
   @JsonProperty({}) type: ValueTypes = ValueTypes.Remainder;
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
+  @JsonProperty({ type: Error }) errors: Array<Error> = [];
+}
+
+export const SUM: (previousValue: number, currentValue: number) => number = (
+  total,
+  next
+) => total + next;
+
+export function processValues(
+  values: ValueType[],
+  currentTotal: number
+): number {
+  /* FixedValues */
+  values.filter(isFixed).forEach((fixed) => {
+    currentTotal -= fixed.fixedValue;
+    fixed.generateDescription(fixed.fixedValue);
+    if (currentTotal < 0) {
+      fixed.errors.push({
+        message: "Not enough assets to cover this transfer.",
+      });
+    }
+    fixed.expectedValue = fixed.fixedValue;
+  });
+
+  /* Portions */
+  const portionsSum = values
+    .filter(isPortion)
+    .map((p) => p.portion)
+    .reduce(SUM, 0);
+  values.filter(isPortion).forEach((p) => {
+    p.expectedValue = p.portion * currentTotal;
+    p.generateDescription(p.expectedValue);
+  });
+  currentTotal -= portionsSum * currentTotal;
+  /*
+  if (portionsSum > 1) {
+    parentErrors.push({
+      message: `Portions allocated add up to more than 100% (${
+        portionsSum * 100
+      })`,
+    });
+  }
+  */
+
+  /* Remainders */
+  //TODO: Refactor to use the index to just get a different value
+  values
+    .filter(isRemainder)
+    .slice(0, 1)
+    .forEach((remainder) => {
+      remainder.expectedValue = Math.max(0, currentTotal);
+      currentTotal -= remainder.expectedValue;
+      remainder.generateDescription(remainder.expectedValue);
+    });
+  values
+    .filter(isRemainder)
+    .slice(1)
+    .forEach((remainder) => {
+      remainder.expectedValue = 0;
+      currentTotal -= remainder.expectedValue;
+      remainder.generateDescription(remainder.expectedValue);
+    });
+  return currentTotal;
 }

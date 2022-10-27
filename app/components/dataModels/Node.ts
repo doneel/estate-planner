@@ -1,9 +1,13 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
-import { WashingtonEstateTaxSummary } from "./calculators/cashflows";
+import {
+  calculateWashingtonTaxes,
+  WashingtonEstateTaxSummary,
+} from "./calculators/cashflows";
 import type { Link, OnDeath } from "./Link";
 import { isOnDeath } from "./Link";
 import { isTransfer } from "./Link";
-import type { Fixed, Portion, Remainder, ValueType } from "./utilities";
+import type { ValueType } from "./utilities";
+import { Fixed, Portion, processValues, Remainder } from "./utilities";
 import { isPortion } from "./utilities";
 import { isFixed, isRemainder } from "./utilities";
 
@@ -69,6 +73,14 @@ export function isTrust(
   return node.category === NodeType.Trust;
 }
 
+export function isAssetHolder(node: Node): node is AssetHolder {
+  return "inflows" in Object.keys(node);
+}
+
+export interface ProcessesCashflows {
+  processCashflows(inflows: number, outflows: Link[]): string[];
+}
+
 @JsonObject()
 export class Node implements NodeInterface {
   @JsonProperty({ required: true }) key: string = "";
@@ -77,81 +89,65 @@ export class Node implements NodeInterface {
   // @ts-ignore
   @JsonProperty() location: string;
   @JsonProperty() visible: boolean = true;
+}
 
-  /* Process the individual links (generate their values) and calculate how much money remains. */
-  processOutflows(outflows: Link[], startingTotal: number): number {
-    let currentTotal = startingTotal;
-    /* Gift Transfers */
-    outflows.filter(isTransfer).forEach((transfer) => {
-      currentTotal -= transfer?.fixedValue || 0;
-      if (currentTotal < 0) {
-        console.error(
-          `${this.key} does not have enough assets to cover gift of ${transfer?.fixedValue} to ${transfer.to}`
-        );
-      }
-    });
-    const onDeathWithValues = outflows
-      .filter(isOnDeath)
-      .map<[OnDeath, ValueType | undefined]>((t) => [t, t.value]);
+@JsonObject()
+export class AssetHolder extends Node implements ProcessesCashflows {
+  @JsonProperty() inflows: number = 0;
+  @JsonProperty() remaining: number = 0;
 
-    /* Fixed Values */
-    onDeathWithValues
-      // @ts-ignore
-      .filter<[OnDeath, Fixed]>(([t, v]) => isFixed(v))
-      .forEach(([t, fixed]: [OnDeath, Fixed]) => {
-        currentTotal -= fixed.fixedValue;
-        if (currentTotal < 0) {
-          console.error(
-            `${this.key} does not have enough assets to cover gift of ${fixed.fixedValue} to ${t.to}`
-          );
-        }
-        fixed.generateDescription(fixed.fixedValue);
-        t.calculatedValue = fixed.fixedValue;
-      });
+  calculateCashflowValues(inflows: number, outflows: Link[]): number {
+    return processValues(
+      outflows
+        .map((l) => l.value)
+        .filter((v): v is ValueType => v !== undefined),
+      inflows
+    );
+  }
 
-    /* Portions */
+  processCashflows(inflows: number, outflows: Link[]): string[] {
+    this.inflows = inflows;
+    const transferred = this.calculateCashflowValues(inflows, outflows);
+    this.remaining = inflows - transferred;
+    return outflows.map((l) => l.to);
+  }
+}
 
-    const portions = onDeathWithValues
-      // @ts-ignore
-      .filter<[OnDeath, Portion]>(([t, v]) => isPortion(v));
-    const portionsSum = portions
-      .map(([t, portion]) => portion.portion)
-      .reduce((a, b) => a + b, 0);
-    if (portionsSum > 1) {
-      console.error(
-        `Portions allocated from ${this.key} add up to more than 100% (${
-          portionsSum * 100
-        })`
-      );
-    }
-    portions.forEach(([t, portion]: [OnDeath, Portion]) => {
-      const calculatedValue = portion.portion * currentTotal;
-      t.calculatedValue = calculatedValue;
-      portion.generateDescription(calculatedValue);
-    });
-    /* Only subtract portion amounts at the end, since all portions should have the same denominator */
-    currentTotal -= portionsSum * currentTotal;
+export interface TaxPayerInterface {
+  washingtonTaxes: WashingtonEstateTaxSummary;
+  isSpouseLink(link: Link): boolean;
+}
 
-    /* Remainders */
-    const remainders = onDeathWithValues
-      // @ts-ignore
-      .filter<[OnDeath, Remainder]>(([t, v]) => isRemainder(v));
-    if (remainders.length > 1) {
-      console.error(`Two remainders found from ${this.key}`);
-    }
-    remainders.slice(0, 1).forEach(([t, remainder]: [OnDeath, Remainder]) => {
-      const calculatedValue = Math.max(0, currentTotal);
-      currentTotal -= calculatedValue;
-      remainder.generateDescription(calculatedValue);
-      t.calculatedValue = calculatedValue;
-    });
-    remainders.slice(1).forEach(([t, remainder]: [OnDeath, Remainder]) => {
-      const calculatedValue = 0;
-      t.calculatedValue = calculatedValue;
-      currentTotal -= calculatedValue;
-      remainder.generateDescription(calculatedValue);
-    });
+export class TaxPayer extends AssetHolder implements TaxPayerInterface {
+  isSpouseLink(link: Link): boolean {
+    throw new Error("Method not implemented.");
+  }
+  @JsonProperty({ type: WashingtonEstateTaxSummary })
+  // @ts-ignore
+  washingtonTaxes: WashingtonEstateTaxSummary;
 
+  calculateCashflowValues(inflows: number, outflows: Link[]): number {
+    let currentTotal = inflows;
+    this.washingtonTaxes = calculateWashingtonTaxes(inflows, outflows);
+    const deductable = (l: Link) => l.charitable || this.isSpouseLink(l);
+
+    const nonTaxableTotal = processValues(
+      outflows
+        .filter(deductable)
+        .map((l) => l.value)
+        .filter((v): v is ValueType => v !== undefined),
+      inflows
+    );
+    currentTotal -= nonTaxableTotal;
+    currentTotal -= this.washingtonTaxes.washingtonEstateTax;
+
+    currentTotal -= processValues(
+      outflows
+        .filter((l) => !deductable(l))
+        .map((l) => l.value)
+        .filter((v): v is ValueType => v !== undefined),
+      currentTotal
+    );
     return currentTotal;
   }
 }
@@ -195,22 +191,20 @@ export interface GiftMap {
 }
 
 @JsonObject()
-export class Owner extends Node implements OwnerInterface {
+export class Owner extends TaxPayer implements OwnerInterface {
   @JsonProperty({ required: true }) category: NodeType.Owner = NodeType.Owner;
   @JsonProperty() birthYear: number | undefined;
   @JsonProperty({ type: AnnualGiftSummary })
   annualGiftSummaries: Array<AnnualGiftSummary> = [];
 
-  @JsonProperty() inflows: number = 0;
-  @JsonProperty() remaining: number = 0;
-
   @JsonProperty() expectedLifeSpan: number | undefined;
 
-  @JsonProperty({ type: WashingtonEstateTaxSummary })
-  // @ts-ignore
-  washingtonTaxes: WashingtonEstateTaxSummary;
-
   public giftMap: GiftMap | undefined = {};
+
+  /* A solo owner only exists when the other spouse has already died */
+  isSpouseLink(link: Link): boolean {
+    return false;
+  }
 
   constructor(name: string, birthYear?: number, expectedLifeSpan?: number) {
     super();
@@ -218,23 +212,22 @@ export class Owner extends Node implements OwnerInterface {
     this.birthYear = birthYear;
     this.expectedLifeSpan = expectedLifeSpan;
   }
+}
+
+@JsonObject()
+export class Beneficiary extends AssetHolder implements BeneficiaryInterface {
+  @JsonProperty({ required: true }) category: NodeType.Beneficiary =
+    NodeType.Beneficiary;
+  @JsonProperty() birthYear: number | undefined;
 
   processCashflows(inflows: number, outflows: Link[]): string[] {
     this.inflows = inflows;
-    this.remaining = this.processOutflows(outflows, inflows);
-    return outflows.map((l) => l.to);
+    return [];
   }
 }
 
 @JsonObject()
-export class Beneficiary extends Node implements BeneficiaryInterface {
-  @JsonProperty({ required: true }) category: NodeType.Beneficiary =
-    NodeType.Beneficiary;
-  @JsonProperty() birthYear: number | undefined;
-}
-
-@JsonObject()
-export class JointEstate extends Node {
+export class JointEstate extends TaxPayer {
   @JsonProperty({ required: true }) category: NodeType.JointEstate =
     NodeType.JointEstate;
   @JsonProperty({ type: Owner, required: true }) husband: Owner = new Owner(
@@ -250,9 +243,13 @@ export class JointEstate extends Node {
   @JsonProperty() wifeRemainder: number = 0;
   @JsonProperty() firstDeath: FirstDeath | undefined;
 
-  @JsonProperty({ type: WashingtonEstateTaxSummary })
-  // @ts-ignore
-  washingtonTaxes: WashingtonEstateTaxSummary;
+  /* A solo owner only exists when the other spouse has already died */
+  isSpouseLink(link: Link): boolean {
+    if (this.firstDeath === FirstDeath.Husband) {
+      return link.to === this.wife.key;
+    }
+    return link.to === this.husband.key;
+  }
 
   processCashflows(inflows: number, outflows: Link[]): string[] {
     const husbandOutflows = outflows.filter(
@@ -260,29 +257,25 @@ export class JointEstate extends Node {
     );
     let husbandTotal =
       this.commonPropertyValue / 2 + (this.husbandExtraValue || 0);
-    this.husbandRemainder = this.processOutflows(husbandOutflows, husbandTotal);
+
+    this.husbandRemainder =
+      husbandTotal -
+      super.calculateCashflowValues(husbandTotal, husbandOutflows);
 
     const wifeOutflows = outflows.filter((l) => l.fromPort === "wifeport");
     let wifeTotal = this.commonPropertyValue / 2 + (this.wifeExtraValue || 0);
-    this.wifeRemainder = this.processOutflows(wifeOutflows, wifeTotal);
+    this.wifeRemainder =
+      wifeTotal - super.calculateCashflowValues(wifeTotal, wifeOutflows);
 
     return outflows.map((l) => l.to);
   }
 }
 
 @JsonObject()
-export class Trust extends Node {
+export class Trust extends AssetHolder {
   @JsonProperty({ required: true }) category: NodeType.Trust = NodeType.Trust;
 
-  @JsonProperty() inflows: number = 0;
-  @JsonProperty() remaining: number = 0;
   @JsonProperty() name: string = "";
   @JsonProperty() trustees: string = "";
   @JsonProperty() notes: string = "";
-
-  processCashflows(inflows: number, outflows: Link[]): string[] {
-    this.inflows = inflows;
-    this.remaining = this.processOutflows(outflows, inflows);
-    return outflows.map((l) => l.to);
-  }
 }

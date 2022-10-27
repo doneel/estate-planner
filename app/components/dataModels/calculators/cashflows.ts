@@ -7,10 +7,12 @@ import {
 import type { Link } from "../Link";
 import { isTransfer } from "../Link";
 import type { JointEstate, Node, Owner } from "../Node";
+import { isAssetHolder } from "../Node";
 import { FirstDeath } from "../Node";
 import { isTrust } from "../Node";
 import { isOwner } from "../Node";
 import { isJointEstate } from "../Node";
+import { SUM } from "../utilities";
 
 interface InflowsMap {
   [key: string]: number;
@@ -37,26 +39,35 @@ export type CashflowsResults = {
 
 function processNode(node: Node, links: Link[]): ProcessNodeResults {
   const outflows = links.filter((l) => l.from === node.key);
+  const calculatedInflows = links
+    .filter((l) => l.to === node.key)
+    .map((link) => link.value?.expectedValue ?? 0)
+    .reduce(SUM, 0);
+
+  if (isAssetHolder(node)) {
+    const children = node.processCashflows(calculatedInflows, outflows);
+    return { children };
+  }
+  /*
   if (isJointEstate(node)) {
     const children = node.processCashflows(0, outflows);
-    node.washingtonTaxes = calculateWashingtonTaxesJointEstate(node, outflows);
     return { children };
   } else if (isOwner(node)) {
     const calculatedInflows = links
       .filter((l) => l.to === node.key)
-      .map((link) => link.calculatedValue)
-      .reduce((sum, n) => sum + n, 0);
+      .map((link) => link.value?.expectedValue ?? 0)
+      .reduce(SUM, 0);
     const children = node.processCashflows(calculatedInflows, outflows);
-    node.washingtonTaxes = calculateWashingTaxesOwner(node, outflows);
     return { children };
   } else if (isTrust(node)) {
     const calculatedInflows = links
       .filter((l) => l.to === node.key)
-      .map((link) => link.calculatedValue)
-      .reduce((sum, n) => sum + n, 0);
+      .map((link) => link.value?.expectedValue ?? 0)
+      .reduce(SUM, 0);
     const children = node.processCashflows(calculatedInflows, outflows);
     return { children };
   }
+  */
   return { children: [] };
 }
 
@@ -104,21 +115,21 @@ export class WashingtonEstateTaxSummary {
   @JsonProperty() washingtonEstateTax: number = 0;
 }
 
-function calculateWashingtonTaxes(
+export function calculateWashingtonTaxes(
   totalValueAtDeath: number,
   outflows: Link[],
   spouseKey?: string
 ): WashingtonEstateTaxSummary {
   const maritalFlows = outflows
     .filter((l) => spouseKey !== undefined && l.to === spouseKey)
-    .map((l) => l.calculatedValue)
-    .reduce((a, b) => a + b, 0);
+    .map((l) => l.value?.expectedValue ?? 0)
+    .reduce(SUM, 0);
 
   const charitableFlows = outflows
     .filter(isTransfer)
     .filter((t) => t.isGift === false)
-    .map((l) => l.calculatedValue)
-    .reduce((a, b) => a + b, 0);
+    .map((l) => l.value?.expectedValue ?? 0)
+    .reduce(SUM, 0);
 
   const washingtonExclusionAmount =
     WASHINGTON_ESTATE_EXCLUSIONS(new Date().getFullYear()) ?? 0;

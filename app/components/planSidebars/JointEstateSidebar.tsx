@@ -1,6 +1,7 @@
 import type { JointEstate } from "../dataModels/Node";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 import JointEstateForm from "../planForms/JointEstateForm";
+import WashingtonTaxSummaryTab from "./WashingtonTaxSummaryTab";
 
 export type Props = {
   jointEstate: Partial<JointEstate>;
@@ -18,6 +19,9 @@ export default function JointEstateSidebar({
         jointEstate={jointEstate}
         setJointEstate={setJointEstate}
       />
+      {jointEstate.washingtonTaxes && (
+        <WashingtonTaxSummaryTab taxSummary={jointEstate.washingtonTaxes} />
+      )}
     </div>
   );
 }
