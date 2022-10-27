@@ -1,5 +1,6 @@
 import * as go from "gojs";
 import type { Owner } from "../dataModels/Node";
+import { withSuffix } from "../dataModels/utilities";
 
 function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
@@ -95,7 +96,11 @@ export const OwnerDiagram = new go.Node("Vertical", {
       stroke: "black",
       font: "bold 24pt sans-serif",
       editable: true,
-    }).bind("text", "key")
+    }).bind(
+      "text",
+      "",
+      (o) => `${o.key} ${o.inflows ? "($" + withSuffix(o.inflows) + ")" : ""}`
+    )
   )
   .add(
     new go.Shape("Circle", {

@@ -1,5 +1,5 @@
 import * as go from "gojs";
-import { LinkType } from "../dataModels/Link";
+import { LinkType, OnDeath } from "../dataModels/Link";
 import { ValueTypes, withSuffix } from "../dataModels/utilities";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 
@@ -61,14 +61,7 @@ function makeGiftFromPort(partName: string) {
     e.diagram.clearSelection();
 
     var tool = e.diagram.toolManager.linkingTool;
-    tool.archetypeLinkData = {
-      category: LinkType.OnDeath,
-      personKey: node.data.husband.key,
-      value: {
-        type: ValueTypes.Fixed,
-        fixedValue: 0,
-      },
-    };
+    tool.archetypeLinkData = OnDeath.archetypeLinkData(node.data.husband.key);
     tool.startObject = node.findPort(partName);
 
     //@ts-ignore

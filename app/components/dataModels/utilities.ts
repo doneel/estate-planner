@@ -16,6 +16,8 @@ export type Outflow = {
 
 export interface AssetHolder {
   key: string;
+
+  prefunding(): number;
   //growthRate: number;
   currentValue(date: Date | undefined): number;
   //outFlows: []; //TODO
@@ -46,10 +48,23 @@ export const valueTypeDiscriminatorFn = (value: ValueType) => {
   }
 };
 
+export function isFixed(value?: ValueType): value is Fixed {
+  return value?.type === ValueTypes.Fixed;
+}
+export function isPortion(value?: ValueType): value is Portion {
+  return value?.type === ValueTypes.Portion;
+}
+export function isRemainder(value?: ValueType): value is Remainder {
+  return value?.type === ValueTypes.Remainder;
+}
+
 @JsonObject()
 export class Fixed implements Value {
   generateDescription(assetHolder: AssetHolder, date: Date | undefined): void {
     this.description = `$${withSuffix(this.value(assetHolder, date))}`;
+  }
+  generateDescription2(calculatedValue: number): void {
+    this.description = `$${withSuffix(calculatedValue)}`;
   }
   @JsonProperty({}) type: ValueTypes = ValueTypes.Fixed;
   @JsonProperty({ required: true }) fixedValue: number = 0;
@@ -70,6 +85,12 @@ export class Portion implements Value {
       assetHolder.key
     } ($${withSuffix(this.value(assetHolder, date))})`;
   }
+
+  generateDescription2(calculatedValue: number): void {
+    this.description = `${this.portion * 100}% ($${withSuffix(
+      calculatedValue
+    )})`;
+  }
   @JsonProperty({}) type: ValueTypes = ValueTypes.Portion;
   @JsonProperty({ required: true }) portion: number = 0;
 
@@ -89,6 +110,9 @@ export class Remainder implements Value {
     this.description = `Remainder of ${assetHolder.key} ($${withSuffix(
       this.value(assetHolder, date)
     )})`;
+  }
+  generateDescription2(calculatedValue: number): void {
+    this.description = `Remainder ($${withSuffix(calculatedValue)})`;
   }
   @JsonProperty({}) type: ValueTypes = ValueTypes.Remainder;
   public value: (assetHolder: AssetHolder, date: Date | undefined) => number = (

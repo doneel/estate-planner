@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import go from "gojs";
 import {
   JsonObject,
@@ -6,6 +7,7 @@ import {
   throwError,
 } from "typescript-json-serializer";
 import { isGeneratorObject } from "util/types";
+import { calculateCashflows } from "./calculators/cashflows";
 import {
   ANNUAL_GIFT_EXCLUSIONS,
   GIFT_TAX_RATE,
@@ -134,11 +136,19 @@ export class Model {
     });
   }
 
+  public walkTree() {
+    const root = this.getRoot();
+  }
+
   public calculateAll() {
+    /*
     const allEvents = this.getAllEvents();
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
-    this.generateDescriptions();
+    */
+    const root = this.getRoot();
+    root && calculateCashflows(root, this.nodeDataArray, this.linkDataArray);
+    //this.generateDescriptions();
     this.setOwnerVisibility();
   }
 
@@ -265,7 +275,11 @@ export function recomputeDiagram(
   diagram: go.Diagram,
   saveDiagram?: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
-  console.log(diagram.model.toJson());
+  diagram.links
+    .filter((link) => link.data.key === undefined)
+    .each((link) => {
+      link.data.key = self.crypto.randomUUID();
+    });
   const dataModel = defaultSerializer.deserialize(
     diagram.model.toJson(),
     Model
@@ -280,7 +294,6 @@ export function recomputeDiagram(
       defaultSerializer.serialize(dataModel)
     );
     diagram.model = go.Model.fromJson(reserializedModel);
-    console.log(diagram.findNodeForKey("JointEstate")?.location);
     saveDiagram && saveDiagram(reserializedModel);
   }
 }
