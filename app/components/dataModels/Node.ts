@@ -1,4 +1,5 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
+import { WashingtonEstateTaxSummary } from "./calculators/cashflows";
 import type { Link, OnDeath } from "./Link";
 import { isOnDeath } from "./Link";
 import { isTransfer } from "./Link";
@@ -204,6 +205,11 @@ export class Owner extends Node implements OwnerInterface {
   @JsonProperty() remaining: number = 0;
 
   @JsonProperty() expectedLifeSpan: number | undefined;
+
+  @JsonProperty({ type: WashingtonEstateTaxSummary })
+  // @ts-ignore
+  washingtonTaxes: WashingtonEstateTaxSummary;
+
   public giftMap: GiftMap | undefined = {};
 
   constructor(name: string, birthYear?: number, expectedLifeSpan?: number) {
@@ -243,6 +249,10 @@ export class JointEstate extends Node {
   @JsonProperty() wifeExtraValue: number = 0;
   @JsonProperty() wifeRemainder: number = 0;
   @JsonProperty() firstDeath: FirstDeath | undefined;
+
+  @JsonProperty({ type: WashingtonEstateTaxSummary })
+  // @ts-ignore
+  washingtonTaxes: WashingtonEstateTaxSummary;
 
   processCashflows(inflows: number, outflows: Link[]): string[] {
     const husbandOutflows = outflows.filter(
