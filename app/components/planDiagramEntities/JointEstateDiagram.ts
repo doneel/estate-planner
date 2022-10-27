@@ -13,7 +13,6 @@ export function updateJointEstateEntity(
     const husbandDiagramEntity = diagram.findNodeForKey(
       jointEstateEntity.data.husband.key
     );
-    console.log(jointEstateEntity.data.wife.key);
     const wifeDiagramEntity = diagram.findNodeForKey(
       jointEstateEntity.data.wife.key
     );
@@ -31,7 +30,6 @@ export function updateJointEstateEntity(
       );
     }
     if (updateParams.wifeName) {
-      console.log(wifeDiagramEntity?.data, updateParams.wifeName);
       diagram.model.setDataProperty(
         wifeDiagramEntity?.data,
         "key",
@@ -190,6 +188,19 @@ export const JointEstateDiagram = new go.Node("Vertical", {
                       }
                     )
                   )
+                  .add(
+                    new go.TextBlock("", {
+                      font: "12pt sans-serif",
+                      stroke: "black",
+                      stretch: go.GraphObject.Horizontal,
+                      margin: new go.Margin(4, 0, 0, 0),
+                      wrap: go.TextBlock.WrapFit,
+                    }).bind("text", "", (n) =>
+                      n.husbandRemainder
+                        ? `($${withSuffix(n.wifeRemainder)} remaining)`
+                        : ""
+                    )
+                  )
               )
           )
           .add(
@@ -235,6 +246,20 @@ export const JointEstateDiagram = new go.Node("Vertical", {
                         width: 300,
                         wrap: go.TextBlock.WrapFit,
                       }
+                    )
+                  )
+                  .add(
+                    new go.TextBlock("", {
+                      font: "12pt sans-serif",
+                      alignment: go.Spot.Center,
+                      stroke: "black",
+                      stretch: go.GraphObject.Horizontal,
+                      margin: new go.Margin(4, 0, 0, 0),
+                      wrap: go.TextBlock.WrapFit,
+                    }).bind("text", "", (n) =>
+                      n.husbandRemainder
+                        ? `($${withSuffix(n.husbandRemainder)} remaining)`
+                        : ""
                     )
                   )
               )

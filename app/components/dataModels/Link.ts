@@ -49,7 +49,10 @@ export class Link {
 
   // @ts-ignore
   @JsonProperty({ required: true }) category: LinkType;
+
+  // @ts-ignore
   @JsonProperty() calculatedValue: number;
+  @JsonProperty() linksSharingTarget: number = 0;
 }
 
 @JsonObject()

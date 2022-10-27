@@ -75,8 +75,11 @@ export const OnDeathDiagram = new go.Link({
   )
   .add(
     new go.Panel("Auto", {
-      //segmentOrientation: go.Link.OrientUpright,
+      segmentOrientation: go.Link.None, //go.Link.OrientUpright,
     })
+      .bind("segmentOrientation", "linksSharingTarget", (count) =>
+        count > 1 ? go.Link.OrientUpright : go.Link.None
+      )
       .add(
         new go.Shape("RoundedRectangle", {
           strokeWidth: 0,

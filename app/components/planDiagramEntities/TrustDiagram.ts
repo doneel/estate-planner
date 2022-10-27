@@ -169,6 +169,21 @@ export const TrustDiagram = new go.Node("Vertical", {
               textAlign: "left",
             }).bind(new Binding("text", "notes"))
           )
+          .add(
+            new go.TextBlock("", {
+              alignment: go.Spot.Left,
+              isMultiline: true,
+              textAlign: "left",
+              font: "bold 12pt sans-serif",
+              stroke: "black",
+              stretch: go.GraphObject.Horizontal,
+              margin: new go.Margin(8, 0, 0, 0),
+            }).bind("text", "", (n) =>
+              n.remaining && n.remaining !== n.inflows
+                ? `($${withSuffix(n.remaining)} remaining)`
+                : ""
+            )
+          )
       )
   )
   .add(

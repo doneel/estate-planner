@@ -50,11 +50,25 @@ function processNode(node: Node, links: Link[]): ProcessNodeResults {
   return { children: [] };
 }
 
+function removeHiddenNodes(nodes: Node[], allLinks: Link[]): [Node[], Link[]] {
+  const hiddenNodeKeys = nodes
+    .filter((node) => node.visible === false)
+    .map((node) => node.key);
+
+  return [
+    nodes.filter((n) => !hiddenNodeKeys.includes(n.key)),
+    allLinks.filter(
+      (l) => !hiddenNodeKeys.includes(l.to) && !hiddenNodeKeys.includes(l.from)
+    ),
+  ];
+}
+
 export function calculateCashflows(
   root: Node,
   nodes: Node[],
   allLinks: Link[]
 ) {
+  [nodes, allLinks] = removeHiddenNodes(nodes, allLinks);
   let remainingToProcess: string[] = [];
   const { children } = processNode(root, allLinks);
   remainingToProcess = remainingToProcess.concat(children);
