@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
 import type { ValueType } from "./utilities";
 import { ValueTypes } from "./utilities";
@@ -48,11 +47,13 @@ export class Link {
   @JsonProperty({ required: true }) toPort: string = "";
 
   // @ts-ignore
-  @JsonProperty({ required: true }) category: LinkType;
+  @JsonProperty({ type: valueTypeDiscriminatorFn }) value: ValueType;
 
   // @ts-ignore
-  @JsonProperty() calculatedValue: number;
+  @JsonProperty({ required: true }) category: LinkType;
+
   @JsonProperty() linksSharingTarget: number = 0;
+  @JsonProperty() charitable: boolean = false;
 }
 
 @JsonObject()
@@ -73,6 +74,7 @@ export class Transfer extends Link implements LinkInterface {
   date: Date;
 
   @JsonProperty() isGift: boolean | undefined;
+  //@JsonProperty({ type: Fixed }) value: Fixed;
   @JsonProperty() fixedValue: number | undefined;
   /*
   constructor(
@@ -100,9 +102,6 @@ export class Transfer extends Link implements LinkInterface {
 export class OnDeath extends Link implements OnDeathInterface {
   @JsonProperty() category: LinkType.OnDeath = LinkType.OnDeath;
   @JsonProperty() personKey: string | undefined;
-  @JsonProperty({ type: valueTypeDiscriminatorFn }) value:
-    | ValueType
-    | undefined;
   /*
   constructor(
     to: string,

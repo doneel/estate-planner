@@ -14,10 +14,15 @@ export type Outflow = {
   value: Value;
 };
 
+@JsonObject()
+export class Error {
+  @JsonProperty({}) message: string = "";
+}
 interface Value {
   generateDescription(calculatedValue: number): void;
   description: string;
   expectedValue: number | undefined;
+  errors: Error[];
 }
 
 export enum ValueTypes {
@@ -58,6 +63,7 @@ export class Fixed implements Value {
 
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
+  @JsonProperty({ type: Error }) errors: Array<Error> = [];
 }
 
 @JsonObject()
@@ -72,6 +78,7 @@ export class Portion implements Value {
 
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
+  @JsonProperty({ type: Error }) errors: Array<Error> = [];
 }
 
 @JsonObject()
@@ -82,4 +89,10 @@ export class Remainder implements Value {
   @JsonProperty({}) type: ValueTypes = ValueTypes.Remainder;
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
+  @JsonProperty({ type: Error }) errors: Array<Error> = [];
 }
+
+export const SUM: (previousValue: number, currentValue: number) => number = (
+  total,
+  next
+) => total + next;

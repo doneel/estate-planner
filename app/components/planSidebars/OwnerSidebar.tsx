@@ -1,6 +1,7 @@
 import type { Owner } from "../dataModels/Node";
 import OwnerForm from "../planForms/OwnerForm";
 import OwnerGiftSummaryTable from "./OwnerGiftSummaryTable";
+import WashingtonTaxSummaryTab from "./WashingtonTaxSummaryTab";
 
 export type Props = {
   owner: Partial<Owner>;
@@ -13,6 +14,9 @@ export default function OwnerSidebar({ owner, setOwner }: Props) {
       <h1 className="mx-auto text-2xl">Owner</h1>
       <OwnerForm owner={owner} setOwner={setOwner} />
       <OwnerGiftSummaryTable owner={owner} />
+      {owner.washingtonTaxes && (
+        <WashingtonTaxSummaryTab taxSummary={owner.washingtonTaxes} />
+      )}
     </div>
   );
 }
