@@ -71,8 +71,8 @@ export function defaultModel() {
     category: "Bands",
     itemArray: [
       { text: "" },
-      { text: "After husband passes" },
       { text: "After wife passes" },
+      { text: "After husband passes" },
     ],
   };
   return new go.GraphLinksModel({

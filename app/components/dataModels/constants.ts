@@ -1,4 +1,6 @@
-export function ANNUAL_GIFT_EXCLUSIONS(number: number): number | undefined {
+export function ANNUAL_GIFT_EXCLUSIONS_PER_RECIPIENT(
+  number: number
+): number | undefined {
   if (number < 1997) {
     return undefined;
   } else if (number < 2002) {
