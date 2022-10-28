@@ -295,12 +295,14 @@ export const JointEstateDiagram = new go.Node("Vertical", {
             const shapePort: go.Shape = port;
             if (!e.diagram.isReadOnly) {
               shapePort.stroke = "black";
+              shapePort.fromLinkable = false;
             }
           },
           mouseLeave: (e, port) => {
             //@ts-ignore
             const shapePort: go.Shape = port;
             shapePort.stroke = "pink";
+            shapePort.fromLinkable = true;
           },
         })
       )
@@ -321,12 +323,14 @@ export const JointEstateDiagram = new go.Node("Vertical", {
             const shapePort: go.Shape = port;
             if (!e.diagram.isReadOnly) {
               shapePort.stroke = "black";
+              shapePort.fromLinkable = false;
             }
           },
           mouseLeave: (e, port) => {
             //@ts-ignore
             const shapePort: go.Shape = port;
             shapePort.stroke = "#749ced";
+            shapePort.fromLinkable = true;
           },
         })
       )

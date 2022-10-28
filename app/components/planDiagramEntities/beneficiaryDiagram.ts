@@ -33,11 +33,13 @@ export const BeneficiaryDiagram = new go.Node("Vertical", {
         //@ts-ignore
         const shapePort: go.Shape = port;
         if (!e.diagram.isReadOnly) shapePort.fill = "#66F";
+        shapePort.toLinkable = false;
       },
       mouseLeave: (e, port) => {
         //@ts-ignore
         const shapePort: go.Shape = port;
         shapePort.fill = "gray";
+        shapePort.toLinkable = true;
       },
     })
   )
