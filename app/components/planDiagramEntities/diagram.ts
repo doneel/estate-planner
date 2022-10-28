@@ -225,5 +225,7 @@ export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
     diagram.model = defaultModel();
   }
   diagram.undoManager.isEnabled = true;
+  recomputeDiagram(diagram, saveModel);
+  diagram.select(diagram.findPartForKey("JointEstate"));
   return diagram;
 }
