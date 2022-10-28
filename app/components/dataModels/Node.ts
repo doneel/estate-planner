@@ -123,7 +123,11 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
   // @ts-ignore
   washingtonTaxes: WashingtonEstateTaxSummary;
 
-  calculateCashflowValues(inflows: number, outflows: Link[]): number {
+  calculateCashflowValues(
+    inflows: number,
+    outflows: Link[],
+    saveTaxes: boolean = true
+  ): number {
     const isDeductible = (l: Link) => l.charitable || this.isSpouseLink(l);
     /* Desired amounts with no taxes */
     processValues(
@@ -141,7 +145,10 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
       .filter((l) => isDeductible(l))
       .map((l) => l.value.expectedValue ?? 0)
       .reduce(SUM, 0);
-    this.washingtonTaxes = calculateWashingtonTaxes(inflows, deductableTotal);
+    const washingtonTaxes = calculateWashingtonTaxes(inflows, deductableTotal);
+    if (saveTaxes) {
+      this.washingtonTaxes = washingtonTaxes;
+    }
 
     let taxAccountedFor = 0;
     outflows
@@ -150,21 +157,21 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
       .forEach((l) => {
         const portionOfAllTaxable = (l.value.expectedValue ?? 0) / taxableTotal;
         const shareOfTaxBurden =
-          portionOfAllTaxable * this.washingtonTaxes.washingtonEstateTax;
+          portionOfAllTaxable * washingtonTaxes.washingtonEstateTax;
         l.value.expectedValue && (l.value.expectedValue -= shareOfTaxBurden);
         taxAccountedFor += shareOfTaxBurden;
       });
 
-    if (taxAccountedFor < this.washingtonTaxes.washingtonEstateTax) {
+    if (taxAccountedFor < washingtonTaxes.washingtonEstateTax) {
       console.error(
-        `${this.key} can only pay ${taxAccountedFor} out of the required ${this.washingtonTaxes.washingtonEstateTax}.
+        `${this.key} can only pay ${taxAccountedFor} out of the required ${washingtonTaxes.washingtonEstateTax}.
         \nReduce fixed value gifts.`
       );
     }
     return (
       inflows -
       (outflows.map((l) => l.value.expectedValue ?? 0).reduce(SUM, 0) +
-        this.washingtonTaxes.washingtonEstateTax)
+        washingtonTaxes.washingtonEstateTax)
     );
   }
 }
@@ -277,12 +284,17 @@ export class JointEstate extends TaxPayer {
 
     this.husbandRemainder = super.calculateCashflowValues(
       husbandTotal,
-      husbandOutflows
+      husbandOutflows,
+      this.firstDeath === FirstDeath.Husband
     );
 
     const wifeOutflows = outflows.filter((l) => l.fromPort === "wifeport");
     let wifeTotal = this.commonPropertyValue / 2 + (this.wifeExtraValue || 0);
-    this.wifeRemainder = super.calculateCashflowValues(wifeTotal, wifeOutflows);
+    this.wifeRemainder = super.calculateCashflowValues(
+      wifeTotal,
+      wifeOutflows,
+      this.firstDeath === FirstDeath.Wife
+    );
 
     return outflows.map((l) => l.to);
   }

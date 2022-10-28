@@ -73,7 +73,6 @@ export class Transfer extends Link implements LinkInterface {
   // @ts-ignore
   date: Date;
 
-  @JsonProperty() isGift: boolean | undefined;
   //@JsonProperty({ type: Fixed }) value: Fixed;
   @JsonProperty() fixedValue: number | undefined;
   /*
@@ -96,6 +95,18 @@ export class Transfer extends Link implements LinkInterface {
     this.fixedValue = fixedValue;
   }
   */
+  public static archetypeLinkData() {
+    return {
+      key: self.crypto.randomUUID(),
+      category: "transfer",
+      date: new Date(),
+      value: {
+        type: ValueTypes.Fixed,
+        fixedValue: 0,
+      },
+      isCharitable: false,
+    };
+  }
 }
 
 @JsonObject()
@@ -130,6 +141,7 @@ export class OnDeath extends Link implements OnDeathInterface {
         type: ValueTypes.Fixed,
         fixedValue: 0,
       },
+      isCharitable: false,
     };
   }
 }

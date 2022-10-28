@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import React, { useEffect } from "react";
-import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
+import type { Beneficiary } from "../dataModels/Node";
 
 export type Props = {
   beneficiary: Partial<Beneficiary>;
@@ -11,15 +11,15 @@ export default function BeneficiaryForm({
   beneficiary,
   setBeneficiary,
 }: Props) {
-  const [name, setName] = React.useState(beneficiary.name);
-  useEffect(() => setName(beneficiary.name), [beneficiary]);
+  const [name, setName] = React.useState(beneficiary.key);
+  useEffect(() => setName(beneficiary.key), [beneficiary]);
 
   const [birthYear, setBirthYear] = React.useState(beneficiary.birthYear);
   useEffect(() => setBirthYear(beneficiary.birthYear), [beneficiary]);
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setBeneficiary({
-      name,
+      key: name,
       birthYear,
     });
   }
@@ -45,10 +45,10 @@ export default function BeneficiaryForm({
       </div>
       <div className="group relative z-0 mb-6 w-full">
         <input
-          type="text"
+          type="number"
           name="birth_year"
           id="birth_year"
-          value={birthYear}
+          value={birthYear ?? ""}
           onChange={(e) => setBirthYear(e.target.valueAsNumber)}
           className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
           placeholder=" "
