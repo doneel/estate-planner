@@ -1,19 +1,14 @@
 import * as go from "gojs";
-import { LinkType } from "../dataModels/Link";
+import { OnDeath, Transfer } from "../dataModels/Link";
 import type { Owner } from "../dataModels/Node";
-import { ValueTypes, withSuffix } from "../dataModels/utilities";
+import { withSuffix } from "../dataModels/utilities";
 
 function addTransfer(e: go.InputEvent, button: go.GraphObject) {
   //@ts-ignore
   var node: go.Node = button.part.adornedPart;
   e.diagram.clearSelection();
   var tool = e.diagram.toolManager.linkingTool;
-  tool.archetypeLinkData = {
-    category: "transfer",
-    date: new Date(),
-    fixedValue: 0,
-    isGift: true,
-  };
+  tool.archetypeLinkData = Transfer.archetypeLinkData();
   tool.startObject = node.port;
 
   //@ts-ignore
@@ -27,14 +22,7 @@ function onDeath(e: go.InputEvent, button: go.GraphObject) {
   e.diagram.clearSelection();
 
   var tool = e.diagram.toolManager.linkingTool;
-  tool.archetypeLinkData = {
-    category: LinkType.OnDeath,
-    personKey: node.data.key,
-    value: {
-      type: ValueTypes.Fixed,
-      fixedValue: 0,
-    },
-  };
+  tool.archetypeLinkData = OnDeath.archetypeLinkData(node.data.key);
   tool.startObject = node.findPort("out");
 
   //@ts-ignore

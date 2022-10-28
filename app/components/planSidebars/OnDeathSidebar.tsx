@@ -1,10 +1,9 @@
 import type { OnDeath } from "../dataModels/Link";
-import type { ValueType } from "../dataModels/utilities";
 import OnDeathForm from "../planForms/OnDeathForm";
 
 export type Props = {
   onDeath: Partial<OnDeath>;
-  setOnDeath: (onDeath: Partial<ValueType>) => void;
+  setOnDeath: (onDeath: Partial<OnDeath>) => void;
 };
 
 export default function OnDeathSidebar({ onDeath, setOnDeath }: Props) {

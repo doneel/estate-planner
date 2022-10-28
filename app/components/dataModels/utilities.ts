@@ -64,6 +64,11 @@ export class Fixed implements Value {
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
   @JsonProperty({ type: Error }) errors: Array<Error> = [];
+
+  public constructor(fixedValue: number) {
+    this.type = ValueTypes.Fixed;
+    this.fixedValue = fixedValue;
+  }
 }
 
 @JsonObject()
@@ -79,6 +84,11 @@ export class Portion implements Value {
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
   @JsonProperty({ type: Error }) errors: Array<Error> = [];
+
+  public constructor(portion: number) {
+    this.type = ValueTypes.Portion;
+    this.portion = portion;
+  }
 }
 
 @JsonObject()
@@ -90,6 +100,10 @@ export class Remainder implements Value {
   @JsonProperty({}) description: string = "";
   @JsonProperty({}) expectedValue: number | undefined;
   @JsonProperty({ type: Error }) errors: Array<Error> = [];
+
+  public constructor() {
+    this.type = ValueTypes.Remainder;
+  }
 }
 
 export const SUM: (previousValue: number, currentValue: number) => number = (

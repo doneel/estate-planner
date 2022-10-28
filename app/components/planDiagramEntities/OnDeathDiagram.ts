@@ -1,14 +1,15 @@
 import * as go from "gojs";
-import type { ValueType } from "../dataModels/utilities";
+import type { OnDeath } from "../dataModels/Link";
 
 export function updateOnDeathEntity(
   diagram: go.Diagram,
   onDeathDiagram: go.Part,
-  updateParams: Partial<ValueType>
+  updateParams: Partial<OnDeath>
 ) {
   diagram?.startTransaction(`Update ${onDeathDiagram.data.to}`);
   Object.entries(updateParams).forEach(([key, value]) => {
-    diagram.model.setDataProperty(onDeathDiagram?.data.value, `${key}`, value);
+    console.log("setting", key, value);
+    diagram.model.setDataProperty(onDeathDiagram?.data, `${key}`, value);
   });
   diagram?.commitTransaction(`Update ${onDeathDiagram.data.to}`);
 }

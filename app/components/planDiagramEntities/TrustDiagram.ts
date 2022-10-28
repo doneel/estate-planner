@@ -123,7 +123,7 @@ export const TrustDiagram = new go.Node("Vertical", {
                       "text",
                       "",
                       (o) =>
-                        `${o.key} ${
+                        `${o.name} ${
                           o.inflows ? "($" + withSuffix(o.inflows) + ")" : ""
                         }`
                     )

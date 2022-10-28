@@ -1,10 +1,5 @@
+import type { Beneficiary } from "../dataModels/Node";
 import BeneficiaryForm from "../planForms/BeneficiaryForm";
-
-export type Beneficiary = {
-  category: "Beneficiary";
-  name: string;
-  birthYear: number;
-};
 
 export type Props = {
   beneficiary: Partial<Beneficiary>;

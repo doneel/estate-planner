@@ -34,13 +34,16 @@ export const TransferDiagram = new go.Link({
   .add(new go.Shape({ toArrow: "Standard" }))
   .add(
     new go.Panel("Auto")
+      .bind("segmentOrientation", "linksSharingTarget", (count) =>
+        count > 1 ? go.Link.OrientUpright : go.Link.None
+      )
       .add(
         new go.Shape("RoundedRectangle", {
           stroke: "black",
-          strokeWidth: 1,
-          fill: "lightgray",
-          opacity: 0.8,
-          minSize: new go.Size(150, NaN),
+          strokeWidth: 0,
+          fill: "white",
+          opacity: 0.75,
+          //minSize: new go.Size(150, NaN),
         })
           .bind(
             new go.Binding("stroke", "isHighlighted", (isHighlighted) => {
@@ -54,31 +57,42 @@ export const TransferDiagram = new go.Link({
           )
           .bind(
             new go.Binding("strokeWidth", "isHighlighted", (isHighlighted) => {
-              return isHighlighted ? 2 : 1;
+              return isHighlighted ? 2 : 0;
             }).ofObject()
           )
       )
       .add(
-        new go.Picture("images/gift.svg", {
-          alignment: go.Spot.TopRight,
-          desiredSize: new go.Size(24, 24),
-          opacity: 0.4,
-        }).bind("opacity", "isGift", (isGift) => (isGift ? 0.4 : 0))
-      )
-      .add(
-        new go.Panel("Vertical", { margin: 4, alignment: go.Spot.Left }).add(
-          new go.TextBlock("", {
-            alignment: go.Spot.Left,
-            font: "12pt sans-serif",
-          }).bind("text", "date", (d) => d.toLocaleDateString()),
-          new go.TextBlock("", {
-            font: "10pt sans-serif",
-            alignment: go.Spot.Left,
-          }).bind("text", "fixedValue", (v) => `$${v.toLocaleString()}`),
-          new go.TextBlock("", {
-            alignment: go.Spot.Left,
-            font: "10pt sans-serif",
-          }).bind("text", "estimatedValue")
-        )
+        new go.Panel("Vertical", { margin: 4 })
+          .add(
+            new go.Panel("Horizontal")
+              .add(
+                new go.Picture("images/gift.svg", {
+                  alignment: go.Spot.TopRight,
+                  desiredSize: new go.Size(24, 24),
+                  opacity: 0.4,
+                }).bind("opacity", "charitable", (isGift) => (isGift ? 0.4 : 0))
+              )
+              .add(
+                new go.TextBlock("", {
+                  alignment: go.Spot.Left,
+                  font: "12pt sans-serif",
+                }).bind("text", "date", (d) => d.toLocaleDateString())
+              )
+          )
+          .add(
+            new go.Panel("Horizontal").add(
+              new go.TextBlock("", {
+                alignment: go.Spot.Left,
+                font: "16pt bold sans-serif",
+                stroke: "black",
+              })
+                .bind("text", "", (node) => node.value.description)
+                .bind(
+                  new go.Binding("stroke", "isHighlighted", (isHighlighted) => {
+                    return isHighlighted ? "black" : "black";
+                  }).ofObject()
+                )
+            )
+          )
       )
   );

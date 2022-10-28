@@ -1,21 +1,16 @@
 import * as go from "gojs";
-import type { Beneficiary } from "../planSidebars/BeneficiarySidebar";
+import type { Beneficiary } from "../dataModels/Node";
 
 export function updateBeneficiaryEntity(
   diagram: go.Diagram,
   beneficiaryEntity: go.Part,
   beneficiary: Partial<Beneficiary>
 ) {
-  diagram?.startTransaction(`Update ${beneficiary.name}`);
+  diagram?.startTransaction(`Update ${beneficiary.key}`);
   Object.entries(beneficiary).forEach(([key, value]) => {
     diagram.model.setDataProperty(beneficiaryEntity?.data, key, value);
   });
-  diagram.model.setDataProperty(
-    beneficiaryEntity?.data,
-    "key",
-    beneficiary.name
-  );
-  diagram?.commitTransaction(`Update ${beneficiary.name}`);
+  diagram?.commitTransaction(`Update ${beneficiary.key}`);
 }
 
 export const BeneficiaryDiagram = new go.Node("Vertical", {

@@ -2,11 +2,12 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import type { OnDeath } from "../dataModels/Link";
 import type { ValueType } from "../dataModels/utilities";
+import { Remainder } from "../dataModels/utilities";
 import { Fixed, Portion, ValueTypes } from "../dataModels/utilities";
 
 export type Props = {
   onDeath: Partial<OnDeath>;
-  setOnDeath: (onDeath: Partial<ValueType>) => void;
+  setOnDeath: (onDeath: Partial<OnDeath>) => void;
 };
 
 export default function OnDeathForm({ onDeath, setOnDeath }: Props) {
@@ -36,17 +37,23 @@ export default function OnDeathForm({ onDeath, setOnDeath }: Props) {
     [currentValue]
   );
 
+  const [charitable, setCharitable] = useState(onDeath.charitable);
+  useEffect(() => setCharitable(onDeath.charitable), [onDeath]);
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    let value: Partial<ValueType> = { type: type ?? ValueTypes.Fixed };
+    let value: ValueType = new Fixed(0);
     if (type === ValueTypes.Fixed) {
-      value = { type, fixedValue };
+      value = new Fixed(fixedValue ?? 0);
     } else if (type === ValueTypes.Portion) {
-      value = { type, portion };
+      value = new Portion(portion ?? 0);
     } else if (type === ValueTypes.Remainder) {
-      value = { type };
+      value = new Remainder();
     }
-    setOnDeath(value);
+    setOnDeath({
+      charitable,
+      value,
+    });
   }
   return (
     <form>
@@ -156,6 +163,24 @@ export default function OnDeathForm({ onDeath, setOnDeath }: Props) {
         >
           Portion of estate
         </label>
+      </div>
+      <div className="group relative z-0 mb-6 w-full">
+        <div className="flex items-center rounded border border-gray-200 pl-4 dark:border-gray-700">
+          <input
+            id="is_gift_checkbox"
+            type="checkbox"
+            checked={charitable ?? false}
+            name="is_gift_checkbox"
+            onChange={(e) => setCharitable(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+          />
+          <label
+            htmlFor="is_gift_checkbox"
+            className="ml-2 w-full py-4 text-sm font-medium text-gray-900 dark:text-gray-300"
+          >
+            Is this a charitable donation?
+          </label>
+        </div>
       </div>
       <button
         onClick={handleSubmit}

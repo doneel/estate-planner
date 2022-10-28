@@ -2,6 +2,9 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import type { JointEstate } from "../dataModels/Node";
 import { FirstDeath } from "../dataModels/Node";
+import CurrencyFormat from "react-currency-format";
+import { TextInput } from "flowbite-react";
+import TBInput from "../inputs/TBInput";
 
 export type JointEstateUpdateProps = {
   wifeName?: string;
@@ -101,12 +104,16 @@ export default function JointEstateForm({
         </div>
       </div>
       <div className="group relative z-0 mb-6 w-full">
-        <input
-          type="number"
+        <CurrencyFormat
+          thousandSeparator={true}
+          prefix={"$"}
           name="common_property_value"
           id="common_property_value"
-          value={commonPropertyValue ?? ""}
-          onChange={(e) => setCommonPropertyValue(e.target.valueAsNumber)}
+          value={commonPropertyValue ?? 0}
+          onValueChange={(v) =>
+            setCommonPropertyValue(isNaN(v.floatValue) ? 0 : v.floatValue)
+          }
+          customInput={TBInput}
           className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
           placeholder=" "
         />
@@ -119,12 +126,16 @@ export default function JointEstateForm({
       </div>
       <div className="grid md:grid-cols-2 md:gap-6">
         <div className="group relative z-0 mb-6 w-full">
-          <input
-            type="number"
+          <CurrencyFormat
+            thousandSeparator={true}
+            prefix={"$"}
             name="wife_extra_value"
             id="wife_extra_value"
             value={wifeExtraValue ?? ""}
-            onChange={(e) => setWifeExtraValue(e.target.valueAsNumber)}
+            onValueChange={(v) =>
+              setWifeExtraValue(isNaN(v.floatValue) ? 0 : v.floatValue)
+            }
+            customInput={TBInput}
             className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
             placeholder=" "
           />
@@ -136,12 +147,16 @@ export default function JointEstateForm({
           </label>
         </div>
         <div className="group relative z-0 mb-6 w-full">
-          <input
-            type="number"
+          <CurrencyFormat
+            thousandSeparator={true}
+            prefix={"$"}
             name="husband_extra_value"
             id="husband_extra_value"
             value={husbandExtraValue ?? ""}
-            onChange={(e) => setHusbandExtraValue(e.target.valueAsNumber)}
+            onValueChange={(v) =>
+              setHusbandExtraValue(isNaN(v.floatValue) ? 0 : v.floatValue)
+            }
+            customInput={TBInput}
             className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
             placeholder=" "
           />
