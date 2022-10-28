@@ -57,7 +57,7 @@ export const OwnerDiagram = new go.Node("Vertical", {
               margin: 8,
               click: addTransfer,
             },
-            new go.TextBlock("Add transfer", { margin: 8 })
+            new go.TextBlock("Add Gift", { margin: 8 })
           )
         )
         .add(
