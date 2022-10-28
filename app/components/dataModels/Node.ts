@@ -1,10 +1,13 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
+import { calculateFederalGiftTax } from "./calculators/federalGiftTax";
 import { processValues } from "./calculators/linkValues";
 import {
   calculateWashingtonTaxes,
   WashingtonEstateTaxSummary,
 } from "./calculators/washington";
 import type { Link } from "./Link";
+import { isOnDeath } from "./Link";
+import { isTransfer } from "./Link";
 import type { ValueType } from "./utilities";
 import { isFixed } from "./utilities";
 import { SUM } from "./utilities";
@@ -71,6 +74,12 @@ export function isTrust(
   return node.category === NodeType.Trust;
 }
 
+export function isBands(
+  node: Node | Owner | Beneficiary | JointEstate
+): node is Bands {
+  return node.category === NodeType.Bands;
+}
+
 export function isAssetHolder(node: Node): node is AssetHolder {
   return node.category !== NodeType.Bands;
 }
@@ -110,6 +119,33 @@ export class AssetHolder extends Node implements ProcessesCashflows {
   }
 }
 
+@JsonObject()
+export class AnnualGiftSummary {
+  constructor(
+    year: number,
+    totalGiftValue: number,
+    minusAnnualExclusions: number,
+    expectedTax: number,
+    lifetimeExclusionUsed: number,
+    taxableValue: number,
+    stateEstateTaxDeduction: number
+  ) {
+    this.year = year;
+    this.totalGiftValue = totalGiftValue;
+    this.minusAnnualExclusions = minusAnnualExclusions;
+    this.expectedTax = expectedTax;
+    this.lifetimeExclusionUsed = lifetimeExclusionUsed;
+    this.taxableValue = taxableValue;
+    this.stateEstateTaxDeduction = stateEstateTaxDeduction;
+  }
+  @JsonProperty() year: number | undefined;
+  @JsonProperty() totalGiftValue: number;
+  @JsonProperty() minusAnnualExclusions: number;
+  @JsonProperty() lifetimeExclusionUsed: number;
+  @JsonProperty() stateEstateTaxDeduction: number;
+  @JsonProperty() taxableValue: number;
+  @JsonProperty() expectedTax: number;
+}
 export interface TaxPayerInterface {
   washingtonTaxes: WashingtonEstateTaxSummary;
   isSpouseLink(link: Link): boolean;
@@ -123,12 +159,16 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
   // @ts-ignore
   washingtonTaxes: WashingtonEstateTaxSummary;
 
+  @JsonProperty({ type: AnnualGiftSummary })
+  annualGiftSummaries: Array<AnnualGiftSummary> = [];
+
   calculateCashflowValues(
     inflows: number,
     outflows: Link[],
     saveTaxes: boolean = true
   ): number {
-    const isDeductible = (l: Link) => l.charitable || this.isSpouseLink(l);
+    const isDeductible = (l: Link) =>
+      l.charitable === true || this.isSpouseLink(l);
     /* Desired amounts with no taxes */
     processValues(
       outflows
@@ -136,7 +176,8 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
         .filter((v): v is ValueType => v !== undefined),
       inflows
     );
-    const taxableTotal = outflows
+    const taxableTotalAtDeath = outflows
+      .filter(isOnDeath)
       .filter((l) => !isDeductible(l))
       .map((l) => l.value.expectedValue ?? 0)
       .reduce(SUM, 0);
@@ -145,22 +186,46 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
       .filter((l) => isDeductible(l))
       .map((l) => l.value.expectedValue ?? 0)
       .reduce(SUM, 0);
+
     const washingtonTaxes = calculateWashingtonTaxes(inflows, deductableTotal);
+    const annualGiftSummaries = calculateFederalGiftTax(
+      outflows
+        .filter((l) => !isDeductible(l))
+        .map((l) => {
+          return {
+            date: isTransfer(l) ? l.date : undefined,
+            to: l.to,
+            expectedValue: l.value.expectedValue ?? 0,
+          };
+        }),
+      washingtonTaxes.washingtonEstateTax
+    );
+    let giftTaxDueAtDeath = 0;
+    let taxesDue = 0;
     if (saveTaxes) {
       this.washingtonTaxes = washingtonTaxes;
+      this.annualGiftSummaries = annualGiftSummaries;
+      giftTaxDueAtDeath =
+        annualGiftSummaries.find((s) => s.year === undefined)?.expectedTax ?? 0;
+      taxesDue = washingtonTaxes.washingtonEstateTax + giftTaxDueAtDeath;
     }
 
     let taxAccountedFor = 0;
-    outflows
-      .filter((l) => !isDeductible(l))
-      .filter((l) => !isFixed(l.value))
-      .forEach((l) => {
-        const portionOfAllTaxable = (l.value.expectedValue ?? 0) / taxableTotal;
-        const shareOfTaxBurden =
-          portionOfAllTaxable * washingtonTaxes.washingtonEstateTax;
-        l.value.expectedValue && (l.value.expectedValue -= shareOfTaxBurden);
-        taxAccountedFor += shareOfTaxBurden;
-      });
+    if (taxesDue > 0) {
+      outflows
+        .filter((l) => !isDeductible(l))
+        .filter(isOnDeath)
+        .filter((l) => !isFixed(l.value))
+        .forEach((l) => {
+          const portionOfAllTaxable =
+            (l.value.expectedValue ?? 0) / taxableTotalAtDeath;
+          const shareOfTaxBurden = portionOfAllTaxable * taxesDue;
+          l.value.expectedValue && (l.value.expectedValue -= shareOfTaxBurden);
+          l.value.expectedValue &&
+            l.value.generateDescription(l.value.expectedValue);
+          taxAccountedFor += shareOfTaxBurden;
+        });
+    }
 
     if (taxAccountedFor < washingtonTaxes.washingtonEstateTax) {
       console.error(
@@ -171,7 +236,8 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
     return (
       inflows -
       (outflows.map((l) => l.value.expectedValue ?? 0).reduce(SUM, 0) +
-        washingtonTaxes.washingtonEstateTax)
+        washingtonTaxes.washingtonEstateTax +
+        giftTaxDueAtDeath)
     );
   }
 }
@@ -188,25 +254,6 @@ export class Bands extends Node {
   @JsonProperty({ type: BandItem }) itemArray: Array<BandItem> = [];
 }
 
-@JsonObject()
-export class AnnualGiftSummary {
-  constructor(
-    year: number,
-    totalGiftValue: number,
-    expectedTax: number,
-    lifetimeExclusionUsed: number
-  ) {
-    this.year = year;
-    this.totalGiftValue = totalGiftValue;
-    this.expectedTax = expectedTax;
-    this.lifetimeExclusionUsed = lifetimeExclusionUsed;
-  }
-  @JsonProperty() year: number;
-  @JsonProperty() totalGiftValue: number;
-  @JsonProperty() expectedTax: number;
-  @JsonProperty() lifetimeExclusionUsed: number;
-}
-
 export interface RecipientMap {
   [to: string]: number;
 }
@@ -218,8 +265,6 @@ export interface GiftMap {
 export class Owner extends TaxPayer implements OwnerInterface {
   @JsonProperty({ required: true }) category: NodeType.Owner = NodeType.Owner;
   @JsonProperty() birthYear: number | undefined;
-  @JsonProperty({ type: AnnualGiftSummary })
-  annualGiftSummaries: Array<AnnualGiftSummary> = [];
 
   @JsonProperty() expectedLifeSpan: number | undefined;
 

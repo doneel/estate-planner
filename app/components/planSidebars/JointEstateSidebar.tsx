@@ -1,6 +1,7 @@
 import type { JointEstate } from "../dataModels/Node";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 import JointEstateForm from "../planForms/JointEstateForm";
+import FederalSummaryTable from "./FederalSummaryTable";
 import WashingtonTaxSummaryTab from "./WashingtonTaxSummaryTab";
 
 export type Props = {
@@ -18,6 +19,9 @@ export default function JointEstateSidebar({
       <JointEstateForm
         jointEstate={jointEstate}
         setJointEstate={setJointEstate}
+      />
+      <FederalSummaryTable
+        annualGiftSummaries={jointEstate.annualGiftSummaries}
       />
       {jointEstate.washingtonTaxes && (
         <WashingtonTaxSummaryTab taxSummary={jointEstate.washingtonTaxes} />

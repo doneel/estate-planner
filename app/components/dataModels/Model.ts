@@ -7,7 +7,7 @@ import {
 } from "typescript-json-serializer";
 import { calculateCashflows } from "./calculators/cashflows";
 import {
-  ANNUAL_GIFT_EXCLUSIONS,
+  ANNUAL_GIFT_EXCLUSIONS_PER_RECIPIENT,
   GIFT_TAX_RATE,
   LIFETIME_GIFT_EXCLUSIONS,
 } from "./constants";
@@ -16,7 +16,8 @@ import { OnDeath } from "./Link";
 import { isOnDeath } from "./Link";
 import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
-import type { Node, NodeTypesUnion, RecipientMap } from "./Node";
+import type { Node, NodeTypesUnion } from "./Node";
+import { isBands, RecipientMap } from "./Node";
 import { Trust } from "./Node";
 import { isTrust } from "./Node";
 import { FirstDeath } from "./Node";
@@ -86,64 +87,33 @@ export class Model {
     return this.nodeDataArray.find(isJointEstate);
   }
 
-  public calculateGiftSummaries() {
-    const nodes: NodeTypesUnion[] = this.nodeDataArray;
-    const n = nodes[0];
-    switch (n.category) {
-      case NodeType.Beneficiary:
-        break;
-      case NodeType.Owner:
-        break;
-    }
-    nodes.filter((n) => n.category === NodeType.Owner).map((n) => n);
-    this.nodeDataArray.filter(isOwner).forEach((owner) => {
-      let lifetimeExclusionUsed = 0;
-      owner.annualGiftSummaries = Object.entries(owner.giftMap || {}).map(
-        ([yearU, giftsByRecipientU]) => {
-          const year: number = Number(yearU);
-          const annualExclusion = ANNUAL_GIFT_EXCLUSIONS(year);
-          const lifetimeExclusionAsOfThisYear = LIFETIME_GIFT_EXCLUSIONS(year);
-          const giftsByRecipient: RecipientMap = giftsByRecipientU;
-          const totalGifts = Object.values(giftsByRecipient).reduce(
-            (sum: number, gift: number) => sum + gift,
-            0
-          );
-          const excessOverLimit = annualExclusion
-            ? Object.values(giftsByRecipient)
-                .map((giftValue) => giftValue - annualExclusion)
-                .filter((excess) => excess > 0)
-                .reduce((sum, n) => sum + n, 0)
-            : 0;
-          let taxesOwed = 0;
-          if (lifetimeExclusionAsOfThisYear) {
-            const headroom =
-              lifetimeExclusionAsOfThisYear - lifetimeExclusionUsed;
-            const taxable = Math.max(excessOverLimit - headroom, 0);
-            const tax_rate = GIFT_TAX_RATE(year);
-            taxesOwed = taxable * (tax_rate ?? 0);
-          }
-          lifetimeExclusionUsed += excessOverLimit;
-          return new AnnualGiftSummary(
-            year,
-            totalGifts,
-            taxesOwed,
-            lifetimeExclusionUsed
-          );
-        }
-      );
-    });
-  }
-
   public calculateAll() {
     /*
     const allEvents = this.getAllEvents();
     this.sumUpGifts(allEvents);
     this.calculateGiftSummaries();
     */
+    this.setBandsLabels();
     this.setOwnerVisibility();
     this.countIncomingLinks();
     const root = this.getRoot();
     root && calculateCashflows(root, this.nodeDataArray, this.linkDataArray);
+  }
+
+  public setBandsLabels() {
+    const jointEstate = this.nodeDataArray.find(isJointEstate);
+    const firstDeath = jointEstate?.firstDeath;
+    const itemArray = this.nodeDataArray.find(isBands)?.itemArray;
+    if (itemArray) {
+      itemArray[1].text =
+        firstDeath === FirstDeath.Husband
+          ? `After ${jointEstate?.husband.key} passes`
+          : `After ${jointEstate?.wife.key} passes`;
+      itemArray[2].text =
+        firstDeath === FirstDeath.Husband
+          ? `After ${jointEstate?.wife.key} passes`
+          : `After ${jointEstate?.husband.key} passes`;
+    }
   }
 
   private countIncomingLinks(): void {
