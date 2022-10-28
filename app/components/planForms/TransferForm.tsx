@@ -2,9 +2,11 @@ import type { FormEvent } from "react";
 import React, { useEffect, useState } from "react";
 import type { Transfer } from "../dataModels/Link";
 import type { ValueType } from "../dataModels/utilities";
+import CurrencyFormat from "react-currency-format";
 import { Remainder } from "../dataModels/utilities";
 import { Fixed } from "../dataModels/utilities";
 import { Portion, ValueTypes } from "../dataModels/utilities";
+import TBInput from "../inputs/TBInput";
 
 export type Props = {
   transfer: Partial<Transfer>;
@@ -59,12 +61,18 @@ export default function TransferForm({ transfer, setTransfer }: Props) {
   return (
     <form>
       <div className="group relative z-0 mb-6 w-full">
-        <input
-          type="text"
+        <CurrencyFormat
+          format="##/##/####"
+          mask={["M", "M", "D", "D", "Y", "Y", "Y", "Y"]}
+          prefix={"$"}
           id="date_input"
           name="date_input"
           value={dateAsString ?? ""}
-          onChange={(e) => setDateAsString(e.target.value)}
+          onValueChange={(v) => {
+            console.log(v.formattedValue);
+            setDateAsString(v.formattedValue);
+          }}
+          customInput={TBInput}
           className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
           placeholder=" "
         />
