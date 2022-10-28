@@ -1,6 +1,12 @@
 import { Link } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/server-runtime";
+import { redirect } from "@remix-run/server-runtime";
 
 import { useOptionalUser } from "~/utils";
+
+export async function loader({ request }: LoaderArgs) {
+  throw redirect("/plan");
+}
 
 export default function Index() {
   const user = useOptionalUser();
