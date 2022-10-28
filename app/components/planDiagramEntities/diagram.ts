@@ -175,13 +175,25 @@ export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
       e?.object?.name !== "Initial Layout" &&
       e.isTransactionFinished
     ) {
-      const selection = diagram.selection.first();
-      const selectedKey = diagram.selection.first()?.key;
-      recomputeDiagram(diagram, saveModel);
-      const reselectable = diagram.findPartForKey(selectedKey);
-      diagram.select(
-        reselectable ? reselectable : diagram.findPartForKey("JointEstate")
-      );
+      if (
+        ["transfer", "onDeath"].includes(
+          diagram.selection.first()?.data.category
+        )
+      ) {
+        const linkKey = diagram.selection.first()?.data.key;
+        recomputeDiagram(diagram, saveModel);
+        const foundLink = diagram.findLinksByExample({ key: linkKey }).first();
+        diagram.select(
+          foundLink ? foundLink : diagram.findPartForKey("JointEstate")
+        );
+      } else {
+        const selectedKey = diagram.selection.first()?.key;
+        recomputeDiagram(diagram, saveModel);
+        const reselectable = diagram.findPartForKey(selectedKey);
+        diagram.select(
+          reselectable ? reselectable : diagram.findPartForKey("JointEstate")
+        );
+      }
     }
   }
 
