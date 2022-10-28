@@ -1,9 +1,11 @@
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
+import CurrencyFormat from "react-currency-format";
 import type { OnDeath } from "../dataModels/Link";
 import type { ValueType } from "../dataModels/utilities";
 import { Remainder } from "../dataModels/utilities";
 import { Fixed, Portion, ValueTypes } from "../dataModels/utilities";
+import TBInput from "../inputs/TBInput";
 
 export type Props = {
   onDeath: Partial<OnDeath>;
@@ -126,12 +128,16 @@ export default function OnDeathForm({ onDeath, setOnDeath }: Props) {
           type === ValueTypes.Fixed ? "" : "hidden"
         }`}
       >
-        <input
-          type="number"
+        <CurrencyFormat
+          thousandSeparator={true}
+          prefix={"$"}
           name="fixed_value"
           id="fixed_value"
           value={fixedValue ?? ""}
-          onChange={(e) => setFixedValue(e.target.valueAsNumber)}
+          onValueChange={(v) =>
+            setFixedValue(isNaN(v.floatValue) ? 0 : v.floatValue)
+          }
+          customInput={TBInput}
           className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
           placeholder=" "
         />
@@ -148,12 +154,16 @@ export default function OnDeathForm({ onDeath, setOnDeath }: Props) {
           type === ValueTypes.Portion ? "" : "hidden"
         }`}
       >
-        <input
-          type="number"
+        <CurrencyFormat
+          thousandSeparator={true}
+          suffix={"%"}
           name="portion"
           id="portion"
-          value={portion ?? ""}
-          onChange={(e) => setPortion(e.target.valueAsNumber)}
+          value={(portion ?? 0) * 100}
+          onValueChange={(v) =>
+            setPortion(isNaN(v.floatValue) ? 0 : v.floatValue / 100)
+          }
+          customInput={TBInput}
           className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
           placeholder=" "
         />

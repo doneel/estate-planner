@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import type { JointEstate } from "../dataModels/Node";
 import { FirstDeath } from "../dataModels/Node";
 import CurrencyFormat from "react-currency-format";
-import { TextInput } from "flowbite-react";
 import TBInput from "../inputs/TBInput";
 
 export type JointEstateUpdateProps = {
