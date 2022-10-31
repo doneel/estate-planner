@@ -62,10 +62,10 @@ export default function TrustForm({ trust, setTrust }: Props) {
       </div>
       <div className="group relative z-0 mb-6 w-full">
         <label
-          htmlFor="message"
+          htmlFor="notes"
           className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-400"
         >
-          Your message
+          Notes
         </label>
         <textarea
           name="notes"
