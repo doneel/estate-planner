@@ -1,4 +1,5 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { Client, envs } from "stytch";
 import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
@@ -18,6 +19,13 @@ export const sessionStorage = createCookieSessionStorage({
 });
 
 const USER_SESSION_KEY = "userId";
+const STYTCH_SESSION_TOKEN_KEY = "stytch_session_token";
+
+const stytchClient = new Client({
+  project_id: "project-test-28f3f1a5-adca-4cc3-8df2-b0d03979d8cb",
+  secret: "secret-test-_SKPJKAPPpNySw_5vHmAyVzG6IqHF2Rmczk=",
+  env: envs.test,
+});
 
 export async function getSession(request: Request) {
   const cookie = request.headers.get("Cookie");
@@ -29,6 +37,21 @@ export async function getUserId(
 ): Promise<User["id"] | undefined> {
   const session = await getSession(request);
   const userId = session.get(USER_SESSION_KEY);
+  try {
+    const stytchResults = await stytchClient.sessions.authenticate({
+      session_token: session.get(STYTCH_SESSION_TOKEN_KEY),
+      session_duration_minutes: 60 * 8,
+    });
+
+    if (stytchResults.status_code !== 200) {
+      /* Session did not authenticate */
+      return undefined;
+    }
+  } catch (err) {
+    /* Session did not authenticate */
+    console.error("Session error on stytch", err);
+    return undefined;
+  }
   return userId;
 }
 
@@ -66,16 +89,19 @@ export async function requireUser(request: Request) {
 export async function createUserSession({
   request,
   userId,
+  sessionToken,
   remember,
   redirectTo,
 }: {
   request: Request;
   userId: string;
+  sessionToken: string;
   remember: boolean;
   redirectTo: string;
 }) {
   const session = await getSession(request);
   session.set(USER_SESSION_KEY, userId);
+  session.set(STYTCH_SESSION_TOKEN_KEY, sessionToken);
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -89,6 +115,9 @@ export async function createUserSession({
 
 export async function logout(request: Request) {
   const session = await getSession(request);
+  await stytchClient.sessions.revoke({
+    session_token: session.get(STYTCH_SESSION_TOKEN_KEY),
+  });
   return redirect("/", {
     headers: {
       "Set-Cookie": await sessionStorage.destroySession(session),

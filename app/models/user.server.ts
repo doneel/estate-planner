@@ -13,10 +13,18 @@ export async function getUserByEmail(email: User["email"]) {
   return prisma.user.findUnique({ where: { email } });
 }
 
-export async function createUserFromStytch(
+export async function getOrCreateStytchUser(
   stytchUserId: User["stytchUserId"],
   email: User["email"]
-) {}
+) {
+  const maybeUser = await prisma.user.findUnique({
+    where: { stytchUserId },
+  });
+  if (maybeUser === null) {
+    return await prisma.user.create({ data: { stytchUserId, email } });
+  }
+  return maybeUser;
+}
 
 export async function createUser(email: User["email"], password: string) {
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,11 +32,6 @@ export async function createUser(email: User["email"], password: string) {
   return prisma.user.create({
     data: {
       email,
-      password: {
-        create: {
-          hash: hashedPassword,
-        },
-      },
     },
   });
 }
@@ -44,24 +47,21 @@ export async function verifyLogin(
   const userWithPassword = await prisma.user.findUnique({
     where: { email },
     include: {
-      password: true,
+      //password: true,
     },
   });
 
-  if (!userWithPassword || !userWithPassword.password) {
+  if (!userWithPassword) {
     return null;
   }
 
-  const isValid = await bcrypt.compare(
-    password,
-    userWithPassword.password.hash
-  );
+  const isValid = false; //await bcrypt.compare(password);
 
   if (!isValid) {
     return null;
   }
 
-  const { password: _password, ...userWithoutPassword } = userWithPassword;
+  const { ...userWithoutPassword } = userWithPassword;
 
   return userWithoutPassword;
 }
