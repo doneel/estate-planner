@@ -7,6 +7,8 @@ import { getUserId, createUserSession } from "~/session.server";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { Products } from "@stytch/vanilla-js";
+import { StytchLogin } from "@stytch/nextjs";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -15,6 +17,12 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
+  console.log(request.formData);
+  const stytchUserId = request?.body?.userId;
+  const email = request?.body?.email;
+
+  console.log(stytchUserId, email);
+  /*
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
@@ -62,6 +70,7 @@ export async function action({ request }: ActionArgs) {
     remember: false,
     redirectTo,
   });
+  */
 }
 
 export const meta: MetaFunction = () => {
@@ -77,6 +86,38 @@ export default function Join() {
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
 
+  /* Stytch auth */
+  const stytchProps = {
+    config: {
+      products: [Products.emailMagicLinks],
+      emailMagicLinksOptions: {
+        loginRedirectURL: "http://localhost:3000/authenticate",
+        loginExpirationMinutes: 30,
+        signupRedirectURL: "http://localhost:3000/authenticate",
+        signupExpirationMinutes: 30,
+        createUserAsPending: true,
+      },
+    },
+    styles: {
+      //fontFamily: '"Helvetica New", Helvetica, sans-serif',
+      //width: "321px",
+      primaryColor: "#3B82F6",
+      container: {
+        borderColor: "#f3f4f6",
+      },
+      buttons: {
+        primary: {
+          backgroundColor: "#3B82F6",
+        },
+      },
+    },
+    callbacks: {
+      onEvent: (message) => console.log("onEvent", message),
+      onSuccess: (message) => console.log("onSuccess", message),
+      onError: (message) => console.log("onError", message),
+    },
+  };
+
   React.useEffect(() => {
     if (actionData?.errors?.email) {
       emailRef.current?.focus();
@@ -88,6 +129,11 @@ export default function Join() {
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
+        <StytchLogin
+          config={stytchProps.config}
+          styles={stytchProps.styles}
+          callbacks={stytchProps.callbacks}
+        />
         <Form method="post" className="space-y-6">
           <div>
             <label
