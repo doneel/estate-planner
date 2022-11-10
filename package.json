@@ -34,6 +34,9 @@
     "@remix-run/react": "^1.7.2",
     "@remix-run/serve": "^1.7.2",
     "@remix-run/server-runtime": "^1.7.2",
+    "@stytch/nextjs": "^0.5.0",
+    "@stytch/react": "^0.5.0",
+    "@stytch/vanilla-js": "^0.5.1",
     "bcryptjs": "^2.4.3",
     "flowbite": "^1.5.3",
     "flowbite-react": "^0.2.0",
@@ -42,6 +45,7 @@
     "react": "^18.2.0",
     "react-currency-format": "^1.1.0",
     "react-dom": "^18.2.0",
+    "stytch": "^5.15.0",
     "tiny-invariant": "^1.2.0",
     "typescript-json-serializer": "^5.0.0"
   },

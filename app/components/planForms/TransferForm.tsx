@@ -77,7 +77,6 @@ export default function TransferForm({ transfer, setTransfer }: Props) {
           name="date_input"
           value={dateAsString ?? ""}
           onValueChange={(v) => {
-            console.log(v.formattedValue);
             setDateAsString(v.formattedValue);
           }}
           customInput={TBInput}
