@@ -4,6 +4,7 @@ import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
+import { stytchClient } from "./stytch.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -20,12 +21,6 @@ export const sessionStorage = createCookieSessionStorage({
 
 const USER_SESSION_KEY = "userId";
 const STYTCH_SESSION_TOKEN_KEY = "stytch_session_token";
-
-const stytchClient = new Client({
-  project_id: "project-test-28f3f1a5-adca-4cc3-8df2-b0d03979d8cb",
-  secret: "secret-test-_SKPJKAPPpNySw_5vHmAyVzG6IqHF2Rmczk=",
-  env: envs.test,
-});
 
 export async function getSession(request: Request) {
   const cookie = request.headers.get("Cookie");

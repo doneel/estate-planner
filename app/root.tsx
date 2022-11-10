@@ -7,12 +7,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchProvider } from "@stytch/nextjs";
+import type { User } from "@stytch/vanilla-js";
 
 export const links: LinksFunction = () => {
   return [
@@ -33,13 +35,15 @@ export const meta: MetaFunction = () => ({
 export async function loader({ request }: LoaderArgs) {
   return json({
     user: await getUser(request),
+    ENV: {
+      STYTCH_PROJECT_ID: process.env.STYTCH_PROJECT_ID || "",
+    },
   });
 }
 
 export default function App() {
-  const stytch = createStytchUIClient(
-    "public-token-test-632e8545-56ef-4b0b-9a8b-e4c9d37a2baf"
-  );
+  const data = useLoaderData<typeof loader>();
+  const stytch = createStytchUIClient(data.ENV.STYTCH_PROJECT_ID);
   return (
     <html lang="en" className="h-full">
       <head>

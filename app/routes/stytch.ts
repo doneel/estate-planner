@@ -3,6 +3,7 @@ import { Response, json } from "@remix-run/node";
 
 import { Client, envs } from "stytch";
 import { getOrCreateStytchUser } from "~/models/user.server";
+import { stytchClient } from "~/stytch.server";
 
 export type AuthResults = {
   userId: string;
@@ -15,11 +16,7 @@ export async function loader({ request, params }: LoaderArgs) {
   if (token === null) {
     console.error("No token supplied. Authentication will fail.");
   }
-  const client = new Client({
-    project_id: "project-test-28f3f1a5-adca-4cc3-8df2-b0d03979d8cb",
-    secret: "secret-test-_SKPJKAPPpNySw_5vHmAyVzG6IqHF2Rmczk=",
-    env: envs.test,
-  });
+  const client = stytchClient;
 
   return client.magicLinks
     .authenticate(token ?? "", { session_duration_minutes: 60 * 8 })
