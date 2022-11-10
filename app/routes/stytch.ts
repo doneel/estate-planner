@@ -1,7 +1,6 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { Response, json } from "@remix-run/node";
 
-import { Client, envs } from "stytch";
 import { getOrCreateStytchUser } from "~/models/user.server";
 import { stytchClient } from "~/stytch.server";
 

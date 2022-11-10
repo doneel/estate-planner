@@ -3,6 +3,7 @@ import { json, redirect } from "@remix-run/node";
 
 import { getUserId } from "~/session.server";
 import { StytchLogin } from "@stytch/nextjs";
+import type { StytchError, StytchEvent } from "@stytch/vanilla-js";
 import { Products } from "@stytch/vanilla-js";
 
 export async function loader({ request }: LoaderArgs) {
@@ -44,9 +45,9 @@ export default function LoginPage() {
       },
     },
     callbacks: {
-      onEvent: (message) => console.log("onEvent", message),
-      onSuccess: (message) => console.log("onSuccess", message),
-      onError: (message) => console.log("onError", message),
+      onEvent: (message: StytchEvent) => console.log("onEvent", message),
+      onSuccess: (message: StytchEvent) => console.log("onSuccess", message),
+      onError: (message: StytchError) => console.log("onError", message),
     },
   };
 
