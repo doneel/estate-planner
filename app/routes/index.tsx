@@ -5,6 +5,7 @@ import Navbar from "~/components/header/Navbar";
 import { Link as ScrollLink } from "react-scroll";
 import { useOptionalUser } from "~/utils";
 import BrowserOnly from "../components/BrowserOnly";
+import GlobalFooter from "~/components/footer/GlobalFooter";
 
 export async function loader({ request }: LoaderArgs) {
   //throw redirect("/plan");
@@ -17,7 +18,7 @@ export default function Index() {
     <>
       <Navbar></Navbar>
       <main className="relative min-h-screen w-full bg-slate-50 sm:items-center sm:justify-center">
-        <div className="relative sm:pb-16 sm:pt-8">
+        <div className="sm:pb-8 sm:pt-8">
           <section className="bg-slate-50 dark:bg-gray-900">
             <div className="mx-auto grid max-w-screen-xl px-4 py-8 lg:grid-cols-12 lg:gap-8 lg:py-16 xl:gap-0">
               <div className="mr-auto place-self-center lg:col-span-7">
@@ -75,6 +76,7 @@ export default function Index() {
             />
           </div>
         </div>
+        <GlobalFooter />
       </main>
     </>
   );

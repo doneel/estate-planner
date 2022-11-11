@@ -6,7 +6,6 @@ import { getUserId } from "~/session.server";
 export async function loader({ request }: LoaderArgs) {
   //throw redirect("/plan");
   const userId = await getUserId(request);
-
   return json({ userId: userId });
 }
 
@@ -17,7 +16,7 @@ export default function Navbar() {
     <header>
       <nav className="border-b border-gray-200 bg-white px-4 py-2.5 dark:bg-gray-800 lg:px-6">
         <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between">
-          <Link to="https://flowbite.com" className="flex items-center">
+          <Link to={process.env.HOST} className="flex items-center">
             <img
               src="https://flowbite.com/docs/images/logo.svg"
               className="mr-3 h-6 sm:h-9"

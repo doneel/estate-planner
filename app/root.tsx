@@ -14,6 +14,7 @@ import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchProvider } from "@stytch/nextjs";
+import GlobalFooter from "./components/footer/GlobalFooter";
 
 export const links: LinksFunction = () => {
   return [
