@@ -46,7 +46,7 @@ export default function Plan() {
   async function newDiagram() {
     if (diagram !== undefined) {
       diagram.model = defaultModel();
-      recomputeDiagram(diagram, setSavedPlan);
+      recomputeDiagram(diagram, () => {});
       setSelectedItemForm(<></>);
     }
   }
