@@ -41,9 +41,12 @@ export async function getUserId(
       /* Session did not authenticate */
       return undefined;
     }
-  } catch (err) {
+  } catch (err: any) {
+    if (err.status_code != 404) {
+      /* Swallow expected case of no session found */
+      console.error("Session error on stytch", err);
+    }
     /* Session did not authenticate */
-    console.error("Session error on stytch", err);
     return undefined;
   }
   return userId;

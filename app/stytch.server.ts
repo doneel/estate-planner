@@ -16,4 +16,5 @@ export const stytchClient = new Client({
   project_id: process.env.STYTCH_PROJECT_ID || "STYTCH_PROJECT_ID_MISSING",
   secret: process.env.STYTCH_SECRET || "STYTCH_SECRET_MISSING",
   env: process.env.STYTCH_ENV === "live" ? envs.live : envs.test,
+  timeout: 100,
 });

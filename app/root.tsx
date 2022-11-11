@@ -14,7 +14,7 @@ import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchProvider } from "@stytch/nextjs";
-import type { User } from "@stytch/vanilla-js";
+import GlobalFooter from "./components/footer/GlobalFooter";
 
 export const links: LinksFunction = () => {
   return [
@@ -36,14 +36,14 @@ export async function loader({ request }: LoaderArgs) {
   return json({
     user: await getUser(request),
     ENV: {
-      STYTCH_PROJECT_ID: process.env.STYTCH_PROJECT_ID || "",
+      STYTCH_PUBLIC_TOKEN: process.env.STYTCH_PUBLIC_TOKEN || "",
     },
   });
 }
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
-  const stytch = createStytchUIClient(data.ENV.STYTCH_PROJECT_ID);
+  const stytch = createStytchUIClient(data.ENV.STYTCH_PUBLIC_TOKEN);
   return (
     <html lang="en" className="h-full">
       <head>
@@ -56,6 +56,7 @@ export default function App() {
         </StytchProvider>
         <ScrollRestoration />
         <Scripts />
+        <script src="https://unpkg.com/flowbite@1.5.3/dist/flowbite.js"></script>
         <LiveReload />
       </body>
     </html>
