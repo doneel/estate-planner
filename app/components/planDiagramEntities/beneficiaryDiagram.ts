@@ -1,5 +1,6 @@
 import * as go from "gojs";
 import type { Beneficiary } from "../dataModels/Node";
+import { withSuffix } from "../dataModels/utilities";
 
 export function updateBeneficiaryEntity(
   diagram: go.Diagram,
@@ -53,5 +54,9 @@ export const BeneficiaryDiagram = new go.Node("Vertical", {
       stroke: "gray",
       font: "bold 20pt sans-serif",
       editable: true,
-    }).bind("text", "key")
+    }).bind(
+      "text",
+      "",
+      (o) => `${o.key} ${o.inflows ? "($" + withSuffix(o.inflows) + ")" : ""}`
+    )
   );

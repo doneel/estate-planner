@@ -30,7 +30,11 @@ export default function DiagramControls({ diagram }: Props) {
                 category: NodeType.Trust,
               };
               m.addNodeData(nodeData);
-              diagram.select(diagram.findNodeForData(nodeData));
+              const node = diagram.findNodeForData(nodeData);
+              diagram.select(node);
+              if (node !== null) {
+                diagram.centerRect(node.actualBounds);
+              }
             }, "Add a new trust");
           }
         }}

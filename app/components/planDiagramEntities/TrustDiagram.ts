@@ -40,6 +40,9 @@ function onDissolution(e: go.InputEvent, button: go.GraphObject) {
 }
 
 export const TrustDiagram = new go.Node("Vertical", {
+  selectionChanged: (e: go.Part) => {
+    e.isHighlighted = !e.isHighlighted;
+  },
   selectionAdornmentTemplate: new go.Adornment("Spot", {
     layerName: "Tool",
     alignment: go.Spot.Bottom,
@@ -92,6 +95,16 @@ export const TrustDiagram = new go.Node("Vertical", {
           strokeWidth: 1,
           fill: "#f2f2f9",
         })
+          .bind(
+            new go.Binding("stroke", "", (e) => {
+              return e.isHighlighted ? "blue" : "black";
+            }).ofObject()
+          )
+          .bind(
+            new go.Binding("strokeWidth", "", (e) => {
+              return e.isHighlighted ? 2 : 1;
+            }).ofObject()
+          )
       )
       .add(
         new go.Panel("Vertical", { margin: 16, maxSize: new go.Size(500, NaN) })
