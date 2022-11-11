@@ -46,7 +46,7 @@ export default function FullPageWorkspace() {
   async function newDiagram() {
     if (diagram !== undefined) {
       diagram.model = defaultModel();
-      recomputeDiagram(diagram, () => {});
+      recomputeDiagram(diagram, undefined);
       setSelectedItemForm(<></>);
     }
   }
@@ -54,26 +54,6 @@ export default function FullPageWorkspace() {
   return (
     <div className="flex h-full flex-col">
       <h1 className="mx-auto text-4xl">New estate plan</h1>
-      <div className="mx-auto my-4 space-x-8">
-        <button
-          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          onClick={addBeneficiary}
-        >
-          Add beneficiary
-        </button>
-        <button
-          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          onClick={addTrust}
-        >
-          Add trust
-        </button>
-        <button
-          className="w-48 rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          onClick={newDiagram}
-        >
-          Start over
-        </button>
-      </div>
       <LocallySavedWorkspace
         diagramDivId="myDiagramDiv"
         diagram={diagram}
