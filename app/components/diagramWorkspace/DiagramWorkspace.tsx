@@ -1,5 +1,6 @@
 import type { Diagram } from "gojs";
 import React from "react";
+import DiagramControls from "../inputs/DiagramControls";
 import BeneficiarySidebar from "../planSidebars/BeneficiarySidebar";
 import JointEstateSidebar from "../planSidebars/JointEstateSidebar";
 import OnDeathSidebar from "../planSidebars/OnDeathSidebar";
@@ -94,10 +95,12 @@ export default function DiagramWorkspace({
       <div className="h-full min-h-screen w-320 resize-x overflow-auto px-8 pt-8">
         {sidebarContent}
       </div>
-      <div
-        id={diagramDivId}
-        className="min-h-full grow border-l border-gray-300"
-      ></div>
+      <div className="min-h-full grow border-l border-gray-300">
+        <div className="absolute z-10 mt-16 ml-16">
+          {diagram ? <DiagramControls diagram={diagram} /> : <></>}
+        </div>
+        <div id={diagramDivId} className="min-h-full"></div>
+      </div>
     </div>
   );
 }
