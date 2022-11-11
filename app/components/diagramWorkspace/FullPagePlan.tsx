@@ -4,7 +4,7 @@ import { defaultModel } from "~/components/planDiagramEntities/diagram";
 import { NodeType } from "../dataModels/Node";
 import LocallySavedWorkspace from "./LocallySavedWorkspace";
 
-export default function Plan() {
+export default function FullPageWorkspace() {
   const [diagram, setDiagram] = React.useState<go.Diagram | undefined>(
     undefined
   );

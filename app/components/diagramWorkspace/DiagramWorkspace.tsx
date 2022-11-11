@@ -89,6 +89,8 @@ export default function DiagramWorkspace({
     initialize();
   });
 
+  console.log(sidebarContent);
+
   return (
     <div className="flex h-screen w-full">
       <div className="h-full min-h-screen w-320 resize-x overflow-auto px-8 pt-8">
