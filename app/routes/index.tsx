@@ -1,9 +1,8 @@
 import { Link } from "@remix-run/react";
 import type { LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
-import { redirect } from "@remix-run/server-runtime";
 import Navbar from "~/components/header/Navbar";
-
+import { Link as ScrollLink } from "react-scroll";
 import { useOptionalUser } from "~/utils";
 import BrowserOnly from "../components/BrowserOnly";
 
@@ -17,9 +16,9 @@ export default function Index() {
   return (
     <>
       <Navbar></Navbar>
-      <main className="relative min-h-screen w-full bg-white sm:items-center sm:justify-center">
+      <main className="relative min-h-screen w-full bg-slate-50 sm:items-center sm:justify-center">
         <div className="relative sm:pb-16 sm:pt-8">
-          <section className="bg-white dark:bg-gray-900">
+          <section className="bg-slate-50 dark:bg-gray-900">
             <div className="mx-auto grid max-w-screen-xl px-4 py-8 lg:grid-cols-12 lg:gap-8 lg:py-16 xl:gap-0">
               <div className="mr-auto place-self-center lg:col-span-7">
                 <h1 className="mb-4 max-w-2xl text-4xl font-extrabold leading-none tracking-tight dark:text-white md:text-5xl xl:text-6xl">
@@ -30,8 +29,10 @@ export default function Index() {
                   estate attorneys use Mandos Estates to explain their
                   recommendations and help clients make decisions.
                 </p>
-                <Link
-                  to="#homepageDemo"
+                <ScrollLink
+                  smooth={true}
+                  spy={true}
+                  to="homepageDemo"
                   className="hover:bg-primary-800 focus:ring-primary-300 dark:focus:ring-primary-900 mr-3 inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-3 text-center text-base font-medium text-white focus:ring-4"
                 >
                   Try it now
@@ -47,7 +48,7 @@ export default function Index() {
                       clipRule="evenodd"
                     ></path>
                   </svg>
-                </Link>
+                </ScrollLink>
                 <Link
                   to="#"
                   className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-center text-base font-medium text-gray-900 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-800"
@@ -63,7 +64,10 @@ export default function Index() {
               </div>
             </div>
           </section>
-          <div id="homepageDemo">
+          <div
+            id="homepageDemo"
+            className="mx-1 border border-gray-300 bg-white"
+          >
             <BrowserOnly
               importElementFn={() =>
                 import("~/components/diagramWorkspace/EmbeddableDemo")

@@ -1,5 +1,4 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { StytchError } from "@stytch/vanilla-js";
 import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";

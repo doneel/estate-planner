@@ -14,16 +14,14 @@ import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchProvider } from "@stytch/nextjs";
-import type { User } from "@stytch/vanilla-js";
 
 export const links: LinksFunction = () => {
   return [
     { rel: "stylesheet", href: tailwindStylesheetUrl },
-    /*    {
+    {
       rel: "stylesheet",
       href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css",
     },
-    */
   ];
 };
 
@@ -57,6 +55,7 @@ export default function App() {
         </StytchProvider>
         <ScrollRestoration />
         <Scripts />
+        <script src="https://unpkg.com/flowbite@1.5.3/dist/flowbite.js"></script>
         <LiveReload />
       </body>
     </html>

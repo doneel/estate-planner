@@ -91,12 +91,12 @@ export default function DiagramWorkspace({
 
   return (
     <div className="flex h-screen w-full">
-      <div className="h-full min-h-screen w-320 resize-x overflow-auto px-8">
+      <div className="h-full min-h-screen w-320 resize-x overflow-auto px-8 pt-8">
         {sidebarContent}
       </div>
       <div
         id={diagramDivId}
-        className="min-h-full grow border border-gray-700"
+        className="min-h-full grow border-l border-gray-300"
       ></div>
     </div>
   );
