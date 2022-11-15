@@ -36,6 +36,15 @@ export function updateOwnerEntity(
   owner: Partial<Owner>
 ) {
   diagram?.startTransaction(`Update ${owner.key}`);
+  /* Update the joint estate */
+  const jointEstateData = diagram.findNodeForKey("JointEstate")?.data;
+  if (jointEstateData.husband.key === ownerEntity.key) {
+    diagram.model.setDataProperty(jointEstateData.husband, "key", owner.key);
+  } else if (jointEstateData.wife.key === ownerEntity.key) {
+    diagram.model.setDataProperty(jointEstateData.wife, "key", owner.key);
+  }
+
+  /* Update self */
   Object.entries(owner).forEach(([key, value]) => {
     diagram.model.setDataProperty(ownerEntity?.data, key, value);
   });

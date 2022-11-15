@@ -17,6 +17,7 @@ import { isOnDeath } from "./Link";
 import { isTransfer, Transfer } from "./Link";
 import { LinkType, linkTypeDiscriminatorFn } from "./Link";
 import type { Node, NodeTypesUnion } from "./Node";
+import { isStickynote, Stickynote } from "./Node";
 import { isBands, RecipientMap } from "./Node";
 import { Trust } from "./Node";
 import { isTrust } from "./Node";
@@ -201,6 +202,8 @@ export function deserializeNode(blob: any): NodeTypesUnion | undefined {
     node = defaultSerializer.deserialize(blob, JointEstate);
   } else if (isTrust(blob)) {
     node = defaultSerializer.deserialize(blob, Trust);
+  } else if (isStickynote(blob)) {
+    node = defaultSerializer.deserialize(blob, Stickynote);
   }
 
   if (node === undefined || node === null || node instanceof Array) {
