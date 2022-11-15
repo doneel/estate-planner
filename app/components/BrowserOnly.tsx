@@ -15,12 +15,7 @@ export type Props = {
 };
 
 export default function BrowserOnly({ importElementFn }: Props) {
-  //let PlanComponent = lazy(() => import("./FullPagePlan"));
-  //console.log(childModule);
-  //const x = "~/components/FullPagePlan";
-  //let PlanComponent2 = lazy(() => import("~/components/FullPagePlan"));
   let PlanComponent = lazy(importElementFn);
-  //let PlanComponent = lazy(() => x);
   return (
     <>
       <ClientOnly>

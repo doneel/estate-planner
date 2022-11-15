@@ -15,6 +15,7 @@ import { getUser } from "./session.server";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchProvider } from "@stytch/nextjs";
 import GlobalFooter from "./components/footer/GlobalFooter";
+import { Fullstory } from "./components/utils/fullstory";
 
 export const links: LinksFunction = () => {
   return [
@@ -49,6 +50,7 @@ export default function App() {
       <head>
         <Meta />
         <Links />
+        <Fullstory />
       </head>
       <body className="h-full">
         <StytchProvider stytch={stytch}>
