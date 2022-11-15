@@ -132,11 +132,8 @@ export default function JointEstateForm({
         </label>
       </div>
       <div data-tooltip-target="state-portions">
-        <div
-          data-tooltip-target="state-portions"
-          className="grid md:grid-cols-2 md:gap-6"
-        >
-          <div className="group relative z-0  w-full">
+        <div className="grid md:grid-cols-2 md:gap-6">
+          <div className="group relative z-0 mb-6 w-full">
             <label
               htmlFor="state"
               //className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-400"
@@ -177,7 +174,7 @@ export default function JointEstateForm({
             </label>
           </div>
         </div>
-        <div className="flex w-full items-center justify-center py-4">
+        <div className="flex w-full items-center justify-center py-6 lg:pt-0 lg:pb-8">
           <button
             type="button"
             disabled

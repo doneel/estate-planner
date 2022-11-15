@@ -6,6 +6,9 @@ module.exports = {
       width: {
         '320': '32rem',
         '640': '64rem',
+      },
+      height: {
+        'screen-75': '75vh'
       }
     },
   },

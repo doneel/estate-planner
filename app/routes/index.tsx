@@ -26,9 +26,9 @@ export default function Index() {
                   Estate planning tools for attorneys who care.
                 </h1>
                 <p className="mb-6 max-w-2xl font-light text-gray-500 dark:text-gray-400 md:text-lg lg:mb-8 lg:text-xl">
-                  From diagramming to tax calculating to scenario planning,
-                  estate attorneys use Mandos Estates to explain their
-                  recommendations and help clients make decisions.
+                  From diagramming to scenario planning, estate attorneys use
+                  Mandos Estates to explain their recommendations and help
+                  clients make decisions.
                 </p>
                 <ScrollLink
                   smooth={true}
