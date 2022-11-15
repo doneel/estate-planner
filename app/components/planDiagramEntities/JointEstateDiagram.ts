@@ -1,6 +1,6 @@
 import * as go from "gojs";
-import { LinkType, OnDeath } from "../dataModels/Link";
-import { ValueTypes, withSuffix } from "../dataModels/utilities";
+import { OnDeath } from "../dataModels/Link";
+import { withSuffix } from "../dataModels/utilities";
 import type { JointEstateUpdateProps } from "../planForms/JointEstateForm";
 
 export function updateJointEstateEntity(

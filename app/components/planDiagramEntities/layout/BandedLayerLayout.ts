@@ -1,4 +1,5 @@
 import * as go from "gojs";
+import { isStickynote, NodeType } from "~/components/dataModels/Node";
 
 export default class BandedLayerLayout extends go.LayeredDigraphLayout {
   doLayout(coll: go.Diagram | go.Group | go.Iterable<go.Part>) {

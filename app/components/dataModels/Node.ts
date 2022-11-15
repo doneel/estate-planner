@@ -1,4 +1,5 @@
 import { JsonObject, JsonProperty } from "typescript-json-serializer";
+import { StickynoteDiagram } from "../planDiagramEntities/Stickynote";
 import { calculateFederalGiftTax } from "./calculators/federalGiftTax";
 import { processValues } from "./calculators/linkValues";
 import {
@@ -18,6 +19,7 @@ export enum NodeType {
   JointEstate = "JointEstate",
   Bands = "Bands",
   Trust = "Trust",
+  Stickynote = "Stickynote",
 }
 
 export enum FirstDeath {
@@ -25,7 +27,13 @@ export enum FirstDeath {
   Wife = "Wife",
 }
 
-export type NodeTypesUnion = Beneficiary | Owner | JointEstate | Bands | Trust;
+export type NodeTypesUnion =
+  | Beneficiary
+  | Owner
+  | JointEstate
+  | Bands
+  | Trust
+  | Stickynote;
 
 export const nodeType = (node: Node) => {
   switch (node.category) {
@@ -39,6 +47,8 @@ export const nodeType = (node: Node) => {
       return Bands;
     case NodeType.Trust:
       return Trust;
+    case NodeType.Stickynote:
+      return Stickynote;
   }
 };
 
@@ -81,7 +91,15 @@ export function isBands(
 }
 
 export function isAssetHolder(node: Node): node is AssetHolder {
-  return node.category !== NodeType.Bands;
+  return [
+    NodeType.Owner,
+    NodeType.JointEstate,
+    NodeType.Trust,
+    NodeType.Beneficiary,
+  ].includes(node.category);
+}
+export function isStickynote(node: Node): node is Stickynote {
+  return node.category === NodeType.Stickynote;
 }
 
 export interface ProcessesCashflows {
@@ -96,6 +114,16 @@ export class Node implements NodeInterface {
   // @ts-ignore
   @JsonProperty() location: string;
   @JsonProperty() visible: boolean = true;
+}
+
+@JsonObject()
+export class Stickynote extends Node {
+  @JsonProperty({ required: true }) category: NodeType.Stickynote =
+    NodeType.Stickynote;
+  // @ts-ignore
+  @JsonProperty({ required: true }) text: string;
+  // @ts-ignore
+  @JsonProperty({}) size: string;
 }
 
 @JsonObject()
@@ -243,8 +271,24 @@ export class TaxPayer extends AssetHolder implements TaxPayerInterface {
 }
 
 @JsonObject()
+export class Bounds {
+  @JsonProperty({ required: true }) x: string = "";
+  @JsonProperty({ required: true }) y: string = "";
+  @JsonProperty({ required: true }) width: string = "";
+  @JsonProperty({ required: true }) height: string = "";
+}
+
+@JsonObject()
 export class BandItem {
   @JsonProperty({ required: true }) text: string = "";
+  @JsonProperty({
+    /* add in class: bound field */
+    afterSerialize: (prop, currentInstance) => {
+      return { class: "go.Rect", ...prop };
+    },
+  })
+  // @ts-ignore
+  bounds: Bounds;
 }
 
 @JsonObject()

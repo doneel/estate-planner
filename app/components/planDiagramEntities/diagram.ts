@@ -31,6 +31,7 @@ import BandedLayerLayout from "./layout/BandedLayerLayout";
 import { BandsDiagram } from "./layout/BandsDiagram";
 import type React from "react";
 import { TrustDiagram, updateTrustEntity } from "./TrustDiagram";
+import { StickynoteDiagram } from "./Stickynote";
 
 export type ModelType =
   | Owner
@@ -215,6 +216,7 @@ export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
   diagram.nodeTemplateMap.add(NodeType.JointEstate, JointEstateDiagram);
   diagram.nodeTemplateMap.add(NodeType.Bands, BandsDiagram);
   diagram.nodeTemplateMap.add(NodeType.Trust, TrustDiagram);
+  diagram.nodeTemplateMap.add(NodeType.Stickynote, StickynoteDiagram);
   diagram.linkTemplate = new go.Link({}).add(new go.Shape({ strokeWidth: 5 }));
   diagram.linkTemplateMap.add("transfer", TransferDiagram);
   diagram.linkTemplateMap.add("onDeath", OnDeathDiagram);
