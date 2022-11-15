@@ -2,7 +2,7 @@ import go from "gojs";
 import { useEffect } from "react";
 import { recomputeDiagram } from "../dataModels/Model";
 import { NodeType } from "../dataModels/Node";
-import { defaultModel } from "../planDiagramEntities/diagram";
+import { defaultStartingModel } from "../planDiagramEntities/diagram";
 import DiagramControlButton from "./DiagramControlButton";
 
 export type Props = {
@@ -162,7 +162,7 @@ export default function DiagramControls({ diagram }: Props) {
         svgPath="/images/reset.svg"
         tooltipText="Start over"
         onClick={() => {
-          diagram.model = defaultModel();
+          diagram.model = defaultStartingModel();
           recomputeDiagram(diagram, undefined);
         }}
       />

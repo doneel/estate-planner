@@ -70,7 +70,7 @@ export const TransferDiagram = new go.Link({
                   alignment: go.Spot.TopRight,
                   desiredSize: new go.Size(24, 24),
                   opacity: 0.4,
-                }).bind("opacity", "charitable", (isGift) => (isGift ? 0.4 : 0))
+                })
               )
               .add(
                 new go.TextBlock("", {

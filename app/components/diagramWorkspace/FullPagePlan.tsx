@@ -1,6 +1,6 @@
 import React from "react";
 import { recomputeDiagram } from "~/components/dataModels/Model";
-import { defaultModel } from "~/components/planDiagramEntities/diagram";
+import { defaultStartingModel } from "~/components/planDiagramEntities/diagram";
 import { NodeType } from "../dataModels/Node";
 import LocallySavedWorkspace from "./LocallySavedWorkspace";
 
@@ -45,7 +45,7 @@ export default function FullPageWorkspace() {
 
   async function newDiagram() {
     if (diagram !== undefined) {
-      diagram.model = defaultModel();
+      diagram.model = defaultStartingModel();
       recomputeDiagram(diagram, undefined);
       setSelectedItemForm(<></>);
     }
