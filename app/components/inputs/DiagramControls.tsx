@@ -2,7 +2,7 @@ import go from "gojs";
 import { useEffect } from "react";
 import { recomputeDiagram } from "../dataModels/Model";
 import { NodeType } from "../dataModels/Node";
-import { defaultModel } from "../planDiagramEntities/diagram";
+import { defaultStartingModel } from "../planDiagramEntities/diagram";
 import DiagramControlButton from "./DiagramControlButton";
 
 export type Props = {
@@ -24,6 +24,7 @@ export default function DiagramControls({ diagram }: Props) {
     /* Set drag icon to look like the image we're going to dro in */
     const dragIcon = document.createElement("img");
     dragIcon.src = "/images/rendered-stickynote.png";
+    dragIcon.style.top = "-1000px";
     dragIcon.style.position = "absolute";
     document.body.appendChild(dragIcon);
     event.dataTransfer?.setDragImage(dragIcon, 0, 0);
@@ -162,7 +163,7 @@ export default function DiagramControls({ diagram }: Props) {
         svgPath="/images/reset.svg"
         tooltipText="Start over"
         onClick={() => {
-          diagram.model = defaultModel();
+          diagram.model = defaultStartingModel();
           recomputeDiagram(diagram, undefined);
         }}
       />

@@ -30,7 +30,7 @@ export const StickynoteDiagram = new go.Node("Auto", {
       cursor: "text",
       font: "14pt sans-serif",
       editable: true,
-      wrap: go.TextBlock.WrapBreakAll,
+      wrap: go.TextBlock.WrapDesiredSize,
       overflow: go.TextBlock.OverflowEllipsis,
     }).bind(new go.Binding("text", "text").makeTwoWay())
   );

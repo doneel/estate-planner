@@ -32,6 +32,7 @@ import { BandsDiagram } from "./layout/BandsDiagram";
 import type React from "react";
 import { TrustDiagram, updateTrustEntity } from "./TrustDiagram";
 import { StickynoteDiagram } from "./Stickynote";
+import { defaultExampleModel } from "../dataModels/examples";
 
 export type ModelType =
   | Owner
@@ -51,7 +52,7 @@ export type Props = {
   saveModel: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
-export function defaultModel() {
+export function defaultStartingModel() {
   const wife = new Owner("Wife");
   const husband = new Owner("Husband");
 
@@ -224,7 +225,7 @@ export async function initDiagram({ setSidebar, modelJson, saveModel }: Props) {
   if (modelJson) {
     diagram.model = go.Model.fromJson(modelJson);
   } else {
-    diagram.model = defaultModel();
+    diagram.model = defaultExampleModel();
   }
   diagram.undoManager.isEnabled = true;
   recomputeDiagram(diagram, saveModel);
