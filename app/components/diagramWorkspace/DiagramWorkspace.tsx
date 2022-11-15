@@ -7,6 +7,9 @@ import OnDeathSidebar from "../planSidebars/OnDeathSidebar";
 import OwnerSidebar from "../planSidebars/OwnerSidebar";
 import TransferSidebar from "../planSidebars/TransferSidebar";
 import TrustSidebar from "../planSidebars/TrustSidebar";
+import { initDiagram } from "~/components/planDiagramEntities/diagram";
+import { getStylesheetPrefetchLinks } from "@remix-run/react/dist/links";
+import { waitForDebugger } from "inspector";
 
 export type Props = {
   diagramDivId: string;
@@ -29,12 +32,9 @@ export default function DiagramWorkspace({
 }: Props) {
   React.useEffect(() => {
     async function initialize() {
-      const diagramEntity = await import(
-        "~/components/planDiagramEntities/diagram"
-      );
       if (diagram === undefined) {
         setDiagram(
-          await diagramEntity.initDiagram({
+          await initDiagram({
             setSidebar: ({ entity, updateCallback }) => {
               switch (entity.category) {
                 case "Owner":
@@ -91,7 +91,7 @@ export default function DiagramWorkspace({
   });
 
   return (
-    <div className="flex min-h-screen w-full flex-col lg:flex-row">
+    <div className="flex w-full flex-col lg:flex-row">
       <div
         id="mobile-warning"
         className="max-w-s flex w-full items-center rounded-lg bg-white p-4 text-gray-500 shadow dark:bg-gray-800 dark:text-gray-400 lg:hidden"
@@ -140,11 +140,11 @@ export default function DiagramWorkspace({
         </button>
       </div>
 
-      <div className="h-full max-h-screen grow border-b border-gray-300 lg:order-2 lg:max-h-screen lg:border-l">
+      <div className="h-[75vh] grow border-b border-gray-300 lg:order-2 lg:h-screen lg:border-l">
         <div className="absolute z-10 mt-16 ml-16">
           {diagram ? <DiagramControls diagram={diagram} /> : <></>}
         </div>
-        <div id={diagramDivId} className="h-screen-75 lg:min-h-screen"></div>
+        <div id={diagramDivId} className="h-full lg:min-h-screen"></div>
       </div>
       <div className="h-full resize-x overflow-auto px-8 py-8 lg:order-1 lg:w-320">
         {sidebarContent}
