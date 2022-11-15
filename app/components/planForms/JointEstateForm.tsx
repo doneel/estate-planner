@@ -53,6 +53,14 @@ export default function JointEstateForm({
   const [firstDeath, setFirstDeath] = useState(jointEstate.firstDeath);
   useEffect(() => setFirstDeath(jointEstate.firstDeath), [jointEstate]);
 
+  useEffect(() => {
+    async function importFlowbite() {
+      // @ts-ignore
+      await import("../../../node_modules/flowbite/dist/flowbite");
+    }
+    importFlowbite();
+  });
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setJointEstate({
@@ -122,6 +130,88 @@ export default function JointEstateForm({
         >
           Common property value
         </label>
+      </div>
+      <div data-tooltip-target="state-portions">
+        <div
+          data-tooltip-target="state-portions"
+          className="grid md:grid-cols-2 md:gap-6"
+        >
+          <div className="group relative z-0  w-full">
+            <label
+              htmlFor="state"
+              //className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-400"
+              className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500"
+            >
+              State
+            </label>
+            <select
+              id="state"
+              disabled
+              //className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
+              defaultValue={"WA"}
+            >
+              <option value="WA">Washington</option>
+              <option value="CA">California</option>
+              <option value="NY">New York</option>
+              <option value="OR">Oregon</option>
+            </select>
+          </div>
+          <div className="group relative z-0 w-full">
+            <CurrencyFormat
+              thousandSeparator={true}
+              suffix={"%"}
+              disabled={true}
+              name="portion"
+              id="portion"
+              value={100}
+              customInput={TBInput}
+              className="disabled peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent py-2.5 px-0 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
+              placeholder=" "
+            />
+            <label
+              htmlFor="common_property_value"
+              className="absolute top-3 -z-10 origin-[0] -translate-y-6 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-0 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:font-medium peer-focus:text-blue-600 dark:text-gray-400 peer-focus:dark:text-blue-500"
+            >
+              Division of property value
+            </label>
+          </div>
+        </div>
+        <div className="flex w-full items-center justify-center py-4">
+          <button
+            type="button"
+            disabled
+            className="mr-2 inline-flex items-center rounded-full bg-gray-200 p-0.5 text-center text-sm font-medium text-white hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-gray-400 dark:focus:ring-blue-800"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              ></path>
+            </svg>
+            <span className="sr-only">Add a state</span>
+          </button>
+          <span className="text-sm text-gray-500">
+            Add another state with property
+          </span>
+        </div>
+      </div>
+      <div
+        id="state-portions"
+        role="tooltip"
+        data-tooltip-style="light"
+        className="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-900 py-2 px-3 text-sm font-medium text-white opacity-0 shadow-sm transition-opacity duration-300 dark:bg-gray-700"
+      >
+        Multi state divisions of property requires a paid account.
+        <div className="tooltip-arrow" data-popper-arrow></div>
       </div>
       <div className="grid md:grid-cols-2 md:gap-6">
         <div className="group relative z-0 mb-6 w-full">
