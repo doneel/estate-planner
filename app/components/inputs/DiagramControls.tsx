@@ -24,6 +24,7 @@ export default function DiagramControls({ diagram }: Props) {
     /* Set drag icon to look like the image we're going to dro in */
     const dragIcon = document.createElement("img");
     dragIcon.src = "/images/rendered-stickynote.png";
+    dragIcon.style.top = "-1000px";
     dragIcon.style.position = "absolute";
     document.body.appendChild(dragIcon);
     event.dataTransfer?.setDragImage(dragIcon, 0, 0);
