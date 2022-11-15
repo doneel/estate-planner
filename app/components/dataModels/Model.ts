@@ -255,7 +255,6 @@ export function recomputeDiagram(
     const reserializedModel = JSON.stringify(
       defaultSerializer.serialize(dataModel)
     );
-    console.log(reserializedModel);
     diagram.model = go.Model.fromJson(reserializedModel);
     saveDiagram && saveDiagram(reserializedModel);
   }

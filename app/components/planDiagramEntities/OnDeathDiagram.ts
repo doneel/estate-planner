@@ -8,7 +8,6 @@ export function updateOnDeathEntity(
 ) {
   diagram?.startTransaction(`Update ${onDeathDiagram.data.to}`);
   Object.entries(updateParams).forEach(([key, value]) => {
-    console.log("setting", key, value);
     diagram.model.setDataProperty(onDeathDiagram?.data, `${key}`, value);
   });
   diagram?.commitTransaction(`Update ${onDeathDiagram.data.to}`);
