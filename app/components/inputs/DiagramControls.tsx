@@ -99,7 +99,10 @@ export default function DiagramControls({ diagram }: Props) {
   }, []);
 
   return (
-    <div className="align-items-center flex max-h-72 flex-col  rounded-lg bg-slate-50 px-1 py-1">
+    <div
+      id="diagram_controls"
+      className="align-items-center flex max-h-72 flex-col rounded-lg bg-slate-50 px-1 py-1"
+    >
       <DiagramControlButton
         id="trust"
         svgPath="/images/trust.svg"

@@ -33,7 +33,7 @@ export default function Index() {
                 <ScrollLink
                   smooth={true}
                   spy={true}
-                  to="homepageDemo"
+                  to="diagram_controls"
                   className="hover:bg-primary-800 focus:ring-primary-300 dark:focus:ring-primary-900 mr-3 inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-3 text-center text-base font-medium text-white focus:ring-4"
                 >
                   Try it now
