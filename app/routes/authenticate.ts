@@ -30,6 +30,7 @@ export async function loader({ request, context, params }: LoaderArgs) {
         userId: data.userId,
         sessionToken: data.sessionToken,
         remember: true,
+        idToken: data.providerValues.idToken,
         redirectTo: "/plan",
       });
     } else {

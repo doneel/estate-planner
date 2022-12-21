@@ -1,4 +1,6 @@
+import type { Session } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { OAuthProviders } from "@stytch/vanilla-js";
 import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
@@ -20,17 +22,14 @@ export const sessionStorage = createCookieSessionStorage({
 
 const USER_SESSION_KEY = "userId";
 const STYTCH_SESSION_TOKEN_KEY = "stytch_session_token";
+const OAUTH_ID_TOKEN = "oauth_id_token";
 
 export async function getSession(request: Request) {
   const cookie = request.headers.get("Cookie");
   return sessionStorage.getSession(cookie);
 }
 
-export async function getUserId(
-  request: Request
-): Promise<User["id"] | undefined> {
-  const session = await getSession(request);
-  const userId = session.get(USER_SESSION_KEY);
+async function authenticateSession(session: Session): Promise<boolean> {
   try {
     const stytchResults = await stytchClient.sessions.authenticate({
       session_token: session.get(STYTCH_SESSION_TOKEN_KEY),
@@ -39,7 +38,7 @@ export async function getUserId(
 
     if (stytchResults.status_code !== 200) {
       /* Session did not authenticate */
-      return undefined;
+      return false;
     }
   } catch (err: any) {
     if (err.status_code != 404) {
@@ -47,9 +46,33 @@ export async function getUserId(
       console.error("Session error on stytch", err);
     }
     /* Session did not authenticate */
+    return false;
+  }
+  return true;
+}
+
+export async function getUserId(
+  request: Request
+): Promise<User["id"] | undefined> {
+  const session = await getSession(request);
+  const userId = session.get(USER_SESSION_KEY);
+  const sessionIsLive = await authenticateSession(session);
+  if (sessionIsLive) {
+    return userId;
+  } else {
     return undefined;
   }
-  return userId;
+}
+
+export async function getOauthProviderToken(request: Request) {
+  const session = await getSession(request);
+  const oauthProviderToken = session.get(OAUTH_ID_TOKEN);
+  const sessionIsLive = await authenticateSession(session);
+  if (sessionIsLive) {
+    return oauthProviderToken;
+  } else {
+    return undefined;
+  }
 }
 
 export async function getUser(request: Request) {
@@ -88,17 +111,20 @@ export async function createUserSession({
   userId,
   sessionToken,
   remember,
+  idToken,
   redirectTo,
 }: {
   request: Request;
   userId: string;
   sessionToken: string;
   remember: boolean;
+  idToken: string;
   redirectTo: string;
 }) {
   const session = await getSession(request);
   session.set(USER_SESSION_KEY, userId);
   session.set(STYTCH_SESSION_TOKEN_KEY, sessionToken);
+  session.set(OAUTH_ID_TOKEN, idToken);
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {

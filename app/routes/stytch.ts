@@ -9,7 +9,7 @@ import { stytchClient } from "~/stytch.server";
 export type AuthResults = {
   userId: string;
   sessionToken: string;
-  providerValues: Object;
+  providerValues: { idToken: string };
 };
 
 export async function loader({ request, params }: LoaderArgs) {
@@ -41,7 +41,7 @@ export async function loader({ request, params }: LoaderArgs) {
 
 function oauthAuth(client: Client, token: string) {
   return client.oauth
-    .authenticate(token)
+    .authenticate(token, { session_duration_minutes: 60 * 8 })
     .then(async (response) => {
       if (response.status_code === 200) {
         const user = await getOrCreateStytchUser(response.user_id);
