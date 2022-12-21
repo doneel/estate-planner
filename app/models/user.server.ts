@@ -8,23 +8,21 @@ export async function getUserById(id: User["id"]) {
   return prisma.user.findUnique({ where: { id } });
 }
 
-export async function getUserByEmail(email: User["email"]) {
-  return prisma.user.findUnique({ where: { email } });
-}
-
 export async function getOrCreateStytchUser(
   stytchUserId: User["stytchUserId"],
-  email: User["email"]
+  email?: User["email"]
 ) {
   const maybeUser = await prisma.user.findUnique({
     where: { stytchUserId },
   });
   if (maybeUser === null) {
-    return await prisma.user.create({ data: { stytchUserId, email } });
+    return await prisma.user.create({
+      data: { stytchUserId, email: email ?? undefined },
+    });
   }
   return maybeUser;
 }
 
-export async function deleteUserByEmail(email: User["email"]) {
-  return prisma.user.delete({ where: { email } });
+export async function deleteUserById(id: User["id"]) {
+  return prisma.user.delete({ where: { id } });
 }

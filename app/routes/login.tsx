@@ -4,6 +4,7 @@ import { json, redirect } from "@remix-run/node";
 import { getUserId } from "~/session.server";
 import { StytchLogin } from "@stytch/nextjs";
 import type { StytchError, StytchEvent } from "@stytch/vanilla-js";
+import { OAuthProviders, OneTapPositions } from "@stytch/vanilla-js";
 import { Products } from "@stytch/vanilla-js";
 
 export async function loader({ request }: LoaderArgs) {
@@ -22,7 +23,35 @@ export default function LoginPage() {
   /* Stytch auth */
   const stytchProps = {
     config: {
-      products: [Products.emailMagicLinks],
+      products: [Products.emailMagicLinks, Products.oauth],
+      oauthOptions: {
+        loginRedirectURL: "http://localhost:3000/authenticate",
+        signupRedirectURL: "http://localhost:3000/authenticate",
+        providers: [
+          /*
+          {
+            one_tap: true,
+            type: OAuthProviders.Google,
+            position: OneTapPositions.floating,
+            custom_scopes: [
+              "https://mail.google.com/",
+              "https://www.googleapis.com/auth/gmail.modify",
+              "https://www.googleapis.com/auth/gmail.readonly",
+              "https://www.googleapis.com/auth/gmail.settings.basic",
+            ],
+          },
+          */
+          {
+            type: OAuthProviders.Google,
+            custom_scopes: [
+              "https://mail.google.com/",
+              "https://www.googleapis.com/auth/gmail.modify",
+              "https://www.googleapis.com/auth/gmail.readonly",
+              "https://www.googleapis.com/auth/gmail.settings.basic",
+            ],
+          },
+        ],
+      },
       emailMagicLinksOptions: {
         loginRedirectURL: "http://localhost:3000/authenticate",
         loginExpirationMinutes: 30,
