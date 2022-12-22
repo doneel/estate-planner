@@ -1,6 +1,5 @@
 import type { Session } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { OAuthProviders } from "@stytch/vanilla-js";
 import type { ProvidersValues } from "stytch/types/lib/oauth";
 import invariant from "tiny-invariant";
 

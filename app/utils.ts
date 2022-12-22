@@ -1,5 +1,6 @@
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
+import { CustomError } from "ts-custom-error";
 
 import type { User } from "~/models/user.server";
 
@@ -69,3 +70,9 @@ export function useUser(): User {
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
+
+export enum DANGER {
+  DANGEROUS = "dangerous",
+}
+
+export class PermissionError extends CustomError {}
