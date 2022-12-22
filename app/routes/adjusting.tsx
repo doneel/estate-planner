@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { NavLink, Outlet } from "@remix-run/react";
+import { NavLink, Outlet, useMatches, useNavigate } from "@remix-run/react";
 
 const user = {
   name: "Tom Cook",
@@ -9,13 +9,6 @@ const user = {
   imageUrl:
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
 };
-const navigation = [
-  { name: "Dashboard", to: "#", current: true },
-  { name: "Claims", to: "claims", current: false },
-  { name: "Messages", to: "#", current: false },
-  { name: "Activity", to: "#", current: false },
-  { name: "Reports", to: "#", current: false },
-];
 const userNavigation = [
   { name: "Your Profile", to: "#" },
   { name: "Your Organization", to: "#" },
@@ -23,11 +16,14 @@ const userNavigation = [
   { name: "Sign out", to: "#" },
 ];
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function AdjustingFormat() {
+  const navigation = [
+    { name: "Dashboard", to: "dashboard" },
+    { name: "Claims", to: "claims" },
+    { name: "Messages", to: "messages" },
+    { name: "Activity", to: "activity" },
+    { name: "Reports", to: "reports" },
+  ];
   return (
     <>
       {/*
@@ -58,13 +54,13 @@ export default function AdjustingFormat() {
                           <NavLink
                             key={item.name}
                             to={item.to}
-                            className={classNames(
-                              item.current
-                                ? "bg-gray-900 text-white"
-                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                              "rounded-md px-3 py-2 text-sm font-medium"
-                            )}
-                            aria-current={item.current ? "page" : undefined}
+                            className={({ isActive }) =>
+                              `rounded-md px-3 py-2 text-sm font-medium ${
+                                isActive
+                                  ? "bg-slate-200 text-slate-900"
+                                  : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                              }`
+                            }
                           >
                             {item.name}
                           </NavLink>
@@ -109,10 +105,11 @@ export default function AdjustingFormat() {
                                 {({ active }) => (
                                   <NavLink
                                     to={item.to}
-                                    className={classNames(
-                                      active ? "bg-gray-100" : "",
-                                      "block px-4 py-2 text-sm text-gray-700"
-                                    )}
+                                    className={({ isActive }) =>
+                                      `${
+                                        isActive ? "bg-gray-100" : ""
+                                      } block px-4 py-2 text-sm text-gray-700`
+                                    }
                                   >
                                     {item.name}
                                   </NavLink>
@@ -149,15 +146,18 @@ export default function AdjustingFormat() {
                   {navigation.map((item) => (
                     <Disclosure.Button
                       key={item.name}
-                      as="a"
-                      href={item.href}
-                      className={classNames(
-                        item.current
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                        "block rounded-md px-3 py-2 text-base font-medium"
-                      )}
-                      aria-current={item.current ? "page" : undefined}
+                      as={NavLink}
+                      to={item.to}
+                      /* TODO: Unfortunately, the isActive doesn't seem to get passed through. */
+                      /* @ts-ignore */
+                      className={({ isActive }) =>
+                        `${
+                          isActive
+                            ? "bg-gray-900 text-white"
+                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                        }
+                        block rounded-md px-3 py-2 text-base font-medium`
+                      }
                     >
                       {item.name}
                     </Disclosure.Button>
@@ -192,8 +192,8 @@ export default function AdjustingFormat() {
                     {userNavigation.map((item) => (
                       <Disclosure.Button
                         key={item.name}
-                        as="a"
-                        href={item.to}
+                        as={NavLink}
+                        to={item.to}
                         className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                       >
                         {item.name}
