@@ -1,51 +1,25 @@
 import { PrismaClient } from "@prisma/client";
-import { gmail } from "googleapis/build/src/apis/gmail";
 
 const prisma = new PrismaClient();
 
 async function seed() {
-  /*
-  const stytchId = "none";
-  const email = "rachel@remix.run";
-
-  // cleanup the existing database
-  await prisma.user.delete({ where: { email } }).catch(() => {
-    // no worries if it doesn't exist yet
-  });
-
-  const user = await prisma.user.create({
-    data: {
-      stytchUserId: stytchId,
-      email,
-    },
-  });
-
-  await prisma.note.create({
-    data: {
-      title: "My first note",
-      body: "Hello, world!",
-      userId: user.id,
-    },
-  });
-
-  await prisma.note.create({
-    data: {
-      title: "My second note",
-      body: "Hello, world!",
-      userId: user.id,
-    },
-  });
-  */
-
   const carrier = await prisma.carrier.create({
     data: {
       name: "United Car Insurance National",
     },
   });
 
-  const gmail_org = await prisma.organization.findUniqueOrThrow({
+  let gmail_org = await prisma.organization.findUnique({
     where: { domain: "gmail.com" },
   });
+  if (gmail_org === null) {
+    gmail_org = await prisma.organization.create({
+      data: {
+        domain: "gmail.com",
+        name: "Demo Org",
+      },
+    });
+  }
 
   const claimant_daniel = await prisma.claimant.create({
     data: {
