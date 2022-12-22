@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function seed() {
+  /*
   const stytchId = "none";
   const email = "rachel@remix.run";
 
@@ -33,6 +34,7 @@ async function seed() {
       userId: user.id,
     },
   });
+  */
 
   console.log(`Database has been seeded. 🌱`);
 }

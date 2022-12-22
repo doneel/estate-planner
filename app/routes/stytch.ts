@@ -88,6 +88,9 @@ function oauthAuth(client: Client, token: string) {
 }
 
 function magicLinkAuth(client: Client, token: string) {
+  /* Not supported- requiring OAuth at present */
+  return redirect("/login");
+  /*
   return client.magicLinks
     .authenticate(token ?? "", { session_duration_minutes: 60 * 8 })
     .then(async (response) => {
@@ -113,4 +116,5 @@ function magicLinkAuth(client: Client, token: string) {
     .catch((err) => {
       throw new Response(`Error authenticating user ${err}`, { status: 500 });
     });
+    */
 }
