@@ -8,7 +8,6 @@ export async function loader({ request }: LoaderArgs) {
   const allProviderValues = await getOauthProviderValues(request);
   const user = await getUser(request);
 
-  console.log("Provider values:", allProviderValues);
   if (!allProviderValues || !user) return redirect("/");
   const oauth2Client = new google.auth.OAuth2(
     "1046935463743-sr1mkg4jbhehr5lecmclvmp6dd63dvsd.apps.googleusercontent.com",
@@ -28,7 +27,6 @@ export async function loader({ request }: LoaderArgs) {
   });
   google.options({ auth: oauth2Client });
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-  console.log(user?.email);
   const messages = await gmail.users.messages
     .list({ userId: user?.email })
     .catch((err) => console.error(err));

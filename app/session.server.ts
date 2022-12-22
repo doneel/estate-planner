@@ -58,10 +58,6 @@ export async function getUserId(
   const session = await getSession(request);
   const userId = session.get(USER_SESSION_KEY);
   const sessionIsLive = await authenticateSession(session);
-  console.log("AUthenticating session =======");
-  console.log("session", session.data);
-  console.log("userId", userId);
-  console.log("sessionIsLive", sessionIsLive);
   if (sessionIsLive) {
     return userId;
   } else {
@@ -145,10 +141,6 @@ export async function createUserSession({
 
 export async function logout(request: Request) {
   const localSession = await getSession(request);
-  console.log(
-    "LOGGING OUT session id",
-    localSession.get(STYTCH_SESSION_TOKEN_KEY)
-  );
   await stytchClient.sessions
     .revoke({
       session_token: localSession.get(STYTCH_SESSION_TOKEN_KEY),

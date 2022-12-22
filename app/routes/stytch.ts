@@ -36,7 +36,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const client = stytchClient;
   switch (stytch_token_type) {
     case "magic_links":
-      console.log("magic linkes login");
+      console.log("magic links login");
       return magicLinkAuth(client, token);
     case "oauth":
       console.log("oauth login");
@@ -49,12 +49,14 @@ function oauthAuth(client: Client, token: string) {
     .authenticate(token, { session_duration_minutes: 60 * 8 })
     .then(async (response) => {
       if (response.status_code === 200) {
-        console.log(response);
-        console.log(response.provider_type);
-        console.log(response.provider_subject);
         const refreshToken = response.provider_values.refresh_token;
+        const email = response.user.emails.at(0)?.email;
         if (!refreshToken) {
           console.error("No refresh token. Restart flow."); //TODO
+          throw redirect("/login");
+        }
+        if (!email) {
+          console.error("No email. Restart flow."); //TODO
           throw redirect("/login");
         }
         let user = await getUserByStytchId(response.user_id);
@@ -69,7 +71,7 @@ function oauthAuth(client: Client, token: string) {
             stytchUserId: response.user_id,
             oauthProvider: response.provider_type,
             oauthRefreshToken: refreshToken,
-            email: response.user.emails.at(0)?.email || null,
+            email,
           });
         }
         return json({

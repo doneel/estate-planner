@@ -21,7 +21,6 @@ export async function loader({ request, context, params }: LoaderArgs) {
     );
     if (response.ok) {
       const data: AuthResults = await response.json();
-      console.log(data);
       /*
       STORE THE ID_TOKEN
       */
