@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { createUserSession } from "~/session.server";
 import type { AuthResults } from "./stytch";
@@ -30,7 +30,7 @@ export async function loader({ request, context, params }: LoaderArgs) {
         userId: data.userId,
         sessionToken: data.sessionToken,
         remember: true,
-        idToken: data.providerValues.idToken,
+        providerValues: data.providerValues,
         redirectTo: "/plan",
       });
     } else {

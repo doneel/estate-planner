@@ -1,6 +1,7 @@
 import type { Session } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import { OAuthProviders } from "@stytch/vanilla-js";
+import type { ProvidersValues } from "stytch/types/lib/oauth";
 import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
@@ -22,7 +23,7 @@ export const sessionStorage = createCookieSessionStorage({
 
 const USER_SESSION_KEY = "userId";
 const STYTCH_SESSION_TOKEN_KEY = "stytch_session_token";
-const OAUTH_ID_TOKEN = "oauth_id_token";
+const OAUTH_PROVIDER_VALUES = "oauth_provider_values";
 
 export async function getSession(request: Request) {
   const cookie = request.headers.get("Cookie");
@@ -57,6 +58,10 @@ export async function getUserId(
   const session = await getSession(request);
   const userId = session.get(USER_SESSION_KEY);
   const sessionIsLive = await authenticateSession(session);
+  console.log("AUthenticating session =======");
+  console.log("session", session.data);
+  console.log("userId", userId);
+  console.log("sessionIsLive", sessionIsLive);
   if (sessionIsLive) {
     return userId;
   } else {
@@ -64,12 +69,14 @@ export async function getUserId(
   }
 }
 
-export async function getOauthProviderToken(request: Request) {
+export async function getOauthProviderValues(
+  request: Request
+): Promise<ProvidersValues | undefined> {
   const session = await getSession(request);
-  const oauthProviderToken = session.get(OAUTH_ID_TOKEN);
+  const oauthProviderValues = session.get(OAUTH_PROVIDER_VALUES);
   const sessionIsLive = await authenticateSession(session);
   if (sessionIsLive) {
-    return oauthProviderToken;
+    return oauthProviderValues;
   } else {
     return undefined;
   }
@@ -111,20 +118,20 @@ export async function createUserSession({
   userId,
   sessionToken,
   remember,
-  idToken,
+  providerValues,
   redirectTo,
 }: {
   request: Request;
   userId: string;
   sessionToken: string;
   remember: boolean;
-  idToken: string;
+  providerValues: ProvidersValues;
   redirectTo: string;
 }) {
   const session = await getSession(request);
   session.set(USER_SESSION_KEY, userId);
   session.set(STYTCH_SESSION_TOKEN_KEY, sessionToken);
-  session.set(OAUTH_ID_TOKEN, idToken);
+  session.set(OAUTH_PROVIDER_VALUES, providerValues);
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
@@ -137,13 +144,23 @@ export async function createUserSession({
 }
 
 export async function logout(request: Request) {
-  const session = await getSession(request);
-  await stytchClient.sessions.revoke({
-    session_token: session.get(STYTCH_SESSION_TOKEN_KEY),
-  });
+  const localSession = await getSession(request);
+  console.log(
+    "LOGGING OUT session id",
+    localSession.get(STYTCH_SESSION_TOKEN_KEY)
+  );
+  await stytchClient.sessions
+    .revoke({
+      session_token: localSession.get(STYTCH_SESSION_TOKEN_KEY),
+    })
+    .then((response) => console.log(response))
+    .catch((err) => {
+      console.log(err);
+    });
+
   return redirect("/", {
     headers: {
-      "Set-Cookie": await sessionStorage.destroySession(session),
+      "Set-Cookie": await sessionStorage.destroySession(localSession),
     },
   });
 }

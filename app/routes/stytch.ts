@@ -2,14 +2,19 @@ import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { Response, json } from "@remix-run/node";
 import type { Client } from "stytch";
+import type { ProvidersValues } from "stytch/types/lib/oauth";
 
-import { getOrCreateStytchUser } from "~/models/user.server";
+import {
+  createStytchUser,
+  getUserByStytchId,
+  updateRefreshToken,
+} from "~/models/user.server";
 import { stytchClient } from "~/stytch.server";
 
 export type AuthResults = {
   userId: string;
   sessionToken: string;
-  providerValues: { idToken: string };
+  providerValues: ProvidersValues;
 };
 
 export async function loader({ request, params }: LoaderArgs) {
@@ -44,7 +49,29 @@ function oauthAuth(client: Client, token: string) {
     .authenticate(token, { session_duration_minutes: 60 * 8 })
     .then(async (response) => {
       if (response.status_code === 200) {
-        const user = await getOrCreateStytchUser(response.user_id);
+        console.log(response);
+        console.log(response.provider_type);
+        console.log(response.provider_subject);
+        const refreshToken = response.provider_values.refresh_token;
+        if (!refreshToken) {
+          console.error("No refresh token. Restart flow."); //TODO
+          throw redirect("/login");
+        }
+        let user = await getUserByStytchId(response.user_id);
+        if (user) {
+          /* If a refresh token is provided for some unexpected reason, save it anyways */
+          if (response.provider_values.refresh_token) {
+            console.log("Unexpectedly saving refresh token on login");
+            updateRefreshToken(user.id, response.provider_values.refresh_token);
+          }
+        } else {
+          user = await createStytchUser({
+            stytchUserId: response.user_id,
+            oauthProvider: response.provider_type,
+            oauthRefreshToken: refreshToken,
+            email: response.user.emails.at(0)?.email || null,
+          });
+        }
         return json({
           userId: user.id,
           sessionToken: response.session_token,
@@ -73,7 +100,7 @@ function magicLinkAuth(client: Client, token: string) {
             status: response.status_code,
           });
         }
-        const user = await getOrCreateStytchUser(response.user_id, email);
+        const user = await createStytchUser(response.user_id, email);
         return json({ userId: user.id, sessionToken: response.session_token });
       } else {
         return new Response("Authentication failed", {

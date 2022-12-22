@@ -23,7 +23,7 @@ export default function LoginPage() {
   /* Stytch auth */
   const stytchProps = {
     config: {
-      products: [Products.emailMagicLinks, Products.oauth],
+      products: [Products.oauth],
       oauthOptions: {
         loginRedirectURL: "http://localhost:3000/authenticate",
         signupRedirectURL: "http://localhost:3000/authenticate",
