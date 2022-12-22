@@ -1,6 +1,10 @@
 import type { User } from "@prisma/client";
 
 import { prisma } from "~/db.server";
+import {
+  getOrCreateOrganizationForEmail,
+  OrganizationRole,
+} from "./organization.server";
 
 export type { User } from "@prisma/client";
 
@@ -25,10 +29,30 @@ export async function createStytchUser({
     where: { stytchUserId },
   });
   if (maybeUser === null) {
-    return await prisma.user.create({
-      data: { stytchUserId, email, oauthProvider, oauthRefreshToken },
+    const [organization, isNewOrg] = await getOrCreateOrganizationForEmail(
+      email
+    );
+    const user = await prisma.user.create({
+      data: {
+        stytchUserId,
+        email,
+        oauthProvider,
+        oauthRefreshToken,
+        organizationId: organization.id,
+      },
     });
+    if (isNewOrg) {
+      await prisma.organizationRole.create({
+        data: {
+          organizationId: organization.id,
+          userId: user.id,
+          role: OrganizationRole.Admin,
+        },
+      });
+    }
+    return user;
   }
+
   return maybeUser;
 }
 

@@ -15,10 +15,15 @@ model User {
   oauthProvider     String
   oauthRefreshToken String
 
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  organizationId String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  notes Note[]
+  notes            Note[]
+  ClaimRole        ClaimRole[]
+  OrganizationRole OrganizationRole[]
 }
 
 model Note {
@@ -31,4 +36,78 @@ model Note {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
+}
+
+model ClaimRole {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+
+  claim   Claim  @relation(fields: [claimId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  claimId String
+
+  role String
+}
+
+model Claim {
+  id           String  @id @default(cuid())
+  file_number  String?
+  claim_number String?
+  name         String
+
+  claimant   Claimant? @relation(fields: [claimantId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  claimantId String?
+
+  carrier   Carrier @relation(fields: [carrierId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  carrierId String
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  organizationId String
+
+  receivedAt DateTime @default(now())
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  ClaimRole ClaimRole[]
+}
+
+model Carrier {
+  id    String  @id @default(cuid())
+  name  String
+  Claim Claim[]
+}
+
+model Claimant {
+  id    String  @id @default(cuid())
+  name  String?
+  email String?
+  phone String?
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  organizationId String
+
+  Claim Claim[]
+}
+
+model Organization {
+  id               String             @id @default(cuid())
+  name             String
+  domain           String             @unique
+  User             User[]
+  Claim            Claim[]
+  OrganizationRole OrganizationRole[]
+  Claimant         Claimant[]
+}
+
+model OrganizationRole {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  organizationId String
+
+  role String
 }
