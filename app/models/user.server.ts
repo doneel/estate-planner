@@ -8,23 +8,40 @@ export async function getUserById(id: User["id"]) {
   return prisma.user.findUnique({ where: { id } });
 }
 
-export async function getUserByEmail(email: User["email"]) {
-  return prisma.user.findUnique({ where: { email } });
+export async function getUserByStytchId(stytchUserId: User["stytchUserId"]) {
+  return prisma.user.findUnique({ where: { stytchUserId } });
 }
 
-export async function getOrCreateStytchUser(
-  stytchUserId: User["stytchUserId"],
-  email: User["email"]
-) {
+export async function createStytchUser({
+  stytchUserId,
+  email,
+  oauthProvider,
+  oauthRefreshToken,
+}: Pick<
+  User,
+  "stytchUserId" | "email" | "oauthProvider" | "oauthRefreshToken"
+>) {
   const maybeUser = await prisma.user.findUnique({
     where: { stytchUserId },
   });
   if (maybeUser === null) {
-    return await prisma.user.create({ data: { stytchUserId, email } });
+    return await prisma.user.create({
+      data: { stytchUserId, email, oauthProvider, oauthRefreshToken },
+    });
   }
   return maybeUser;
 }
 
-export async function deleteUserByEmail(email: User["email"]) {
-  return prisma.user.delete({ where: { email } });
+export async function deleteUserById(id: User["id"]) {
+  return prisma.user.delete({ where: { id } });
+}
+
+export async function updateRefreshToken(
+  id: User["id"],
+  refreshToken: User["oauthRefreshToken"]
+) {
+  return prisma.user.update({
+    data: { oauthRefreshToken: refreshToken },
+    where: { id },
+  });
 }

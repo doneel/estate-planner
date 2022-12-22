@@ -7,7 +7,7 @@
 import { installGlobals } from "@remix-run/node";
 import { parse } from "cookie";
 
-import { getOrCreateStytchUser } from "~/models/user.server";
+import { createStytchUser } from "~/models/user.server";
 import { createUserSession } from "~/session.server";
 
 installGlobals();
@@ -20,13 +20,25 @@ async function createAndLogin(email: string) {
     throw new Error("All test emails must end in @example.com");
   }
 
-  const user = await getOrCreateStytchUser("fake-user-string", email);
+  const user = await createStytchUser({
+    stytchUserId: "fake-user-string",
+    email,
+    oauthProvider: "Google",
+    oauthRefreshToken: "fake-oauth-refresh-token",
+  });
 
   const response = await createUserSession({
     request: new Request("test://test"),
     userId: user.id,
     sessionToken: "fake-session-token",
     remember: false,
+    providerValues: {
+      access_token: "fake-access-token",
+      refresh_token: "fake-refresh-token",
+      id_token: "token-id",
+      expires_at: new Date(2023, 12, 31).getMilliseconds(),
+      scopes: ["fake-scope"],
+    },
     redirectTo: "/",
   });
 
