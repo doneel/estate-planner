@@ -67,9 +67,9 @@ model Claim {
 
   receivedAt DateTime @default(now())
 
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  ClaimRole ClaimRole[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  ClaimRoles ClaimRole[]
 }
 
 model Carrier {

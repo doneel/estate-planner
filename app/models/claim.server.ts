@@ -19,7 +19,13 @@ async function permitClaimPermissions(
   if (request === undefined) {
     return false;
   }
-  const userId = await requireUserId(request);
+  let userId = undefined;
+  try {
+    userId = await requireUserId(request);
+  } catch (err) {
+    console.log("User doesn't appear logged in", err);
+    return false;
+  }
   const role = await prisma.claimRole.findFirst({
     where: {
       claimId,
@@ -36,11 +42,41 @@ async function permitClaimPermissions(
   if (claim === null) {
     return false;
   }
-  return hasOrgAdminAcces(claim.organizationId, request, override_permissions);
+  return await hasOrgAdminAcces(
+    claim.organizationId,
+    request,
+    override_permissions
+  );
 }
 
 export async function getClaimById(id: Claim["id"]): Promise<Claim | null> {
   return prisma.claim.findUnique({ where: { id } });
+}
+
+export async function getFullClaimInfo(
+  id: Claim["id"],
+  request?: Request,
+  override_permissions?: DANGER
+) {
+  if (!permitClaimPermissions(id, request, override_permissions)) {
+    throw new PermissionError("You don't have access to this claim.");
+  }
+  return prisma.claim.findUniqueOrThrow({
+    where: { id },
+    include: {
+      claimant: true,
+      carrier: true,
+      ClaimRoles: {
+        include: {
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 export async function addUserToClaim(
