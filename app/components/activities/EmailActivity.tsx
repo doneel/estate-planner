@@ -40,9 +40,9 @@ export default function EmailActivity({
           </div>
         </div>
         <div>
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs font-normal italic text-gray-500 dark:border-gray-500 dark:bg-gray-600 dark:text-gray-300">
+          <p className="max-w-fit rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs font-normal italic text-gray-500 dark:border-gray-500 dark:bg-gray-600 dark:text-gray-300">
             {emailPreviewText}
-          </div>
+          </p>
         </div>
       </div>
     </li>

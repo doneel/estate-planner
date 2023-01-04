@@ -24,7 +24,7 @@ export default function ClaimPage() {
     );
   }
   return (
-    <div className="h-full w-full">
+    <div id="ClaimDetailPane" className="flex h-full w-full flex-col">
       <header className="w-full">
         <div className="w-full border-x border-t bg-white py-4 px-8">
           <ClaimInfoCard claim={claim} size={"lg"} />
@@ -119,7 +119,7 @@ export default function ClaimPage() {
           </li>
         </ul>
       </div>
-      <div>
+      <div id="SpecificClaimPaneWrapper" className="w-full grow">
         <Outlet />
       </div>
     </div>

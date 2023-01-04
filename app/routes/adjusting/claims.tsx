@@ -75,7 +75,7 @@ export default function ClaimsPage() {
                       isActive ? "bg-red" : ""
                     }`
                   }
-                  to={claim.id}
+                  to={`${claim.id}/info`}
                 >
                   <ClaimInfoCard claim={claim} />
                 </NavLink>
@@ -84,7 +84,7 @@ export default function ClaimsPage() {
           </ol>
         </div>
       </div>
-      <div className="w-full">
+      <div className="grow">
         <Outlet />
       </div>
     </div>
