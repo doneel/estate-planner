@@ -4,14 +4,10 @@ import { redirect } from "@remix-run/server-runtime";
 import { getOauthProviderValues, getUser, getUserId } from "~/session.server";
 import type { gmail_v1 } from "googleapis";
 import { google } from "googleapis";
-import { useLoaderData } from "@remix-run/react";
+import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import { gmailpostmastertools } from "googleapis/build/src/apis/gmailpostmastertools";
 
 export async function loader({ request }: LoaderArgs) {
-  if (true) {
-    return { messages: [], threads: [] };
-  }
-  /*
   const allProviderValues = await getOauthProviderValues(request);
   const user = await getUser(request);
 
@@ -53,7 +49,6 @@ export async function loader({ request }: LoaderArgs) {
     .flatMap((t) => t?.payload?.headers)
     ?.forEach(console.log);
   return json({ messages, threads: threads });
-  */
 }
 
 function lastMessage(thread: gmail_v1.Schema$Thread) {
@@ -67,37 +62,57 @@ export default function Email() {
       <div className="w-1/2">
         <ol className="mx-1 w-full">
           {threads?.map((thread) => (
-            <li key={thread.data.id} className="w-full border bg-white p-2">
-              <div className="flex flex-col gap-y-2">
-                <div className="flex justify-between">
-                  <div className="flex">
-                    <div className="mr-2 ">
-                      {lastMessage(thread.data)?.payload?.headers?.find(
-                        (h) => h.name === "From"
-                      )?.value ?? "<Unknown Sender>"}
+            <li
+              key={thread.data.id}
+              className="w-full border-x border-t bg-white first:rounded-tl-lg first:rounded-tr-lg last:rounded-bl-lg last:rounded-br-lg last:border-b"
+            >
+              <NavLink
+                className={({ isActive }) =>
+                  `${
+                    isActive
+                      ? "rounded border-r-4 border-blue-400 p-2 pr-2"
+                      : "pr-[12px]"
+                  }
+                 flex flex-col gap-y-2 p-2
+                 `
+                }
+                to={thread.data.id || ""}
+              >
+                <div className="flex flex-col gap-y-2">
+                  <div className="flex justify-between">
+                    <div className="flex">
+                      <div className="mr-2 ">
+                        {lastMessage(thread.data)
+                          ?.payload?.headers?.find((h) => h.name === "From")
+                          ?.value?.replace("<johnziegler4@gmail.com>", "") ??
+                          "<Unknown Sender>"}
+                      </div>
+                      <span className="my-auto rounded bg-gray-100 px-2.5 py-0.5 text-sm font-semibold text-green-800 dark:bg-green-200 dark:text-green-900">
+                        {thread.data.messages?.length}
+                      </span>
                     </div>
-                    <span className="my-auto rounded bg-gray-100 px-2.5 py-0.5 text-sm font-semibold text-green-800 dark:bg-green-200 dark:text-green-900">
-                      {thread.data.messages?.length}
-                    </span>
+                    <div className=" text-sm">
+                      {new Date(
+                        Number(lastMessage(thread.data)?.internalDate) ?? -1
+                      ).toLocaleString() ?? ""}
+                    </div>
                   </div>
-                  <div className=" font-light">
-                    {new Date(
-                      Number(lastMessage(thread.data)?.internalDate) ?? -1
-                    ).toLocaleString() ?? ""}
+                  <div className="mr-2  overflow-hidden text-ellipsis  whitespace-nowrap font-semibold">
+                    {lastMessage(thread.data)?.payload?.headers?.find(
+                      (h) => h.name === "Subject"
+                    )?.value ?? "(No Subject)"}
+                  </div>
+                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+                    {lastMessage(thread.data)?.snippet}
                   </div>
                 </div>
-                <div className="mr-2  overflow-hidden text-ellipsis  font-semibold">
-                  {lastMessage(thread.data)?.payload?.headers?.find(
-                    (h) => h.name === "Subject"
-                  )?.value ?? "(No Subject)"}
-                </div>
-                <div className="max-h-[1em] overflow-hidden text-ellipsis text-sm">
-                  {lastMessage(thread.data)?.snippet}
-                </div>
-              </div>
+              </NavLink>
             </li>
           ))}
         </ol>
+      </div>
+      <div className="ml-4 h-full grow">
+        <Outlet />
       </div>
     </div>
   );

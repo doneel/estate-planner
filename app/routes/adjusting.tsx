@@ -20,7 +20,7 @@ export default function AdjustingFormat() {
   const navigation = [
     { name: "Dashboard", to: "dashboard" },
     { name: "Claims", to: "claims" },
-    { name: "Messages", to: "messages" },
+    { name: "Notifications", to: "notifications" },
     { name: "Activity", to: "activity" },
     { name: "Reports", to: "reports" },
   ];
@@ -206,7 +206,7 @@ export default function AdjustingFormat() {
           )}
         </Disclosure>
 
-        <main className="h-full bg-slate-50 shadow-inner">
+        <main className="h-full min-h-full bg-slate-50 shadow-inner">
           <div className="max-w-9xl mx-auto h-full">
             <Outlet />
           </div>

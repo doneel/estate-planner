@@ -13,7 +13,7 @@ export default function ClaimsPage() {
   const data = useLoaderData<typeof loader>();
   return (
     <div className="flex h-full">
-      <div className="justify-top flex w-80 flex-col items-center border-r-2  md:w-1/4">
+      <div className="justify-top min-w-80 flex w-80 flex-col items-center border-r-2  md:w-1/4 md:min-w-[25%]">
         <div className="w-full">
           <h2 className="my-4 text-center text-3xl font-bold tracking-tight text-slate-700">
             Find Claims
@@ -84,7 +84,7 @@ export default function ClaimsPage() {
           </ol>
         </div>
       </div>
-      <div className="grow">
+      <div className="grow overflow-y-scroll">
         <Outlet />
       </div>
     </div>
