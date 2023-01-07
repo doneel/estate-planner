@@ -1,5 +1,5 @@
 import { NavLink } from "@remix-run/react";
-import { FaMailBulk, FaPrint, FaRegCalendar } from "react-icons/fa";
+import { FaPrint, FaRegCalendar } from "react-icons/fa";
 import EmailActivity from "~/components/activities/EmailActivity";
 
 export default function Activity() {
@@ -28,7 +28,7 @@ export default function Activity() {
         <EmailActivity
           from={"Mark Jackson"}
           emailPreviewText={
-            "Hi John, this is Mark reaching out from Example Adjusters, Inc. about your recent auto insurance claim\n. I'd love to get someone out to take a look this week. Will you be around Monday or Tuesday?"
+            "Hi John, this is Mark reaching out from Example Adjusters, Inc. about your recent auto insurance claim. I'd love to get someone out to take a look this week. Will you be around Monday or Tuesday?"
           }
           date={new Date(2022, 11, 12, 15, 22, 0)}
           status={"active"}

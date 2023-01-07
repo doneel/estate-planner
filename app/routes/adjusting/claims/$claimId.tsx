@@ -24,9 +24,9 @@ export default function ClaimPage() {
     );
   }
   return (
-    <div className="h-full w-full">
+    <div id="ClaimDetailPane" className="flex h-full w-full flex-col">
       <header className="w-full">
-        <div className="w-full border-x border-t bg-white py-4 px-8">
+        <div className="w-full border-x border-t bg-white px-8 pt-4">
           <ClaimInfoCard claim={claim} size={"lg"} />
         </div>
       </header>
@@ -41,7 +41,7 @@ export default function ClaimPage() {
                   isActive
                     ? "active border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500"
                     : "       border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
-                } inline-block rounded-t-lg border-b-2 p-4`
+                } inline-block rounded-t-lg border-b-2 p-4 pt-0`
               }
             >
               Info
@@ -55,7 +55,7 @@ export default function ClaimPage() {
                   isActive
                     ? "active border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500"
                     : "       border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
-                } inline-block rounded-t-lg border-b-2 p-4`
+                } inline-block rounded-t-lg border-b-2 p-4 pt-0`
               }
             >
               Activity
@@ -69,7 +69,7 @@ export default function ClaimPage() {
                   isActive
                     ? "active border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500"
                     : "       border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
-                } inline-block rounded-t-lg border-b-2 p-4`
+                } inline-block rounded-t-lg border-b-2 p-4 pt-0`
               }
             >
               Email
@@ -83,7 +83,7 @@ export default function ClaimPage() {
                   isActive
                     ? "active border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500"
                     : "       border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
-                } inline-block rounded-t-lg border-b-2 p-4`
+                } inline-block rounded-t-lg border-b-2 p-4 pt-0`
               }
             >
               Messaging
@@ -97,7 +97,7 @@ export default function ClaimPage() {
                   isActive
                     ? "active border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500"
                     : "       border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
-                } inline-block rounded-t-lg border-b-2 p-4`
+                } inline-block rounded-t-lg border-b-2 p-4 pt-0`
               }
             >
               Time & Expense
@@ -111,7 +111,7 @@ export default function ClaimPage() {
                   isActive
                     ? "active border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500"
                     : "       border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300"
-                } inline-block rounded-t-lg border-b-2 p-4`
+                } inline-block rounded-t-lg border-b-2 p-4 pt-0`
               }
             >
               Reports
@@ -119,7 +119,7 @@ export default function ClaimPage() {
           </li>
         </ul>
       </div>
-      <div>
+      <div id="SpecificClaimPaneWrapper" className="w-full grow">
         <Outlet />
       </div>
     </div>
