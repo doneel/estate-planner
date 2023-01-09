@@ -20,7 +20,7 @@ export default function AdjustingFormat() {
   const navigation = [
     { name: "Dashboard", to: "dashboard" },
     { name: "Claims", to: "claims" },
-    { name: "Notifications", to: "notifications" },
+    { name: "Notifications", to: "notifications", count: 5 },
     { name: "Activity", to: "activity" },
     { name: "Reports", to: "reports" },
   ];
@@ -55,7 +55,7 @@ export default function AdjustingFormat() {
                             key={item.name}
                             to={item.to}
                             className={({ isActive }) =>
-                              `rounded-md px-3 py-2 text-sm font-medium ${
+                              `relative rounded-md px-3 py-2 text-sm font-medium ${
                                 isActive
                                   ? "bg-slate-200 text-slate-900"
                                   : "text-gray-300 hover:bg-gray-700 hover:text-white"
@@ -63,6 +63,13 @@ export default function AdjustingFormat() {
                             }
                           >
                             {item.name}
+                            {item.count ? (
+                              <div className="absolute -top-1 -right-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500  text-xs font-bold text-white dark:border-2 dark:border-gray-900">
+                                {item.count}
+                              </div>
+                            ) : (
+                              <></>
+                            )}
                           </NavLink>
                         ))}
                       </div>
