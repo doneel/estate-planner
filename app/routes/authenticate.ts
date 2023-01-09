@@ -30,7 +30,7 @@ export async function loader({ request, context, params }: LoaderArgs) {
         sessionToken: data.sessionToken,
         remember: true,
         providerValues: data.providerValues,
-        redirectTo: "/plan",
+        redirectTo: "/adjusting/claims",
       });
     } else {
       return redirect("/login");
