@@ -16,9 +16,7 @@ export async function loader({ request, context, params }: LoaderArgs) {
       ["token", token],
       ["stytch_token_type", stytch_token_type],
     ]);
-    const response = await fetch(
-      new URL(`http://localhost:3000/stytch?${params}`)
-    );
+    const response = await fetch(new URL(`${process.env.BASE_URL}/${params}`));
     if (response.ok) {
       const data: AuthResults = await response.json();
       /*
