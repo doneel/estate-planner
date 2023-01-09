@@ -13,10 +13,7 @@ export async function loader({ request }: LoaderArgs) {
   if (userId) return redirect("/adjusting");
   return json({
     ENV: {
-      REDIRECT_URL:
-        process.env.STYTCH_ENV === "test"
-          ? "http://localhost:3000/authenticate"
-          : "https://estate-planner-3215.fly.dev/authenticate",
+      BASE_URL: process.env.BASE_URL,
     },
   });
 }
@@ -34,8 +31,8 @@ export default function LoginPage() {
     config: {
       products: [Products.oauth],
       oauthOptions: {
-        loginRedirectURL: data.ENV.REDIRECT_URL,
-        signupRedirectURL: data.ENV.REDIRECT_URL,
+        loginRedirectURL: `${data.ENV.BASE_URL}/authenticate`,
+        signupRedirectURL: `${data.ENV.BASE_URL}/authenticate`,
         providers: [
           /*
           {
@@ -62,9 +59,9 @@ export default function LoginPage() {
         ],
       },
       emailMagicLinksOptions: {
-        loginRedirectURL: data.ENV.REDIRECT_URL,
+        loginRedirectURL: `${data.ENV.BASE_URL}/authenticate`,
         loginExpirationMinutes: 30,
-        signupRedirectURL: data.ENV.REDIRECT_URL,
+        signupRedirectURL: `${data.ENV.BASE_URL}/authenticate`,
         signupExpirationMinutes: 30,
         createUserAsPending: true,
       },
