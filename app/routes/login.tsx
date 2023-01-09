@@ -6,11 +6,19 @@ import { StytchLogin } from "@stytch/nextjs";
 import type { StytchError, StytchEvent } from "@stytch/vanilla-js";
 import { OAuthProviders, OneTapPositions } from "@stytch/vanilla-js";
 import { Products } from "@stytch/vanilla-js";
+import { useLoaderData } from "@remix-run/react";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/adjusting");
-  return json({});
+  return json({
+    ENV: {
+      REDIRECT_URL:
+        process.env.STYTCH_ENV === "test"
+          ? "http://localhost:3000/authenticate"
+          : "https://estate-planner-3215.fly.dev/authenticate",
+    },
+  });
 }
 
 export const meta: MetaFunction = () => {
@@ -20,13 +28,14 @@ export const meta: MetaFunction = () => {
 };
 
 export default function LoginPage() {
+  const data = useLoaderData<typeof loader>();
   /* Stytch auth */
   const stytchProps = {
     config: {
       products: [Products.oauth],
       oauthOptions: {
-        loginRedirectURL: "http://localhost:3000/authenticate",
-        signupRedirectURL: "http://localhost:3000/authenticate",
+        loginRedirectURL: data.ENV.REDIRECT_URL,
+        signupRedirectURL: data.ENV.REDIRECT_URL,
         providers: [
           /*
           {
@@ -53,9 +62,9 @@ export default function LoginPage() {
         ],
       },
       emailMagicLinksOptions: {
-        loginRedirectURL: "http://localhost:3000/authenticate",
+        loginRedirectURL: data.ENV.REDIRECT_URL,
         loginExpirationMinutes: 30,
-        signupRedirectURL: "http://localhost:3000/authenticate",
+        signupRedirectURL: data.ENV.REDIRECT_URL,
         signupExpirationMinutes: 30,
         createUserAsPending: true,
       },
