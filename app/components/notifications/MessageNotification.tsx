@@ -5,19 +5,27 @@ import {
   FaPeopleArrows,
   FaRegCheckCircle,
   FaRegCalendar,
+  FaMailBulk,
+  FaRegArrowAltCircleLeft,
+  FaCartArrowDown,
+  FaXing,
+  FaCross,
+  FaPhoenixSquadron,
+  FaStop,
+  FaStopCircle,
 } from "react-icons/fa";
-import type { TaskNotificationData } from "~/routes/adjusting/notifications";
+import type { MessageNotificationData } from "~/routes/adjusting/notifications";
 
 export interface Props {
-  notification: SerializeFrom<TaskNotificationData>;
+  notification: SerializeFrom<MessageNotificationData>;
 }
 export default function TaskNotification({
   notification: {
     id,
     type,
+    from,
     title,
     preview,
-    assignedBy,
     createdAt,
     claimId,
     claimNumber,
@@ -30,9 +38,9 @@ export default function TaskNotification({
       to={id}
     >
       <div className="my-auto flex w-20 flex-col items-center justify-center">
-        <FaCheckCircle size={24} className="text-gray-200" />
+        <FaMailBulk size={24} className="text-gray-200" />
         <div className="wrap-pre px-1 text-center text-xs text-gray-400">
-          New task
+          New message
         </div>
       </div>
 
@@ -62,11 +70,15 @@ export default function TaskNotification({
             From
             <NavLink
               className="ml-1 font-semibold text-blue-700 hover:underline"
-              to={`adjusting/people/${assignedBy ?? ""}`}
+              to={`/adjusting/people/${from ?? ""}`}
             >
-              {assignedBy ?? ""}
+              {from ?? ""}
             </NavLink>
           </div>
+        </div>
+
+        <div className="my-2 max-w-fit overflow-hidden text-ellipsis whitespace-nowrap rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-xs font-normal italic italic text-gray-500 dark:border-gray-500 dark:bg-gray-600 dark:text-gray-300">
+          {preview}
         </div>
         <div className="mt-1 flex justify-start gap-x-3">
           <button
@@ -75,14 +87,14 @@ export default function TaskNotification({
             type="button"
             className="rounded p-1 text-slate-900 hover:bg-slate-400"
           >
-            <FaPeopleArrows size={18} className="" />
+            <FaRegArrowAltCircleLeft size={18} className="" />
           </button>
           <div
             id={`tooltip-reassign-${id}`}
             role="tooltip"
             className="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 shadow-sm dark:bg-gray-700"
           >
-            Reassign
+            Reply
           </div>
 
           <button
@@ -91,14 +103,14 @@ export default function TaskNotification({
             type="button"
             className="rounded p-1 text-slate-900 hover:bg-slate-400"
           >
-            <FaRegCheckCircle size={18} className="" />
+            <FaStopCircle size={18} className="" />
           </button>
           <div
             id={`tooltip-complete-${id}`}
             role="tooltip"
             className="tooltip invisible absolute z-10 inline-block rounded-lg bg-gray-900 px-3 py-2 text-sm text-white opacity-0 shadow-sm dark:bg-gray-700"
           >
-            Mark completed
+            Stop messages from this thread
           </div>
 
           <button
