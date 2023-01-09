@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 import type { LoaderArgs } from "@remix-run/server-runtime";
+import { redirect } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import Navbar from "~/components/header/Navbar";
 import { Link as ScrollLink } from "react-scroll";
@@ -8,8 +9,8 @@ import BrowserOnly from "../components/BrowserOnly";
 import GlobalFooter from "~/components/footer/GlobalFooter";
 
 export async function loader({ request }: LoaderArgs) {
-  //throw redirect("/plan");
-  return json({});
+  throw redirect("/login");
+  //return json({});
 }
 
 export default function Index() {

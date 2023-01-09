@@ -9,7 +9,7 @@ import { Products } from "@stytch/vanilla-js";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
+  if (userId) return redirect("/adjusting");
   return json({});
 }
 
@@ -82,6 +82,25 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-full flex-col justify-center">
+      <div className="mx-auto place-self-center pb-32 lg:col-span-7">
+        <h1 className="mb-4 max-w-2xl text-4xl font-extrabold leading-none tracking-tight dark:text-white md:text-5xl xl:text-6xl">
+          Claims Management
+        </h1>
+        <div className="align-center mb-1 flex gap-x-2">
+          <h4 className="max-w-2xl text-xl font-bold leading-none">
+            Private Demo
+          </h4>
+          <span className="my-auto rounded bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-200 dark:text-green-900">
+            Active
+          </span>
+        </div>
+        <h4 className="max-w-2xl text-xl leading-none">
+          Release{" "}
+          <span className="font-mono text-base">
+            39491bece9838834ce3f53c09b2df0760fdcd668
+          </span>
+        </h4>
+      </div>
       <div className="mx-auto w-full max-w-md px-8">
         <StytchLogin
           config={stytchProps.config}

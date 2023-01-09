@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderArgs) {
     .list({ userId: user?.email })
     .catch((err) => console.error(err));
   const threadList = await gmail.users.threads
-    .list({ userId: user?.email, q: "from:johnziegler4@gmail.com" })
+    .list({ userId: user?.email, q: "from:danieloneel@gmail.com" })
     .catch((err) => console.error(err));
 
   const threadPromises = threadList?.data.threads
@@ -84,7 +84,7 @@ export default function Email() {
                       <div className="mr-2 ">
                         {lastMessage(thread.data)
                           ?.payload?.headers?.find((h) => h.name === "From")
-                          ?.value?.replace("<johnziegler4@gmail.com>", "") ??
+                          ?.value?.replace("<danieloneel@gmail.com>", "") ??
                           "<Unknown Sender>"}
                       </div>
                       <span className="my-auto rounded bg-gray-100 px-2.5 py-0.5 text-sm font-semibold text-green-800 dark:bg-green-200 dark:text-green-900">
