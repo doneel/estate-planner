@@ -31,7 +31,7 @@ export async function loader({ request }: LoaderArgs) {
     .list({ userId: user?.email })
     .catch((err) => console.error(err));
   const threads = await gmail.users.threads
-    .list({ userId: user?.email, q: "from:johnziegler4@gmail.com" })
+    .list({ userId: user?.email, q: "from:danieloneel@gmail.com" })
     .catch((err) => console.error(err));
   return json({ messages, threads });
 }
