@@ -1,4 +1,3 @@
-
 /*
   This example requires some changes to your config:
 
@@ -13,65 +12,52 @@
   }
   ```
 */
-import { Fragment, useState } from 'react'
-import { Dialog, Menu, Transition } from '@headlessui/react'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
-import {
-  ArchiveBoxIcon,
-  Bars3Icon,
-  BellIcon,
-  FlagIcon,
-  InboxIcon,
-  NoSymbolIcon,
-  PencilSquareIcon,
-  UserCircleIcon,
-  XMarkIcon,
-  HomeModernIcon
-} from '@heroicons/react/24/outline'
-import { FaRoad  } from 'react-icons/fa'
-import Map from './Map'
-import { NavLink, Outlet } from '@remix-run/react'
+import { Fragment, useState } from "react";
+import { Dialog, Menu, Transition } from "@headlessui/react";
+import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { ArchiveBoxIcon, Bars3Icon, BellIcon, FlagIcon, InboxIcon, NoSymbolIcon, PencilSquareIcon, UserCircleIcon, XMarkIcon, HomeModernIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
+import { FaRoad } from "react-icons/fa";
+import { NavLink, Outlet } from "@remix-run/react";
+import OlMap from "./OlMap";
+import MapAndControls from "./MapAndControls";
 
 const user = {
-  name: 'Whitney Francis',
-  email: 'whitney.francis@example.com',
-  imageUrl:
-    'https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-}
+  name: "Whitney Francis",
+  email: "whitney.francis@example.com",
+  imageUrl: "https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+};
 const navigation = [
   {
-    name: 'Inboxes',
-    href: '#',
+    name: "Inboxes",
+    href: "#",
     children: [
-      { name: 'Technical Support', href: '#' },
-      { name: 'Sales', href: '#' },
-      { name: 'General', href: '#' },
+      { name: "Technical Support", href: "#" },
+      { name: "Sales", href: "#" },
+      { name: "General", href: "#" },
     ],
   },
-  { name: 'Reporting', href: '#', children: [] },
-  { name: 'Settings', href: '#', children: [] },
-]
+  { name: "Reporting", href: "#", children: [] },
+  { name: "Settings", href: "#", children: [] },
+];
 const sidebarNavigation = [
-  { name: 'Buildings', href: 'buildings', icon: HomeModernIcon, current: true },
-  { name: 'Roads', href: 'roads', icon: FaRoad, current: false },
-  { name: 'Customers', href: 'customers', icon: UserCircleIcon, current: false },
-  { name: 'Flagged', href: 'flagged', icon: FlagIcon, current: false },
-  { name: 'Spam', href: 'spam', icon: NoSymbolIcon, current: false },
-  { name: 'Drafts', href: 'drafts', icon: PencilSquareIcon, current: false },
-]
+  { name: "Buildings", href: "buildings", icon: HomeModernIcon, current: true },
+  { name: "Roads", href: "roads", icon: FaRoad, current: false },
+  { name: "Layers", href: "layers", icon: Square3Stack3DIcon, current: false },
+  { name: "Flagged", href: "flagged", icon: FlagIcon, current: false },
+  { name: "Spam", href: "spam", icon: NoSymbolIcon, current: false },
+  { name: "Drafts", href: "drafts", icon: PencilSquareIcon, current: false },
+];
 const userNavigation = [
-  { name: 'Your Profile', href: '#' },
-  { name: 'Sign out', href: '#' },
-]
+  { name: "Your Profile", href: "#" },
+  { name: "Sign out", href: "#" },
+];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(" ");
 }
 
 export default function Example() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const [selectedTool, setSelectedTool] = useState<string>();
 
   return (
     <>
@@ -88,15 +74,8 @@ export default function Example() {
         <header className="relative flex h-16 flex-shrink-0 items-center bg-white">
           {/* Logo area */}
           <div className="absolute inset-y-0 left-0 md:static md:flex-shrink-0">
-            <a
-              href="#"
-              className="flex h-16 w-16 items-center justify-center bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600 md:w-20"
-            >
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=white"
-                alt="Your Company"
-              />
+            <a href="#" className="flex h-16 w-16 items-center justify-center bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600 md:w-20">
+              <img className="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=white" alt="Your Company" />
             </a>
           </div>
 
@@ -106,7 +85,7 @@ export default function Example() {
               <label htmlFor="inbox-select" className="sr-only">
                 Choose inbox
               </label>
-              <select
+              <ul
                 id="inbox-select"
                 className="rounded-md border-0 bg-none pl-3 pr-8 text-base font-medium text-gray-900 focus:ring-2 focus:ring-indigo-600"
                 defaultValue={sidebarNavigation.find((item) => item.current)?.name}
@@ -116,13 +95,14 @@ export default function Example() {
                     key={item.name}
                     to={item.href}
                     onClick={() => {
-                        console.log("selected", item.name)
-                        setSelectedTool(item.href);
-                    }}>
-                        {item.name}
+                      console.log("selected", item.name);
+                      setSelectedTool(item.href);
+                    }}
+                  >
+                    {item.name}
                   </NavLink>
                 ))}
-              </select>
+              </ul>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center pr-2">
                 <ChevronDownIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
               </div>
@@ -149,12 +129,7 @@ export default function Example() {
                 <label htmlFor="desktop-search" className="sr-only">
                   Search
                 </label>
-                <input
-                  id="desktop-search"
-                  type="search"
-                  placeholder="Search"
-                  className="block w-full border-transparent pl-12 placeholder-gray-500 focus:border-transparent focus:ring-0 sm:text-sm"
-                />
+                <input id="desktop-search" type="search" placeholder="Search" className="block w-full border-transparent pl-12 placeholder-gray-500 focus:border-transparent focus:ring-0 sm:text-sm" />
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-4">
                   <MagnifyingGlassIcon className="h-5 w-5" aria-hidden="true" />
                 </div>
@@ -199,26 +174,14 @@ export default function Example() {
                       <div className="py-1">
                         <Menu.Item>
                           {({ active }) => (
-                            <a
-                              href="#"
-                              className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-sm text-gray-700'
-                              )}
-                            >
+                            <a href="#" className={classNames(active ? "bg-gray-100" : "", "block px-4 py-2 text-sm text-gray-700")}>
                               Your Profile
                             </a>
                           )}
                         </Menu.Item>
                         <Menu.Item>
                           {({ active }) => (
-                            <a
-                              href="#"
-                              className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block px-4 py-2 text-sm text-gray-700'
-                              )}
-                            >
+                            <a href="#" className={classNames(active ? "bg-gray-100" : "", "block px-4 py-2 text-sm text-gray-700")}>
                               Sign Out
                             </a>
                           )}
@@ -256,17 +219,10 @@ export default function Example() {
                   leaveFrom="transform opacity-100 scale-100 sm:translate-x-0 sm:scale-100 sm:opacity-100"
                   leaveTo="transform opacity-0 scale-110  sm:translate-x-full sm:scale-100 sm:opacity-100"
                 >
-                  <Dialog.Panel
-                    className="fixed inset-0 z-40 h-full w-full bg-white sm:inset-y-0 sm:left-auto sm:right-0 sm:w-full sm:max-w-sm sm:shadow-lg"
-                    aria-label="Global"
-                  >
+                  <Dialog.Panel className="fixed inset-0 z-40 h-full w-full bg-white sm:inset-y-0 sm:left-auto sm:right-0 sm:w-full sm:max-w-sm sm:shadow-lg" aria-label="Global">
                     <div className="flex h-16 items-center justify-between px-4 sm:px-6">
                       <a href="#">
-                        <img
-                          className="block h-8 w-auto"
-                          src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                          alt="Your Company"
-                        />
+                        <img className="block h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company" />
                       </a>
                       <button
                         type="button"
@@ -296,18 +252,11 @@ export default function Example() {
                     <div className="max-w-8xl mx-auto py-3 px-2 sm:px-4">
                       {navigation.map((item) => (
                         <Fragment key={item.name}>
-                          <a
-                            href={item.href}
-                            className="block rounded-md py-2 px-3 text-base font-medium text-gray-900 hover:bg-gray-100"
-                          >
+                          <a href={item.href} className="block rounded-md py-2 px-3 text-base font-medium text-gray-900 hover:bg-gray-100">
                             {item.name}
                           </a>
                           {item.children.map((child) => (
-                            <a
-                              key={child.name}
-                              href={child.href}
-                              className="block rounded-md py-2 pl-5 pr-3 text-base font-medium text-gray-500 hover:bg-gray-100"
-                            >
+                            <a key={child.name} href={child.href} className="block rounded-md py-2 pl-5 pr-3 text-base font-medium text-gray-500 hover:bg-gray-100">
                               {child.name}
                             </a>
                           ))}
@@ -330,11 +279,7 @@ export default function Example() {
                       </div>
                       <div className="max-w-8xl mx-auto mt-3 space-y-1 px-2 sm:px-4">
                         {userNavigation.map((item) => (
-                          <a
-                            key={item.name}
-                            href={item.href}
-                            className="block rounded-md py-2 px-3 text-base font-medium text-gray-900 hover:bg-gray-50"
-                          >
+                          <a key={item.name} href={item.href} className="block rounded-md py-2 px-3 text-base font-medium text-gray-900 hover:bg-gray-50">
                             {item.name}
                           </a>
                         ))}
@@ -357,12 +302,11 @@ export default function Example() {
                   key={item.name}
                   to={item.href}
                   onClick={() => {
-                      console.log("selected", item.href)
-                      setSelectedTool(item.href);
+                    console.log("selected", item.href);
                   }}
                   className={({ isActive }) =>
-                    `${isActive ? 'bg-gray-900 text-white' : 'text-gray-400 hover:bg-gray-700'}
-                    flex-shrink-0 inline-flex items-center justify-center h-14 w-14 rounded-lg`
+                    `${isActive ? "bg-gray-900 text-white" : "text-gray-400 hover:bg-gray-700"}
+                    inline-flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg`
                   }
                 >
                   <span className="sr-only">{item.name}</span>
@@ -374,31 +318,12 @@ export default function Example() {
 
           {/* Main area */}
           <main className="min-w-0 flex-1 border-t border-gray-200 lg:flex">
-            {/* Primary column */}
-            <section
-              aria-labelledby="primary-heading"
-              className="flex h-full min-w-0 flex-1 flex-col overflow-y-auto lg:order-last"
-            >
-              <h1 id="primary-heading" className="sr-only">
-                Home
-              </h1>
-              {/* Your content */}
-              <Map selectedTool={selectedTool} />
-            </section>
-
-            {/* Secondary column (hidden on smaller screens) */}
-            <aside className="hidden lg:order-first lg:block lg:flex-shrink-0">
-              <div className="relative flex h-full w-96 flex-col overflow-y-auto border-r border-gray-200 bg-gray-100">
-                <div className="w-full h-full">
-                    <h3 className="text-xl text-center my-4">{selectedTool}</h3>
-                </div>
-                <Outlet />
-                {/* Your content */}
-              </div>
-            </aside>
+            <MapAndControls>
+              <Outlet />
+            </MapAndControls>
           </main>
         </div>
       </div>
     </>
-  )
+  );
 }
