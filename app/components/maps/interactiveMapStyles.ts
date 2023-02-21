@@ -131,7 +131,7 @@ export const formatLength = function (line: LineString) {
   return output;
 };
 
-const formatArea = function (polygon: Polygon) {
+export const formatArea = function (polygon: Polygon) {
   const area = getArea(polygon);
   let output;
   if (area > 10000) {

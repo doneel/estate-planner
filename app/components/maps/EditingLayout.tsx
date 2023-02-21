@@ -69,7 +69,7 @@ export default function Example() {
         <body class="h-full overflow-hidden">
         ```
       */}
-      <div className="flex h-full flex-col">
+      <div id="full-page-edit-layout" className="flex h-full flex-col">
         {/* Top nav*/}
         <header className="relative flex h-16 flex-shrink-0 items-center bg-white">
           {/* Logo area */}

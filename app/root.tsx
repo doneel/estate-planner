@@ -17,7 +17,7 @@ export const links: LinksFunction = () => {
     },
     {
       rel: "stylesheet",
-      href: "/styles/olDefaultCss.css",
+      href: "/styles/map-styles.css",
     },
   ];
 };

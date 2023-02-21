@@ -17,7 +17,7 @@ import { LineString } from "ol/geom";
 import type { LongLat, SavedPolygon } from "./MapContext";
 import { MapContext } from "./MapContext";
 import XYZ from "ol/source/XYZ";
-import { formatLength, styleFunction } from "./interactiveMapStyles";
+import { formatArea, formatLength, styleFunction } from "./interactiveMapStyles";
 import { v4 as uuidv4 } from "uuid";
 import Stamen from "ol/source/Stamen";
 import type { Feature } from "ol";
@@ -26,6 +26,8 @@ import Style from "ol/style/Style";
 import type { FeatureLike } from "ol/Feature";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
+import { TileWMS } from "ol/source";
+import { getArea } from "ol/Sphere";
 
 export interface Props {
   //zoom: number;
@@ -39,6 +41,7 @@ export interface Props {
   setParcelLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
   setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
   setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
+  setWetlandsLayer: React.Dispatch<React.SetStateAction<TileLayer<TileWMS> | undefined>>;
 }
 
 function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: SavedPolygon) => void) {
@@ -56,6 +59,7 @@ function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInter
   drawTool.on("drawend", (e: DrawEvent) => {
     e.feature.set("type", "building");
     const coordinates: number[][] = (e.feature.getGeometry() as Polygon).getCoordinates()[0];
+    console.log("created coords", (e.feature.getGeometry() as Polygon).getCoordinates()[0]);
     const firstCoords = coordinates[0];
     const lengths: string[] = [];
     new LineString(coordinates).forEachSegment((start, end) => {
@@ -67,6 +71,7 @@ function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInter
         return { long: c[0] - firstCoords[0], lat: c[1] - firstCoords[1] };
       }),
       dimensions: lengths,
+      area: formatArea(e.feature.getGeometry() as Polygon),
     };
     addBuildingToLibrary(polygon);
     (e.target as Draw).setActive(false);
@@ -112,7 +117,7 @@ function createTranslationTool(map: Map, selectInteraction: Select) {
   return translateInteraction;
 }
 
-export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTool, setTopoLayer, setParcelLayer, setStreetLayer, setTonerLayer }: Props) {
+export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTool, setTopoLayer, setParcelLayer, setStreetLayer, setTonerLayer, setWetlandsLayer }: Props) {
   const {
     map,
     buildingTool,
@@ -129,6 +134,7 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
       source: drawLayerSource,
       style: function (feature: FeatureLike, resolution) {
         if (feature.get("type") === "building") {
+          console.log("FOUND A BUILDING", feature);
           return new Style({
             stroke: new Stroke({
               color: "black",
@@ -159,6 +165,16 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
         }
       },
     });
+    drawLayer.set("type", "draw");
+
+    const wetlandsLayer = new TileLayer({
+      source: new TileWMS({
+        url: "https://fwspublicservices.wim.usgs.gov/wetlandsmapservice/services/Wetlands/MapServer/WMSServer/",
+        params: { TILED: true, layers: 1 },
+      }),
+    });
+    setWetlandsLayer(wetlandsLayer);
+    wetlandsLayer.setVisible(false);
 
     const topoTileLayer = new TileLayer({
       source: new XYZ({
@@ -189,7 +205,7 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
 
     const newMap = new Map({
       controls: defaultControls(),
-      layers: [osmLayer, topoTileLayer, parcelTileLayer, tonerLayer, drawLayer],
+      layers: [osmLayer, topoTileLayer, parcelTileLayer, tonerLayer, wetlandsLayer, drawLayer],
       target: "map",
       view: new View({
         //center: [-80.90935220287511, 35.34884494150707],

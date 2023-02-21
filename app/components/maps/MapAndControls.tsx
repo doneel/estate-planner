@@ -26,6 +26,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
   const [parcelLayer, setParcelLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
   const [streetLayer, setStreetLayer] = React.useState<TileLayer<OSM> | undefined>(undefined);
   const [tonerLayer, setTonerLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
+  const [wetlandsLayer, setWetlandsLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
 
   const [buildingLibrary, setBuildingLibrary] = React.useState<SavedPolygon[]>([]);
 
@@ -41,6 +42,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
         parcelLayer,
         streetLayer,
         tonerLayer,
+        wetlandsLayer,
         project: {
           featuresGeoJson: JSON.parse("{}"),
           buildingLibrary,
@@ -64,6 +66,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
           setParcelLayer={setParcelLayer}
           setStreetLayer={setStreetLayer}
           setTonerLayer={setTonerLayer}
+          setWetlandsLayer={setWetlandsLayer}
         />
       </section>
 
