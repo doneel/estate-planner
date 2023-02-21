@@ -8,12 +8,13 @@ import { useMemo } from "react";
 import { useState } from "react";
 import React from "react";
 import OlMap from "./OlMap";
+import type { SavedPolygon } from "./MapContext";
 import { MapContext } from "./MapContext";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import type Geometry from "ol/geom/Geometry";
 import type TileLayer from "ol/layer/Tile";
-import type { XYZ } from "ol/source";
+import type { OSM, XYZ } from "ol/source";
 
 export interface Props {}
 
@@ -22,24 +23,48 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
   const [buildingTool, setBuildingTool] = React.useState<Draw | undefined>(undefined);
   const [roadTool, setRoadTool] = React.useState<Draw | undefined>(undefined);
   const [topoLayer, setTopoLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
+  const [parcelLayer, setParcelLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
+  const [streetLayer, setStreetLayer] = React.useState<TileLayer<OSM> | undefined>(undefined);
+  const [tonerLayer, setTonerLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
+
+  const [buildingLibrary, setBuildingLibrary] = React.useState<SavedPolygon[]>([]);
 
   const [map, setMap] = React.useState<Map | undefined>(undefined);
-  /*
-  const [buildingTool, setBuildingTool] = React.useState<Draw | undefined>(undefined);
-  const [roadTool, setRoadTool] = React.useState<Draw | undefined>(undefined);
-  const [selectInteraction, setSelectInteraction] = React.useState<Select | undefined>(undefined);
-  const [translateInteraction, setTranslateInteraction] = React.useState<Translate | undefined>(undefined);
-  */
 
   return (
-    <MapContext.Provider value={{ map, buildingTool, roadTool, topoLayer }}>
+    <MapContext.Provider
+      value={{
+        map,
+        buildingTool,
+        roadTool,
+        topoLayer,
+        parcelLayer,
+        streetLayer,
+        tonerLayer,
+        project: {
+          featuresGeoJson: JSON.parse("{}"),
+          buildingLibrary,
+          setBuildingLibrary,
+        },
+      }}
+    >
       {/* Primary column */}
       <section aria-labelledby="primary-heading" className="flex h-full min-w-0 flex-1 flex-col overflow-y-auto lg:order-last">
         <h1 id="primary-heading" className="sr-only">
           Home
         </h1>
         {/* Your content */}
-        <OlMap selectedTool={selectedTool} map={map} setMap={setMap} setBuildingTool={setBuildingTool} setRoadTool={setRoadTool} setTopoLayer={setTopoLayer} />
+        <OlMap
+          selectedTool={selectedTool}
+          map={map}
+          setMap={setMap}
+          setBuildingTool={setBuildingTool}
+          setRoadTool={setRoadTool}
+          setTopoLayer={setTopoLayer}
+          setParcelLayer={setParcelLayer}
+          setStreetLayer={setStreetLayer}
+          setTonerLayer={setTonerLayer}
+        />
       </section>
 
       {/* Secondary column (hidden on smaller screens) */}

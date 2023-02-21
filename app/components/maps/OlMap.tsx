@@ -5,7 +5,6 @@ import View from "ol/View";
 import Map from "ol/Map";
 import React from "react";
 import { useContext } from "react";
-import "./olDefaultCss.css";
 import { useGeographic } from "ol/proj";
 import { Vector as VectorLayer } from "ol/layer";
 import Select from "ol/interaction/Select";
@@ -13,9 +12,14 @@ import Translate from "ol/interaction/Translate";
 import type { DrawEvent } from "ol/interaction/Draw";
 import Draw from "ol/interaction/Draw";
 import VectorSource from "ol/source/Vector";
-import type { Geometry } from "ol/geom";
+import type { Geometry, Polygon } from "ol/geom";
+import { LineString } from "ol/geom";
+import type { LongLat, SavedPolygon } from "./MapContext";
 import { MapContext } from "./MapContext";
 import XYZ from "ol/source/XYZ";
+import { formatLength, styleFunction } from "./interactiveMapStyles";
+import { v4 as uuidv4 } from "uuid";
+import Stamen from "ol/source/Stamen";
 
 export interface Props {
   //zoom: number;
@@ -26,29 +30,42 @@ export interface Props {
   setBuildingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   setRoadTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   setTopoLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setParcelLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
 }
 
-function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction?: Select, translateInteraction?: Translate) {
+function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: SavedPolygon) => void) {
+  let tip = "";
   const drawTool = new Draw({
     source: drawLayerSource,
     type: "Polygon",
     stopClick: true,
+    style: function (feature) {
+      return styleFunction(feature, true, "Polygon", tip);
+    },
   });
   drawTool.set("name", "buildings");
-  //drawTool.on('drawend', (e: BaseEvent) => console.log('completed', e.feature));
+
   drawTool.on("drawend", (e: DrawEvent) => {
+    const coordinates: number[][] = (e.feature.getGeometry() as Polygon).getCoordinates()[0];
+    const firstCoords = coordinates[0];
+    const lengths: string[] = [];
+    new LineString(coordinates).forEachSegment((start, end) => {
+      lengths.push(formatLength(new LineString([start, end])));
+    });
+    const polygon = {
+      id: uuidv4(),
+      points: coordinates.map<LongLat>((c) => {
+        return { long: c[0] - firstCoords[0], lat: c[1] - firstCoords[1] };
+      }),
+      dimensions: lengths,
+    };
+    addBuildingToLibrary(polygon);
     (e.target as Draw).setActive(false);
-    console.log(selectInteraction);
     selectInteraction?.setActive(true);
     translateInteraction?.setActive(true);
-    /*
-        var translate = new Translate({
-           features: new Collection([e.feature])
-        });
-        map.current?.ol.addInteraction(translate);
-        */
   });
-  console.log("adding interaction tool to ", map);
   map.addInteraction(drawTool);
   return drawTool;
 }
@@ -58,6 +75,9 @@ function createRoadTool(drawLayerSource: VectorSource, map: Map, selectInteracti
     source: drawLayerSource,
     type: "LineString",
     stopClick: true,
+    style: function (feature) {
+      return styleFunction(feature, true, "LineString", "");
+    },
   });
   drawTool.set("name", "roads");
   drawTool.on("drawend", (e: DrawEvent) => {
@@ -84,9 +104,12 @@ function createTranslationTool(map: Map, selectInteraction: Select) {
   return translateInteraction;
 }
 
-export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTool, setTopoLayer }: Props) {
-  useGeographic();
-  const { map, buildingTool } = useContext(MapContext);
+export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTool, setTopoLayer, setParcelLayer, setStreetLayer, setTonerLayer }: Props) {
+  const {
+    map,
+    buildingTool,
+    project: { buildingLibrary, setBuildingLibrary },
+  } = useContext(MapContext);
   const [selectInteraction, setSelectInteraction] = React.useState<Select | undefined>(undefined);
   const [translateInteraction, setTranslateInteraction] = React.useState<Translate | undefined>(undefined);
 
@@ -104,16 +127,37 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
         attributions: ["Powered by Esri. "],
       }),
     });
+    topoTileLayer.setVisible(false);
     setTopoLayer(topoTileLayer);
+
+    const parcelTileLayer = new TileLayer({
+      source: new XYZ({
+        url: "https://tiles.regrid.com/api/v1/parcels/{z}/{x}/{y}.png?token=WkKgQzMANAdxfc9R0HgNellvzv4PG3PRxeaBpGPnE1MXfKtiLs04qgU1yjIAQmTW&format=mvt",
+      }),
+    });
+    setParcelLayer(parcelTileLayer);
+    parcelTileLayer.setVisible(false);
+
+    const osmLayer = new TileLayer({ source: new OSM() });
+    osmLayer.setVisible(true);
+    setStreetLayer(osmLayer);
+
+    const tonerLayer = new TileLayer({
+      source: new Stamen({ layer: "toner" }),
+    });
+    tonerLayer.setVisible(false);
+    setTonerLayer(tonerLayer);
 
     const newMap = new Map({
       controls: defaultControls(),
-      layers: [new TileLayer({ source: new OSM() }), drawLayer, topoTileLayer],
+      layers: [osmLayer, drawLayer, topoTileLayer, parcelTileLayer, tonerLayer],
       target: "map",
       view: new View({
-        center: [-80.90935220287511, 35.34884494150707],
+        //center: [-80.90935220287511, 35.34884494150707],
+        center: [-9006787.887637684, 4211389.412959919],
+        //center: [-11000000, 4600000],
         zoom: 19,
-        rotation: 0,
+        //rotation: 0,
       }),
     });
     setMap(newMap);
@@ -130,7 +174,9 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
     setRoadTool(newRoadTool);
     newRoadTool?.setActive(false);
 
-    const newBuildingTool = createBuildingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool);
+    const newBuildingTool = createBuildingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool, (b) => {
+      setBuildingLibrary((currentState) => [...currentState, b]);
+    });
     newBuildingTool.setActive(false);
     setBuildingTool(newBuildingTool);
   }
