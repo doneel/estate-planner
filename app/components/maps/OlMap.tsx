@@ -20,6 +20,12 @@ import XYZ from "ol/source/XYZ";
 import { formatLength, styleFunction } from "./interactiveMapStyles";
 import { v4 as uuidv4 } from "uuid";
 import Stamen from "ol/source/Stamen";
+import type { Feature } from "ol";
+import { defaultFillStyle } from "ol/render/canvas";
+import Style from "ol/style/Style";
+import type { FeatureLike } from "ol/Feature";
+import Stroke from "ol/style/Stroke";
+import Fill from "ol/style/Fill";
 
 export interface Props {
   //zoom: number;
@@ -48,6 +54,7 @@ function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInter
   drawTool.set("name", "buildings");
 
   drawTool.on("drawend", (e: DrawEvent) => {
+    e.feature.set("type", "building");
     const coordinates: number[][] = (e.feature.getGeometry() as Polygon).getCoordinates()[0];
     const firstCoords = coordinates[0];
     const lengths: string[] = [];
@@ -81,6 +88,7 @@ function createRoadTool(drawLayerSource: VectorSource, map: Map, selectInteracti
   });
   drawTool.set("name", "roads");
   drawTool.on("drawend", (e: DrawEvent) => {
+    e.feature.set("type", "road");
     (e.target as Draw).setActive(false);
     selectInteraction?.setActive(true);
     translateInteraction?.setActive(true);
@@ -119,6 +127,37 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
     const drawLayerSource = new VectorSource({ wrapX: false });
     const drawLayer: VectorLayer<VectorSource<Geometry>> = new VectorLayer({
       source: drawLayerSource,
+      style: function (feature: FeatureLike, resolution) {
+        if (feature.get("type") === "building") {
+          return new Style({
+            stroke: new Stroke({
+              color: "black",
+              width: 4,
+            }),
+            fill: new Fill({
+              color: "#CCCCCC77",
+            }),
+          });
+        }
+        if (feature.get("type") === "road") {
+          const roadWidthMeters = 10;
+          console.log("resolution", resolution);
+          return [
+            new Style({
+              stroke: new Stroke({
+                color: "black",
+                width: roadWidthMeters / resolution,
+              }),
+            }),
+            new Style({
+              stroke: new Stroke({
+                color: "white",
+                width: roadWidthMeters / resolution - 1,
+              }),
+            }),
+          ];
+        }
+      },
     });
 
     const topoTileLayer = new TileLayer({
@@ -150,7 +189,7 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
 
     const newMap = new Map({
       controls: defaultControls(),
-      layers: [osmLayer, drawLayer, topoTileLayer, parcelTileLayer, tonerLayer],
+      layers: [osmLayer, topoTileLayer, parcelTileLayer, tonerLayer, drawLayer],
       target: "map",
       view: new View({
         //center: [-80.90935220287511, 35.34884494150707],
