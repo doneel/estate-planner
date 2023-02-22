@@ -14,7 +14,7 @@ import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import type Geometry from "ol/geom/Geometry";
 import type TileLayer from "ol/layer/Tile";
-import type { OSM, XYZ } from "ol/source";
+import type { OSM, TileWMS, XYZ } from "ol/source";
 
 export interface Props {}
 
@@ -22,11 +22,12 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
   const [selectedTool, setSelectedTool] = useState<string>();
   const [buildingTool, setBuildingTool] = React.useState<Draw | undefined>(undefined);
   const [roadTool, setRoadTool] = React.useState<Draw | undefined>(undefined);
+  const [parkingTool, setParkingTool] = React.useState<Draw | undefined>(undefined);
   const [topoLayer, setTopoLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
   const [parcelLayer, setParcelLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
   const [streetLayer, setStreetLayer] = React.useState<TileLayer<OSM> | undefined>(undefined);
   const [tonerLayer, setTonerLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
-  const [wetlandsLayer, setWetlandsLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
+  const [wetlandsLayer, setWetlandsLayer] = React.useState<TileLayer<TileWMS> | undefined>(undefined);
 
   const [buildingLibrary, setBuildingLibrary] = React.useState<SavedPolygon[]>([]);
 
@@ -40,6 +41,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
         roadTool,
         topoLayer,
         parcelLayer,
+        parkingTool,
         streetLayer,
         tonerLayer,
         wetlandsLayer,
@@ -62,6 +64,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
           setMap={setMap}
           setBuildingTool={setBuildingTool}
           setRoadTool={setRoadTool}
+          setParkingTool={setParkingTool}
           setTopoLayer={setTopoLayer}
           setParcelLayer={setParcelLayer}
           setStreetLayer={setStreetLayer}

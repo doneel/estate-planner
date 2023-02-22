@@ -37,6 +37,7 @@ export interface Props {
   setMap: React.Dispatch<React.SetStateAction<Map | undefined>>;
   setBuildingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   setRoadTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
+  setParkingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   setTopoLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
   setParcelLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
   setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
@@ -45,21 +46,18 @@ export interface Props {
 }
 
 function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: SavedPolygon) => void) {
-  let tip = "";
   const drawTool = new Draw({
     source: drawLayerSource,
     type: "Polygon",
     stopClick: true,
     style: function (feature) {
-      return styleFunction(feature, true, "Polygon", tip);
+      return styleFunction(feature, true, "Polygon", "");
     },
   });
   drawTool.set("name", "buildings");
 
   drawTool.on("drawend", (e: DrawEvent) => {
-    e.feature.set("type", "building");
     const coordinates: number[][] = (e.feature.getGeometry() as Polygon).getCoordinates()[0];
-    console.log("created coords", (e.feature.getGeometry() as Polygon).getCoordinates()[0]);
     const firstCoords = coordinates[0];
     const lengths: string[] = [];
     new LineString(coordinates).forEachSegment((start, end) => {
@@ -103,6 +101,26 @@ function createRoadTool(drawLayerSource: VectorSource, map: Map, selectInteracti
   return drawTool;
 }
 
+function createParkingTool(drawLayerSource: VectorSource, map: Map, selectInteraction?: Select, translateInteraction?: Translate) {
+  const drawTool = new Draw({
+    source: drawLayerSource,
+    type: "Polygon",
+    stopClick: true,
+    style: function (feature) {
+      return styleFunction(feature, true, "Polygon", "");
+    },
+  });
+  drawTool.set("name", "parking");
+  drawTool.on("drawend", (e: DrawEvent) => {
+    e.feature.set("type", "parking");
+    (e.target as Draw).setActive(false);
+    selectInteraction?.setActive(true);
+    translateInteraction?.setActive(true);
+  });
+
+  return drawTool;
+}
+
 function createSelectTool(map: Map) {
   const selectInteraction = new Select();
   map.addInteraction(selectInteraction);
@@ -117,7 +135,7 @@ function createTranslationTool(map: Map, selectInteraction: Select) {
   return translateInteraction;
 }
 
-export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTool, setTopoLayer, setParcelLayer, setStreetLayer, setTonerLayer, setWetlandsLayer }: Props) {
+export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTool, setParkingTool, setTopoLayer, setParcelLayer, setStreetLayer, setTonerLayer, setWetlandsLayer }: Props) {
   const {
     map,
     buildingTool,
@@ -147,7 +165,6 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
         }
         if (feature.get("type") === "road") {
           const roadWidthMeters = 10;
-          console.log("resolution", resolution);
           return [
             new Style({
               stroke: new Stroke({
@@ -162,6 +179,15 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
               }),
             }),
           ];
+        }
+        if (feature.get("type") === "parking") {
+          return new Style({
+            fill: new Fill({ color: "#AAAAAA99" }),
+            stroke: new Stroke({
+              color: "white",
+              width: 2,
+            }),
+          });
         }
       },
     });
@@ -225,7 +251,7 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
     setTranslateInteraction(newTranslateTool);
     newTranslateTool?.setActive(false);
 
-    const newRoadTool = createRoadTool(drawLayerSource, newMap, selectInteraction, translateInteraction);
+    const newRoadTool = createRoadTool(drawLayerSource, newMap, newSelectTool, newTranslateTool);
     setRoadTool(newRoadTool);
     newRoadTool?.setActive(false);
 
@@ -234,6 +260,10 @@ export default function OlMap({ selectedTool, setMap, setBuildingTool, setRoadTo
     });
     newBuildingTool.setActive(false);
     setBuildingTool(newBuildingTool);
+
+    const newParkingTool = createParkingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool);
+    setParkingTool(newParkingTool);
+    newParkingTool.setActive(false);
   }
 
   React.useEffect(() => {

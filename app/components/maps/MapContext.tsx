@@ -19,6 +19,7 @@ export interface MapContextType {
   map?: Map;
   buildingTool?: Draw;
   roadTool?: Draw;
+  parkingTool?: Draw;
   topoLayer?: TileLayer<XYZ>;
   parcelLayer?: TileLayer<XYZ>;
   streetLayer?: TileLayer<OSM>;

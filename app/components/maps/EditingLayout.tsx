@@ -15,7 +15,20 @@
 import { Fragment, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { ArchiveBoxIcon, Bars3Icon, BellIcon, FlagIcon, InboxIcon, NoSymbolIcon, PencilSquareIcon, UserCircleIcon, XMarkIcon, HomeModernIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
+import {
+  ArchiveBoxIcon,
+  Bars3Icon,
+  BellIcon,
+  FlagIcon,
+  StopIcon,
+  InboxIcon,
+  NoSymbolIcon,
+  PencilSquareIcon,
+  UserCircleIcon,
+  XMarkIcon,
+  HomeModernIcon,
+  Square3Stack3DIcon,
+} from "@heroicons/react/24/outline";
 import { FaRoad } from "react-icons/fa";
 import { NavLink, Outlet } from "@remix-run/react";
 import OlMap from "./OlMap";
@@ -40,10 +53,10 @@ const navigation = [
   { name: "Settings", href: "#", children: [] },
 ];
 const sidebarNavigation = [
+  { name: "Layers", href: "layers", icon: Square3Stack3DIcon, current: false },
   { name: "Buildings", href: "buildings", icon: HomeModernIcon, current: true },
   { name: "Roads", href: "roads", icon: FaRoad, current: false },
-  { name: "Layers", href: "layers", icon: Square3Stack3DIcon, current: false },
-  { name: "Flagged", href: "flagged", icon: FlagIcon, current: false },
+  { name: "Parking", href: "parking", icon: FlagIcon, current: false },
   { name: "Spam", href: "spam", icon: NoSymbolIcon, current: false },
   { name: "Drafts", href: "drafts", icon: PencilSquareIcon, current: false },
 ];
