@@ -31,7 +31,6 @@ export class DropBuilding extends PointerInteraction {
     const drawSource = (maybeDrawLayer as VectorLayer<VectorSource>).getSource();
     const coords: Coordinate[] = this.polygon.points.map((point) => [point.long + clickX, point.lat + clickY] as Coordinate);
 
-    console.log(coords);
     const polygonGeometry = new Polygon([coords]);
     console.log("addable polygon", polygonGeometry, "event click", event.coordinate, "source", drawSource);
     const feature = new Feature(polygonGeometry);

@@ -26,6 +26,7 @@ import {
   PencilSquareIcon,
   UserCircleIcon,
   XMarkIcon,
+  ExclamationTriangleIcon,
   HomeModernIcon,
   Square3Stack3DIcon,
 } from "@heroicons/react/24/outline";
@@ -57,7 +58,7 @@ const sidebarNavigation = [
   { name: "Buildings", href: "buildings", icon: HomeModernIcon, current: true },
   { name: "Roads", href: "roads", icon: FaRoad, current: false },
   { name: "Parking", href: "parking", icon: FlagIcon, current: false },
-  { name: "Spam", href: "spam", icon: NoSymbolIcon, current: false },
+  { name: "Stepbacks", href: "stepbacks", icon: ExclamationTriangleIcon, current: false },
   { name: "Drafts", href: "drafts", icon: PencilSquareIcon, current: false },
 ];
 const userNavigation = [

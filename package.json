@@ -43,6 +43,7 @@
     "@stytch/react": "^0.5.0",
     "@stytch/vanilla-js": "^0.5.1",
     "@tailwindcss/forms": "^0.5.3",
+    "@turf/turf": "^6.5.0",
     "@types/ol": "^7.0.0",
     "@types/react-scroll": "^1.8.4",
     "@types/uuid": "^9.0.0",

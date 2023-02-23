@@ -3,7 +3,7 @@ import { useContext } from "react";
 import { DropBuilding } from "~/components/maps/DropBuildingInteraction";
 import { MapContext } from "~/components/maps/MapContext";
 
-export default function Roads() {
+export default function Buildings() {
   const {
     map,
     buildingTool,

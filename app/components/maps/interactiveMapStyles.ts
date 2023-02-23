@@ -9,8 +9,10 @@ import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
 import { poly } from "googleapis/build/src/apis/poly";
 import type { Feature } from "ol";
-import type { Geometry, Polygon } from "ol/geom";
+import { Polygon } from "ol/geom";
+import type { Geometry } from "ol/geom";
 import type { FeatureLike } from "ol/Feature";
+import type { Coordinate } from "ol/coordinate";
 
 export const style = new Style({
   fill: new Fill({
@@ -183,4 +185,92 @@ export function styleFunction(feature: FeatureLike, segments, drawType, tip) {
   }
 
   return styles;
+}
+
+export function getRectangleCenteredAt(start: Coordinate, end: Coordinate, thickness: number): Polygon {
+  const [y1, x1] = start;
+  const [y2, x2] = end;
+  const slope = (y2 - y1) / (x2 - x1);
+  const islope = -1 / slope;
+  const deltaX = Math.sqrt(Math.pow(thickness, 2) / (1 + Math.pow(islope, 2)));
+  const deltaY = deltaX * islope;
+  return new Polygon([
+    [
+      [y1 - deltaY, x1 - deltaX],
+      [y1 + deltaY, x1 + deltaX],
+      [y2 + deltaY, x2 + deltaX],
+      [y2 - deltaY, x2 - deltaX],
+    ],
+  ]);
+}
+
+export function getSlope(start: Coordinate, end: Coordinate): number {
+  const [x1, y1] = start;
+  const [x2, y2] = end;
+  const deltaY = y2 - y1 === 0 ? 0.0001 : y2 - y1;
+  const deltaX = x2 - x1 === 0 ? 0.0001 : x2 - x1;
+  return deltaY / deltaX;
+}
+
+export function getWrappingPolygonOld(lineString: LineString, thickness: number) {
+  const points: Coordinate[] = lineString.getCoordinates();
+  const slopes: number[] = [];
+  lineString.forEachSegment((start, end) => {
+    slopes.push(getSlope(start, end));
+  });
+  const slopesWithCaps: number[] = [slopes[0], ...slopes, slopes[slopes.length - 1]];
+  const plusPoints: Coordinate[] = [];
+  const minusPoints: Coordinate[] = [];
+  points.forEach((point, index) => {
+    const [x, y] = point;
+    const avgSlope = (slopesWithCaps[index] + slopesWithCaps[index + 1]) / 2;
+
+    const islope = index === 0 || index == points.length - 1 ? -1 / avgSlope : avgSlope;
+    const deltaX = Math.sqrt(Math.pow(thickness, 2) / (1 + Math.pow(islope, 2)));
+    const deltaY = deltaX * islope;
+
+    console.log("averageSlope", avgSlope, "islope", islope, "deltaX", deltaX, "deltaY", deltaY);
+    plusPoints.push([x + deltaX, y + deltaY]);
+    minusPoints.push([x - deltaX, y - deltaY]);
+  });
+
+  return new Polygon([[...plusPoints, ...minusPoints.reverse()]]);
+}
+
+export function getWrappingPolygon(lineString: LineString, thickness: number) {
+  const points: Coordinate[] = lineString.getCoordinates();
+  const slopes: number[] = [];
+  lineString.forEachSegment((start, end) => {
+    slopes.push(getSlope(start, end));
+  });
+  const slopesWithCaps: number[] = [slopes[0], ...slopes, slopes[slopes.length - 1]];
+  const plusPoints: Coordinate[] = [];
+  const minusPoints: Coordinate[] = [];
+  points.forEach((point, index) => {
+    const [x, y] = point;
+
+    const m1 = -1 / slopesWithCaps[index];
+    const m2 = -1 / slopesWithCaps[index + 1];
+
+    //const islope = index === 0 || index == points.length - 1 ? -1 / avgSlope : avgSlope;
+    const deltaX1 = (slopesWithCaps[index] > 0 ? 1 : -1) * Math.sqrt(Math.pow(thickness, 2) / (1 + Math.pow(m1, 2)));
+    const deltaY1 = deltaX1 * m1; //* (m1 < 0 ? -1 : 1);
+    const deltaX2 = (slopesWithCaps[index + 1] > 0 ? 1 : -1) * Math.sqrt(Math.pow(thickness, 2) / (1 + Math.pow(m2, 2)));
+    const deltaY2 = deltaX2 * m2; //* (m2 < 0 ? -1 : 1);
+
+    const deltaX = deltaX1 + deltaX2;
+    const deltaY = (true ? -1 : 1) * (Math.abs(deltaY1) + Math.abs(deltaY2));
+    //if (m2 > 0 !== m1 > 0) {
+    // plusPoints.push([x + deltaY, y + deltaX]);
+    // minusPoints.push([x - deltaY, y - deltaX]);
+    //} else {
+    plusPoints.push([x + deltaX, y + deltaY]);
+    minusPoints.push([x - deltaX, y - deltaY]);
+    // }
+
+    //console.log("averageSlope", avgSlope, "islope", islope, "deltaX", deltaX, "deltaY", deltaY);
+    //console.log("m1", m1, "m2", m2, "deltaX", deltaX, deltaX1, deltaX2, "deltaY", deltaY, deltaY1, deltaY2);
+  });
+
+  return new Polygon([[...plusPoints, ...minusPoints.reverse()]]);
 }

@@ -20,6 +20,7 @@ export interface MapContextType {
   buildingTool?: Draw;
   roadTool?: Draw;
   parkingTool?: Draw;
+  stepbackTool?: Draw;
   topoLayer?: TileLayer<XYZ>;
   parcelLayer?: TileLayer<XYZ>;
   streetLayer?: TileLayer<OSM>;

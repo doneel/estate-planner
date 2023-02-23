@@ -22,6 +22,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
   const [selectedTool, setSelectedTool] = useState<string>();
   const [buildingTool, setBuildingTool] = React.useState<Draw | undefined>(undefined);
   const [roadTool, setRoadTool] = React.useState<Draw | undefined>(undefined);
+  const [stepbackTool, setStepbackTool] = React.useState<Draw | undefined>(undefined);
   const [parkingTool, setParkingTool] = React.useState<Draw | undefined>(undefined);
   const [topoLayer, setTopoLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
   const [parcelLayer, setParcelLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
@@ -39,9 +40,10 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
         map,
         buildingTool,
         roadTool,
+        parkingTool,
+        stepbackTool,
         topoLayer,
         parcelLayer,
-        parkingTool,
         streetLayer,
         tonerLayer,
         wetlandsLayer,
@@ -64,6 +66,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
           setMap={setMap}
           setBuildingTool={setBuildingTool}
           setRoadTool={setRoadTool}
+          setStepbackTool={setStepbackTool}
           setParkingTool={setParkingTool}
           setTopoLayer={setTopoLayer}
           setParcelLayer={setParcelLayer}
