@@ -3,7 +3,7 @@ import { useContext } from "react";
 import { MapContext } from "~/components/maps/MapContext";
 
 export default function Roads() {
-  const { map, roadTool } = useContext(MapContext);
+  const { map, roadTool, saveProject } = useContext(MapContext);
 
   return (
     <div className="align-start flex h-full w-full flex-col">
@@ -55,10 +55,10 @@ export default function Roads() {
           type="button"
           className="-mr-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600"
           onClick={() => {
-            roadTool?.setActive(true);
+            saveProject();
           }}
         >
-          New road
+          Save
         </button>
       </div>
     </div>

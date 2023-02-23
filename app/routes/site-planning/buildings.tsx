@@ -4,12 +4,9 @@ import { DropBuilding } from "~/components/maps/DropBuildingInteraction";
 import { MapContext } from "~/components/maps/MapContext";
 
 export default function Buildings() {
-  const {
-    map,
-    buildingTool,
-    project: { buildingLibrary },
-  } = useContext(MapContext);
+  const { map, buildingTool, buildingLibrary } = useContext(MapContext);
 
+  console.log(buildingLibrary);
   return (
     <div className="align-start flex h-full w-full flex-col">
       <h3 className="my-4 text-center text-2xl font-medium text-gray-700">Buildings</h3>
@@ -31,8 +28,9 @@ export default function Buildings() {
         </button>
 
         <ul role="list" className="mt-3 grid grow grid-cols-1 gap-5 sm:grid-cols-1 sm:gap-6 lg:grid-cols-1">
-          {buildingLibrary.length === 0 && <div className="self-center text-center text-lg text-gray-200">No buildings saved yet</div>}
-          {buildingLibrary.length > 0 &&
+          {buildingLibrary === undefined || (buildingLibrary.length === 0 && <div className="self-center text-center text-lg text-gray-200">No buildings saved yet</div>)}
+          {buildingLibrary &&
+            buildingLibrary.length > 0 &&
             buildingLibrary.map((building) => (
               <li key={building.id} className="h-fit ">
                 <button

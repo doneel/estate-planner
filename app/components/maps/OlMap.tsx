@@ -17,7 +17,7 @@ import VectorSource from "ol/source/Vector";
 import type { Geometry, Polygon } from "ol/geom";
 import { GeometryCollection } from "ol/geom";
 import { LineString } from "ol/geom";
-import type { LongLat, SavedPolygon } from "./MapContext";
+import type { LongLat, ISavedPolygon } from "./MapContext";
 import { MapContext } from "./MapContext";
 import XYZ from "ol/source/XYZ";
 import { formatArea, formatLength, getRectangleCenteredAt, getWrappingPolygon, styleFunction } from "./interactiveMapStyles";
@@ -50,9 +50,10 @@ export interface Props {
   setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
   setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
   setWetlandsLayer: React.Dispatch<React.SetStateAction<TileLayer<TileWMS> | undefined>>;
+  setBuildingLibrary: React.Dispatch<React.SetStateAction<ISavedPolygon[]>>;
 }
 
-function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: SavedPolygon) => void) {
+function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: ISavedPolygon) => void) {
   const drawTool = new Draw({
     source: drawLayerSource,
     type: "Polygon",
@@ -140,9 +141,6 @@ function createParkingTool(drawLayerSource: VectorSource, map: Map, selectIntera
     source: drawLayerSource,
     type: "Polygon",
     stopClick: true,
-    style: function (feature) {
-      return styleFunction(feature, true, "Polygon", "");
-    },
   });
   drawTool.set("name", "parking");
   drawTool.on("drawend", (e: DrawEvent) => {
@@ -152,6 +150,7 @@ function createParkingTool(drawLayerSource: VectorSource, map: Map, selectIntera
     translateInteraction?.setActive(true);
   });
 
+  map.addInteraction(drawTool);
   return drawTool;
 }
 
@@ -181,12 +180,9 @@ export default function OlMap({
   setStreetLayer,
   setTonerLayer,
   setWetlandsLayer,
+  setBuildingLibrary,
 }: Props) {
-  const {
-    map,
-    buildingTool,
-    project: { buildingLibrary, setBuildingLibrary },
-  } = useContext(MapContext);
+  const { map, buildingTool, loadProject, buildingLibrary } = useContext(MapContext);
   const [selectInteraction, setSelectInteraction] = React.useState<Select | undefined>(undefined);
   const [translateInteraction, setTranslateInteraction] = React.useState<Translate | undefined>(undefined);
 
@@ -219,6 +215,7 @@ export default function OlMap({
         ];
       },
     });
+    stepbackLayer.set("type", "stepback");
 
     const format = new GeoJSON();
 
@@ -347,18 +344,25 @@ export default function OlMap({
     newRoadTool?.setActive(false);
 
     const newBuildingTool = createBuildingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool, (b) => {
+      console.log("trying to save");
       setBuildingLibrary((currentState) => [...currentState, b]);
     });
     newBuildingTool.setActive(false);
     setBuildingTool(newBuildingTool);
 
     const newParkingTool = createParkingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool);
+    console.log("setting");
     setParkingTool(newParkingTool);
     newParkingTool.setActive(false);
 
     const newStepbackTool = createStepbackTool(stepbackLayerSource, newMap, newSelectTool, newTranslateTool);
     setStepbackTool(newStepbackTool);
     newStepbackTool.setActive(false);
+
+    if (loadProject) {
+      console.log("All layers now", newMap.getAllLayers());
+      loadProject(newMap);
+    }
   }
 
   React.useEffect(() => {

@@ -8,12 +8,12 @@ import type MapBrowserEvent from "ol/MapBrowserEvent";
 import type VectorSource from "ol/source/Vector";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
-import type { SavedPolygon } from "./MapContext";
+import type { ISavedPolygon } from "./MapContext";
 
 export class DropBuilding extends PointerInteraction {
-  polygon: SavedPolygon;
+  polygon: ISavedPolygon;
 
-  constructor(polygon: SavedPolygon) {
+  constructor(polygon: ISavedPolygon) {
     super({});
     this.polygon = polygon;
   }

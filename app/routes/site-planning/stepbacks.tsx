@@ -2,11 +2,7 @@ import { useContext } from "react";
 import { MapContext } from "~/components/maps/MapContext";
 
 export default function Stepbacks() {
-  const {
-    map,
-    stepbackTool,
-    project: { buildingLibrary },
-  } = useContext(MapContext);
+  const { map, stepbackTool } = useContext(MapContext);
 
   return (
     <div className="align-start flex h-full w-full flex-col">
