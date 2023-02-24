@@ -58,6 +58,9 @@ function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInter
     source: drawLayerSource,
     type: "Polygon",
     stopClick: true,
+    style: function (feature) {
+      return styleFunction(feature, true, "Polygon", "");
+    },
   });
   drawTool.set("name", "buildings");
 
@@ -141,6 +144,9 @@ function createParkingTool(drawLayerSource: VectorSource, map: Map, selectIntera
     source: drawLayerSource,
     type: "Polygon",
     stopClick: true,
+    style: function (feature) {
+      return styleFunction(feature, true, "Polygon", "");
+    },
   });
   drawTool.set("name", "parking");
   drawTool.on("drawend", (e: DrawEvent) => {
