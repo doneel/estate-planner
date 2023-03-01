@@ -133,8 +133,26 @@ export const formatLength = function (line: LineString) {
   return output;
 };
 
-export const formatArea = function (polygon: Polygon) {
+export const getAreaFt = function (polygon: Polygon) {
+  return getArea(polygon) * 10.7639104167;
+};
+
+export const formatAreaFt = function (sqFt: number) {
+  if (sqFt >= 43560) {
+    return Math.round((sqFt / 43560) * 100) / 100 + " acres";
+  }
+  return Math.round(sqFt * 100) / 100 + " ft\xB2";
+};
+
+export const formatArea = function (polygon: Polygon, convertToFt: boolean = false) {
   const area = getArea(polygon);
+  if (convertToFt) {
+    const areaInFt = 10.7639104167 * area;
+    if (areaInFt >= 43560) {
+      return Math.round((areaInFt / 43560) * 100) / 100 + " acres";
+    }
+    return Math.round(areaInFt * 100) / 100 + " ft\xB2";
+  }
   let output;
   if (area > 10000) {
     output = Math.round((area / 1000000) * 100) / 100 + " km\xB2";
@@ -146,11 +164,13 @@ export const formatArea = function (polygon: Polygon) {
 
 const segmentStyles = [segmentStyle];
 
-export function styleFunction(feature: FeatureLike, segments, drawType, tip) {
+export function styleFunction(feature: FeatureLike, segments: boolean, drawType: string) {
   const styles = [style];
   const geometry = feature.getGeometry();
-  const type = geometry.getType();
-  let point, label, line;
+  const type = geometry?.getType();
+  let point; //: Point | undefined;
+  let label;
+  let line: LineString | undefined = undefined;
   if (!drawType || drawType === type) {
     if (type === "Polygon") {
       point = (geometry as Polygon).getInteriorPoint();
@@ -159,7 +179,7 @@ export function styleFunction(feature: FeatureLike, segments, drawType, tip) {
     } else if (type === "LineString") {
       point = new Point((geometry as LineString).getLastCoordinate());
       label = formatLength(geometry as LineString);
-      line = geometry;
+      line = geometry as LineString;
     }
   }
   if (segments && line) {
@@ -177,9 +197,9 @@ export function styleFunction(feature: FeatureLike, segments, drawType, tip) {
       count++;
     });
   }
-  if (label) {
-    const centerpoint = point?.translate(0, 15);
-    labelStyle.setGeometry(centerpoint);
+  if (label && point) {
+    point.translate(0, 15);
+    labelStyle.setGeometry(point);
     labelStyle.getText().setText(label);
     styles.push(labelStyle);
   }

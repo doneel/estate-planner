@@ -66,7 +66,7 @@ const userNavigation = [
   { name: "Sign out", href: "#" },
 ];
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
@@ -105,14 +105,7 @@ export default function Example() {
                 defaultValue={sidebarNavigation.find((item) => item.current)?.name}
               >
                 {sidebarNavigation.map((item) => (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => {
-                      console.log("selected", item.name);
-                      setSelectedTool(item.href);
-                    }}
-                  >
+                  <NavLink key={item.name} to={item.href}>
                     {item.name}
                   </NavLink>
                 ))}
@@ -315,9 +308,6 @@ export default function Example() {
                 <NavLink
                   key={item.name}
                   to={item.href}
-                  onClick={() => {
-                    console.log("selected", item.href);
-                  }}
                   className={({ isActive }) =>
                     `${isActive ? "bg-gray-900 text-white" : "text-gray-400 hover:bg-gray-700"}
                     inline-flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg`

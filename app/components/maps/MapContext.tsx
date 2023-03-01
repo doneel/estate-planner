@@ -17,6 +17,7 @@ export interface ISavedPolygon {
   points: LongLat[];
   dimensions: String[];
   area: string;
+  name?: string;
 }
 
 @JsonObject()

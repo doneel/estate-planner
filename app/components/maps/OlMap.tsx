@@ -1,5 +1,6 @@
 import { defaults as defaultControls } from "ol/control";
 import TileLayer from "ol/layer/Tile";
+import type { GeoJSONFeature } from "ol/format/GeoJSON";
 import GeoJSON from "ol/format/GeoJSON";
 import { intersect } from "@turf/turf";
 import OSM from "ol/source/OSM";
@@ -32,7 +33,7 @@ import Fill from "ol/style/Fill";
 import { TileWMS } from "ol/source";
 import { getArea } from "ol/Sphere";
 import { geojsonType } from "@turf/turf";
-import type { GeoJsonObject } from "geojson";
+import type { GeoJsonObject, Feature as GJFeature, Polygon as GJPolygon } from "geojson";
 import type { GeoJsonProperties } from "geojson";
 
 export interface Props {
@@ -59,7 +60,7 @@ function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInter
     type: "Polygon",
     stopClick: true,
     style: function (feature) {
-      return styleFunction(feature, true, "Polygon", "");
+      return styleFunction(feature, true, "Polygon");
     },
   });
   drawTool.set("name", "buildings");
@@ -95,7 +96,7 @@ function createRoadTool(drawLayerSource: VectorSource, map: Map, selectInteracti
     type: "LineString",
     stopClick: true,
     style: function (feature) {
-      return styleFunction(feature, true, "LineString", "");
+      return styleFunction(feature, true, "LineString");
     },
   });
   drawTool.set("name", "roads");
@@ -116,7 +117,7 @@ function createStepbackTool(stepbackLayerSource: VectorSource, map: Map, selectI
     type: "LineString",
     stopClick: true,
     style: function (feature) {
-      return styleFunction(feature, true, "LineString", "");
+      return styleFunction(feature, true, "LineString");
     },
   });
   drawTool.on("drawend", (e: DrawEvent) => {
@@ -145,7 +146,7 @@ function createParkingTool(drawLayerSource: VectorSource, map: Map, selectIntera
     type: "Polygon",
     stopClick: true,
     style: function (feature) {
-      return styleFunction(feature, true, "Polygon", "");
+      return styleFunction(feature, true, "Polygon");
     },
   });
   drawTool.set("name", "parking");
@@ -230,13 +231,13 @@ export default function OlMap({
       source: drawLayerSource,
       style: function (feature: FeatureLike, resolution) {
         if (feature.get("type") === "building") {
-          const stepbackGeoJson: Feature<Geometry, GeoJsonProperties>[] = [];
+          const stepbackGeoJson: GJFeature<GJPolygon, GeoJsonProperties>[] = [];
           stepbackLayerSource.forEachFeature((feature) => {
             if (feature.get("type") === "stepbackBorder") {
-              stepbackGeoJson.push(format.writeFeatureObject(feature));
+              stepbackGeoJson.push(format.writeFeatureObject(feature) as GJFeature<GJPolygon, GeoJsonProperties>);
             }
           });
-          const buildingGeoFeature: Feature<Geometry, GeoJsonProperties> = format.writeFeatureObject(feature as Feature<Polygon>);
+          const buildingGeoFeature: GJFeature<GJPolygon, GeoJsonProperties> = format.writeFeatureObject(feature as Feature<Polygon>) as GJFeature<GJPolygon, GeoJsonProperties>;
           const safe = stepbackGeoJson.every((stepback) => intersect(stepback, buildingGeoFeature) === null);
           if (!safe) {
             return new Style({
