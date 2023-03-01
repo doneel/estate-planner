@@ -4,7 +4,7 @@ import Text from "ol/style/Text";
 import RegularShape from "ol/style/RegularShape";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
-import { getArea, getLength } from "ol/Sphere";
+import { getArea, getLength } from "ol/sphere";
 import LineString from "ol/geom/LineString";
 import Point from "ol/geom/Point";
 import { poly } from "googleapis/build/src/apis/poly";

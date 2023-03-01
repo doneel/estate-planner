@@ -31,7 +31,7 @@ import type { FeatureLike } from "ol/Feature";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
 import { TileWMS } from "ol/source";
-import { getArea } from "ol/Sphere";
+import { getArea } from "ol/sphere";
 import { geojsonType } from "@turf/turf";
 import type { GeoJsonObject, Feature as GJFeature, Polygon as GJPolygon } from "geojson";
 import type { GeoJsonProperties } from "geojson";

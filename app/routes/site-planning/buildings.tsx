@@ -4,7 +4,7 @@ import type Feature from "ol/Feature";
 import type Geometry from "ol/geom/Geometry";
 import type Polygon from "ol/geom/Polygon";
 import type VectorSource from "ol/source/Vector";
-import { getArea } from "ol/Sphere";
+import { getArea } from "ol/sphere";
 import { useContext } from "react";
 import { DropBuilding } from "~/components/maps/DropBuildingInteraction";
 import { formatArea, formatAreaFt, getAreaFt } from "~/components/maps/interactiveMapStyles";
