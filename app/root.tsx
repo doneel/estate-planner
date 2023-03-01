@@ -1,20 +1,11 @@
 import type { LinksFunction, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useLoaderData,
-} from "@remix-run/react";
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
 
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 import { createStytchUIClient } from "@stytch/nextjs/ui";
 import { StytchProvider } from "@stytch/nextjs";
-import GlobalFooter from "./components/footer/GlobalFooter";
 import { Fullstory } from "./components/utils/fullstory";
 
 export const links: LinksFunction = () => {
@@ -23,6 +14,10 @@ export const links: LinksFunction = () => {
     {
       rel: "stylesheet",
       href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css",
+    },
+    {
+      rel: "stylesheet",
+      href: "/styles/map-styles.css",
     },
   ];
 };
