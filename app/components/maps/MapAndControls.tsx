@@ -19,9 +19,10 @@ import type VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import type Geometry from "ol/geom/Geometry";
 import type TileLayer from "ol/layer/Tile";
-import type { OSM, TileWMS, XYZ } from "ol/source";
+import type { ImageArcGISRest, OSM, TileWMS, XYZ } from "ol/source";
 import useLocalStorageState from "~/hooks/useLocalStorageState";
 import type Feature from "ol/Feature";
+import type ImageLayer from "ol/layer/Image";
 
 export interface Props {}
 
@@ -36,6 +37,8 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
   const [streetLayer, setStreetLayer] = React.useState<TileLayer<OSM> | undefined>(undefined);
   const [tonerLayer, setTonerLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
   const [wetlandsLayer, setWetlandsLayer] = React.useState<TileLayer<TileWMS> | undefined>(undefined);
+  const [contourLayer, setContourLayer] = React.useState<ImageLayer<ImageArcGISRest> | undefined>(undefined);
+  const [slopeLayer, setSlopeLayer] = React.useState<ImageLayer<ImageArcGISRest> | undefined>(undefined);
 
   const [buildingLibrary, setBuildingLibrary] = React.useState<ISavedPolygon[]>([]);
 
@@ -109,6 +112,8 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
         streetLayer,
         tonerLayer,
         wetlandsLayer,
+        contourLayer,
+        slopeLayer,
         loadProject,
         buildingLibrary,
       }}
@@ -132,6 +137,8 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
           setStreetLayer={setStreetLayer}
           setTonerLayer={setTonerLayer}
           setWetlandsLayer={setWetlandsLayer}
+          setContourLayer={setContourLayer}
+          setSlopeLayer={setSlopeLayer}
           setBuildingLibrary={setBuildingLibrary}
         />
       </section>
