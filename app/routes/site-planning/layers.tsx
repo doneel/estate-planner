@@ -7,7 +7,7 @@ function classNames(...classes: String[]) {
   return classes.filter(Boolean).join(" ");
 }
 export default function Layers() {
-  const { topoLayer, streetLayer, parcelLayer, tonerLayer, wetlandsLayer } = useContext(MapContext);
+  const { topoLayer, streetLayer, parcelLayer, tonerLayer, wetlandsLayer, contourLayer, slopeLayer } = useContext(MapContext);
   const baseChoices = [
     { name: "Street", details: "©OSM 2022", olLayer: streetLayer },
     { name: "Topo", details: "Topo & Wetland features Provided by ESGI", olLayer: topoLayer },
@@ -15,8 +15,19 @@ export default function Layers() {
   ];
 
   const [selectedBase, setSelectedBase] = useState(baseChoices[0].name);
+
   const [parcelEnabled, setParcelEnabled] = useState(parcelLayer?.getVisible());
-  const [wetLandsEnabled, setWetlandsEnabled] = useState(wetlandsLayer?.getVisible());
+  const [wetlandsEnabled, setWetlandsEnabled] = useState(wetlandsLayer?.getVisible());
+  const [contourEnabled, setContourEnabled] = useState(contourLayer?.getVisible());
+  const [slopeEnabled, setSlopeEnabled] = useState(slopeLayer?.getVisible());
+
+  const overlayChoices = [
+    { name: "1ft Topo", enabled: contourEnabled, setEnabled: setContourEnabled, layer: contourLayer },
+    { name: "Parcel boundaries", enabled: parcelEnabled, setEnabled: setParcelEnabled, layer: parcelLayer },
+    { name: "Wetlands", enabled: wetlandsEnabled, setEnabled: setWetlandsEnabled, layer: wetlandsLayer },
+    { name: "Slope Steepness", enabled: slopeEnabled, setEnabled: setSlopeEnabled, layer: slopeLayer },
+  ];
+
   return (
     <div className="align-start flex h-full w-full flex-col">
       <h3 className="my-4 text-center text-2xl font-medium text-gray-700">Layers</h3>
@@ -70,58 +81,36 @@ export default function Layers() {
 
         <div className="text-md mx-1 mt-8 mb-4 font-medium text-gray-900">Overlays</div>
         <Switch.Group as="div" className="items-left my-4 flex flex-col justify-between space-y-2">
-          <div className="flex">
-            <Switch
-              checked={parcelLayer?.getVisible()}
-              onChange={() => {
-                setParcelEnabled(!parcelEnabled);
-                parcelLayer?.setVisible(!parcelLayer?.getVisible());
-              }}
-              className={classNames(
-                parcelEnabled ? "bg-indigo-600" : "bg-gray-200",
-                "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className={classNames(
-                  parcelEnabled ? "translate-x-5" : "translate-x-0",
-                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                )}
-              />
-            </Switch>
-            <span className="ml-4 flex flex-grow flex-col">
-              <Switch.Label as="span" className="text-sm font-medium text-gray-900" passive>
-                Parcel boundaries
-              </Switch.Label>
-            </span>
-          </div>
-          <div className="flex">
-            <Switch
-              checked={wetlandsLayer?.getVisible()}
-              onChange={() => {
-                setWetlandsEnabled(!wetLandsEnabled);
-                wetlandsLayer?.setVisible(!wetlandsLayer?.getVisible());
-              }}
-              className={classNames(
-                wetLandsEnabled ? "bg-indigo-600" : "bg-gray-200",
-                "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className={classNames(
-                  wetLandsEnabled ? "translate-x-5" : "translate-x-0",
-                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                )}
-              />
-            </Switch>
-            <span className="ml-4 flex flex-grow flex-col">
-              <Switch.Label as="span" className="text-sm font-medium text-gray-900" passive>
-                Wetlands
-              </Switch.Label>
-            </span>
-          </div>
+          {overlayChoices.map((overlay) => {
+            return (
+              <div className="flex" key={overlay.name}>
+                <Switch
+                  checked={overlay.layer?.getVisible()}
+                  onChange={() => {
+                    overlay.setEnabled(!overlay.enabled);
+                    overlay.layer?.setVisible(!overlay.layer?.getVisible());
+                  }}
+                  className={classNames(
+                    overlay.enabled ? "bg-indigo-600" : "bg-gray-200",
+                    "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={classNames(
+                      overlay.enabled ? "translate-x-5" : "translate-x-0",
+                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    )}
+                  />
+                </Switch>
+                <span className="ml-4 flex flex-grow flex-col">
+                  <Switch.Label as="span" className="text-sm font-medium text-gray-900" passive>
+                    {overlay.name}
+                  </Switch.Label>
+                </span>
+              </div>
+            );
+          })}
         </Switch.Group>
       </div>
     </div>

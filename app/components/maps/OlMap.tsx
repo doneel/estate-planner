@@ -11,6 +11,7 @@ import { useContext } from "react";
 import { useGeographic } from "ol/proj";
 import { Vector as VectorLayer } from "ol/layer";
 import Select from "ol/interaction/Select";
+import ImageLayer from "ol/layer/Image";
 import Translate from "ol/interaction/Translate";
 import type { DrawEvent } from "ol/interaction/Draw";
 import Draw from "ol/interaction/Draw";
@@ -30,7 +31,7 @@ import Style from "ol/style/Style";
 import type { FeatureLike } from "ol/Feature";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
-import { TileWMS } from "ol/source";
+import { ImageArcGISRest, TileWMS } from "ol/source";
 import { getArea } from "ol/sphere";
 import { geojsonType } from "@turf/turf";
 import type { GeoJsonObject, Feature as GJFeature, Polygon as GJPolygon } from "geojson";
@@ -51,6 +52,8 @@ export interface Props {
   setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
   setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
   setWetlandsLayer: React.Dispatch<React.SetStateAction<TileLayer<TileWMS> | undefined>>;
+  setContourLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
+  setSlopeLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
   setBuildingLibrary: React.Dispatch<React.SetStateAction<ISavedPolygon[]>>;
 }
 
@@ -187,6 +190,8 @@ export default function OlMap({
   setStreetLayer,
   setTonerLayer,
   setWetlandsLayer,
+  setContourLayer,
+  setSlopeLayer,
   setBuildingLibrary,
 }: Props) {
   const { map, buildingTool, loadProject, buildingLibrary } = useContext(MapContext);
@@ -309,6 +314,28 @@ export default function OlMap({
     topoTileLayer.setVisible(false);
     setTopoLayer(topoTileLayer);
 
+    const contourLayer = new ImageLayer({
+      source: new ImageArcGISRest({
+        ratio: 1,
+        params: { renderingRule: '{"rasterFunction":"Contour 25","rasterFunctionArguments":{"ContourInterval":0.33,"ZBase":1,"NumberOfContours":0}}' },
+        url: "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
+      }),
+      visible: false,
+      opacity: 0.5,
+    });
+    setContourLayer(contourLayer);
+
+    const slopeLayer = new ImageLayer({
+      source: new ImageArcGISRest({
+        ratio: 1,
+        params: { renderingRule: '{"rasterFunction":"Slope Map"}' },
+        url: "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
+      }),
+      visible: false,
+      opacity: 0.5,
+    });
+    setSlopeLayer(slopeLayer);
+
     const parcelTileLayer = new TileLayer({
       source: new XYZ({
         url: "https://tiles.regrid.com/api/v1/parcels/{z}/{x}/{y}.png?token=WkKgQzMANAdxfc9R0HgNellvzv4PG3PRxeaBpGPnE1MXfKtiLs04qgU1yjIAQmTW&format=mvt",
@@ -329,7 +356,7 @@ export default function OlMap({
 
     const newMap = new Map({
       controls: defaultControls(),
-      layers: [osmLayer, topoTileLayer, parcelTileLayer, tonerLayer, wetlandsLayer, stepbackLayer, drawLayer],
+      layers: [osmLayer, topoTileLayer, contourLayer, slopeLayer, tonerLayer, parcelTileLayer, wetlandsLayer, stepbackLayer, drawLayer],
       target: "map",
       view: new View({
         center: [-9006787.887637684, 4211389.412959919],
