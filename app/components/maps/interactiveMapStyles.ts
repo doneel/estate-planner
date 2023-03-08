@@ -133,6 +133,17 @@ export const formatLength = function (line: LineString) {
   return output;
 };
 
+export const getRectDimensions = function (polygon: Polygon) {
+  const line = new LineString(polygon.getCoordinates()[0]);
+  const lengthsInFt: number[] = [];
+  line.forEachSegment(function (a, b) {
+    const segment = new LineString([a, b]);
+    const lengthInFt = getLength(segment) * 3.28084;
+    lengthsInFt.push(lengthInFt);
+  });
+  return [Math.min(...lengthsInFt), Math.max(...lengthsInFt)];
+};
+
 export const getAreaFt = function (polygon: Polygon) {
   return getArea(polygon) * 10.7639104167;
 };
@@ -294,3 +305,21 @@ export function getWrappingPolygon(lineString: LineString, thickness: number) {
 
   return new Polygon([[...plusPoints, ...minusPoints.reverse()]]);
 }
+
+/*
+export function offsetGeometry(feature: Feature<Geometry>, size: number) {
+  switch (feature.getGeometry()?.getType()) {
+    case "Polygon":
+      const coords = (feature.getGeometry() as Polygon).getCoordinates();
+      var sign = ((feature.getGeometry() as Polygon).getLinearRing(0)?.getArea() || 0) < 0 ? -1 : 1;
+      coords[0] = offsetCoords(coords[0], sign * size);
+      return new Polygon(coords);
+    case "LineString":
+      const coords = (feature.getGeometry() as Polygon).getCoordinates();
+      const newCoords = ol.coordinate.offsetCoords(coords, size);
+      return new LineString(newCoords);
+    default:
+      return feature.getGeometry();
+  }
+}
+*/

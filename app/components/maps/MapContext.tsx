@@ -1,5 +1,5 @@
 import React from "react";
-import type { Map } from "ol";
+import type { Feature, Map } from "ol";
 import type Draw from "ol/interaction/Draw";
 import type TileLayer from "ol/layer/Tile";
 import type { ImageArcGISRest, OSM, TileWMS, XYZ } from "ol/source";
@@ -7,7 +7,8 @@ import { JsonObject, JsonProperty, JsonSerializer, throwError } from "typescript
 import type { GeoJSONFeature } from "ol/format/GeoJSON";
 import type ImageLayer from "ol/layer/Image";
 import { Vector as VectorLayer } from "ol/layer";
-import { Feature, Geometry, GeoJsonProperties } from "geojson";
+import { GeoJsonProperties } from "geojson";
+import type { Geometry } from "ol/geom";
 
 export interface LongLat {
   long: number;
@@ -98,6 +99,7 @@ export interface MapContextType {
   contourLayer?: ImageLayer<ImageArcGISRest>;
   slopeLayer?: ImageLayer<ImageArcGISRest>;
   buildingLibrary?: ISavedPolygon[];
+  parkingLots?: Feature<Geometry>[];
   setBuildingLibrary?: React.Dispatch<React.SetStateAction<ISavedPolygon[]>>;
   saveProject: () => void;
   loadProject?: (map: Map) => void;

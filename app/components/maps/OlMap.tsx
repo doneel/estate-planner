@@ -36,6 +36,7 @@ import { getArea } from "ol/sphere";
 import { geojsonType } from "@turf/turf";
 import type { GeoJsonObject, Feature as GJFeature, Polygon as GJPolygon } from "geojson";
 import type { GeoJsonProperties } from "geojson";
+import { getUsableParkingLot } from "~/routes/site-planning/parking";
 
 export interface Props {
   //zoom: number;
@@ -55,6 +56,7 @@ export interface Props {
   setContourLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
   setSlopeLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
   setBuildingLibrary: React.Dispatch<React.SetStateAction<ISavedPolygon[]>>;
+  setParkingLots: React.Dispatch<React.SetStateAction<Feature<Geometry>[]>>;
 }
 
 function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: ISavedPolygon) => void) {
@@ -143,7 +145,7 @@ function createStepbackTool(stepbackLayerSource: VectorSource, map: Map, selectI
   return drawTool;
 }
 
-function createParkingTool(drawLayerSource: VectorSource, map: Map, selectInteraction?: Select, translateInteraction?: Translate) {
+function createParkingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addParkingLot: (lot: Feature<Geometry>) => void) {
   const drawTool = new Draw({
     source: drawLayerSource,
     type: "Polygon",
@@ -156,8 +158,11 @@ function createParkingTool(drawLayerSource: VectorSource, map: Map, selectIntera
   drawTool.on("drawend", (e: DrawEvent) => {
     e.feature.set("type", "parking");
     (e.target as Draw).setActive(false);
+    const internalRect = getUsableParkingLot(e.feature);
+    drawLayerSource.addFeature(internalRect);
     selectInteraction?.setActive(true);
     translateInteraction?.setActive(true);
+    addParkingLot(e.feature);
   });
 
   map.addInteraction(drawTool);
@@ -193,6 +198,7 @@ export default function OlMap({
   setContourLayer,
   setSlopeLayer,
   setBuildingLibrary,
+  setParkingLots,
 }: Props) {
   const { map, buildingTool, loadProject, buildingLibrary } = useContext(MapContext);
   const [selectInteraction, setSelectInteraction] = React.useState<Select | undefined>(undefined);
@@ -285,10 +291,20 @@ export default function OlMap({
         }
         if (feature.get("type") === "parking") {
           return new Style({
-            fill: new Fill({ color: "#AAAAAA99" }),
+            fill: new Fill({ color: "#AAAAAA11" }),
             stroke: new Stroke({
-              color: "white",
+              color: "#FFF",
               width: 2,
+            }),
+          });
+        }
+        if (feature.get("type") === "parking-internal-rect") {
+          var offset = 6;
+          return new Style({
+            fill: new Fill({ color: "#AAAAAA33" }),
+            stroke: new Stroke({
+              color: "#888",
+              width: 1,
             }),
           });
         }
@@ -317,7 +333,7 @@ export default function OlMap({
     const contourLayer = new ImageLayer({
       source: new ImageArcGISRest({
         ratio: 1,
-        params: { renderingRule: '{"rasterFunction":"Contour 25","rasterFunctionArguments":{"ContourInterval":0.33,"ZBase":1,"NumberOfContours":0}}' },
+        params: { renderingRule: '{"rasterFunction":"Contour 25","rasterFunctionArguments":{"ContourInterval":0.3048,"ZBase":1,"NumberOfContours":0}}' },
         url: "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
       }),
       visible: false,
@@ -384,8 +400,9 @@ export default function OlMap({
     newBuildingTool.setActive(false);
     setBuildingTool(newBuildingTool);
 
-    const newParkingTool = createParkingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool);
-    console.log("setting");
+    const newParkingTool = createParkingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool, (lot) => {
+      setParkingLots((currentState) => [...currentState, lot]);
+    });
     setParkingTool(newParkingTool);
     newParkingTool.setActive(false);
 

@@ -41,6 +41,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
   const [slopeLayer, setSlopeLayer] = React.useState<ImageLayer<ImageArcGISRest> | undefined>(undefined);
 
   const [buildingLibrary, setBuildingLibrary] = React.useState<ISavedPolygon[]>([]);
+  const [parkingLots, setParkingLots] = React.useState<Feature<Geometry>[]>([]);
 
   const [map, setMap] = React.useState<Map | undefined>(undefined);
 
@@ -77,6 +78,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
     if (project) {
       setBuildingLibrary(project.buildingLibrary);
       const drawFeatures = project.drawLayerFeatures.map((geoJsonFeature) => format.readFeature(geoJsonFeature));
+      /* TODO load parking layers and put in parkingLots hook */
       const drawLayerSource = map
         ?.getAllLayers()
         .find((layer) => layer.get("type") === "draw")
@@ -116,6 +118,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
         slopeLayer,
         loadProject,
         buildingLibrary,
+        parkingLots,
       }}
     >
       {/* Primary column */}
@@ -140,6 +143,7 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
           setContourLayer={setContourLayer}
           setSlopeLayer={setSlopeLayer}
           setBuildingLibrary={setBuildingLibrary}
+          setParkingLots={setParkingLots}
         />
       </section>
 
