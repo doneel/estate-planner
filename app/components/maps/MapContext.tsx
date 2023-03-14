@@ -87,10 +87,23 @@ export class Project implements IProject {
 
 export interface MapContextType {
   map?: Map;
+  setMap: React.Dispatch<React.SetStateAction<Map | undefined>>;
+  setTopoLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setParcelLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
+  setWetlandsLayer: React.Dispatch<React.SetStateAction<TileLayer<TileWMS> | undefined>>;
+  setContourLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
+  setSlopeLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
+  setParkingLots: React.Dispatch<React.SetStateAction<Feature<Geometry>[]>>;
   buildingTool?: Draw;
+  setBuildingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   roadTool?: Draw;
+  setRoadTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   parkingTool?: Draw;
+  setParkingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   stepbackTool?: Draw;
+  setStepbackTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   topoLayer?: TileLayer<XYZ>;
   parcelLayer?: TileLayer<XYZ>;
   streetLayer?: TileLayer<OSM>;
@@ -104,4 +117,19 @@ export interface MapContextType {
   saveProject: () => void;
   loadProject?: (map: Map) => void;
 }
-export const MapContext = React.createContext<MapContextType>({ saveProject: () => {} });
+export const MapContext = React.createContext<MapContextType>({
+  setMap: () => {},
+  setTopoLayer: () => {},
+  setParcelLayer: () => {},
+  setTonerLayer: () => {},
+  setStreetLayer: () => {},
+  setWetlandsLayer: () => {},
+  setContourLayer: () => {},
+  setSlopeLayer: () => {},
+  setParkingLots: () => {},
+  setBuildingTool: () => {},
+  setParkingTool: () => {},
+  setRoadTool: () => {},
+  setStepbackTool: () => {},
+  saveProject: () => {},
+});

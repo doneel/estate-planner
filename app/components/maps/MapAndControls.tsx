@@ -23,128 +23,19 @@ import type { ImageArcGISRest, OSM, TileWMS, XYZ } from "ol/source";
 import useLocalStorageState from "~/hooks/useLocalStorageState";
 import type Feature from "ol/Feature";
 import type ImageLayer from "ol/layer/Image";
+import SitePlanningContextProvider from "../site-planning/SitePlanningContextProvider";
 
 export interface Props {}
 
 export default function MapAndControls({ children }: Props & PropsWithChildren) {
-  const [selectedTool, setSelectedTool] = useState<string>();
-  const [buildingTool, setBuildingTool] = React.useState<Draw | undefined>(undefined);
-  const [roadTool, setRoadTool] = React.useState<Draw | undefined>(undefined);
-  const [stepbackTool, setStepbackTool] = React.useState<Draw | undefined>(undefined);
-  const [parkingTool, setParkingTool] = React.useState<Draw | undefined>(undefined);
-  const [topoLayer, setTopoLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
-  const [parcelLayer, setParcelLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
-  const [streetLayer, setStreetLayer] = React.useState<TileLayer<OSM> | undefined>(undefined);
-  const [tonerLayer, setTonerLayer] = React.useState<TileLayer<XYZ> | undefined>(undefined);
-  const [wetlandsLayer, setWetlandsLayer] = React.useState<TileLayer<TileWMS> | undefined>(undefined);
-  const [contourLayer, setContourLayer] = React.useState<ImageLayer<ImageArcGISRest> | undefined>(undefined);
-  const [slopeLayer, setSlopeLayer] = React.useState<ImageLayer<ImageArcGISRest> | undefined>(undefined);
-
-  const [buildingLibrary, setBuildingLibrary] = React.useState<ISavedPolygon[]>([]);
-  const [parkingLots, setParkingLots] = React.useState<Feature<Geometry>[]>([]);
-
-  const [map, setMap] = React.useState<Map | undefined>(undefined);
-
-  const [savedPlan, setSavedPlan] = useLocalStorageState<string | undefined>("site-plan", undefined);
-
-  const format = new GeoJSON();
-  function saveProject() {
-    console.log("Saving...");
-    const layerNames = ["draw", "stepback"];
-    const layersToSave = map
-      ?.getAllLayers()
-      //.getArray()
-      .filter((layer) => layerNames.includes(layer.get("type")));
-    //console.log("Saving layers", layersToSave);
-    //console.log((layersToSave ?? []).map((l) => l.getSource() as VectorSource<Geometry>).map((source) => source.getFeatures()));
-    const featuresByLayer = (layersToSave ?? [])
-      .map<[string, VectorSource<Geometry>]>((l) => [l.get("type"), l.getSource() as VectorSource<Geometry>])
-      .flatMap<[string, Feature<Geometry>]>(([name, source]) => source.getFeatures().map<[string, Feature<Geometry>]>((f) => [name, f]))
-      .map<[string, GeoJSONFeature]>(([name, feature]) => [name, format.writeFeatureObject(feature)]);
-
-    const project: Project = new Project(
-      featuresByLayer.filter(([name, feature]) => name === "stepback").map(([name, feature]) => feature),
-      featuresByLayer.filter(([name, feature]) => name === "draw").map(([name, feature]) => feature),
-      buildingLibrary.map((data) => new SavedPolygon(data))
-    );
-    setSavedPlan(JSON.stringify(defaultSerializer.serialize(project)));
-  }
-
-  function loadProject(map: Map) {
-    if (!savedPlan) {
-      return;
-    }
-    const project = defaultSerializer.deserializeObject(savedPlan, Project);
-    if (project) {
-      setBuildingLibrary(project.buildingLibrary);
-      const drawFeatures = project.drawLayerFeatures.map((geoJsonFeature) => format.readFeature(geoJsonFeature));
-      /* TODO load parking layers and put in parkingLots hook */
-      const drawLayerSource = map
-        ?.getAllLayers()
-        .find((layer) => layer.get("type") === "draw")
-        ?.getSource();
-      console.log("source", drawLayerSource);
-      if (drawLayerSource) {
-        (drawLayerSource as VectorSource<Geometry>).addFeatures(drawFeatures);
-      }
-
-      const stepbackFeatures = project.stepbackLayerFeatures.map((geoJsonFeature) => format.readFeature(geoJsonFeature));
-      const stepbackLayerSource = map
-        ?.getAllLayers()
-        .find((layer) => layer.get("type") === "stepback")
-        ?.getSource();
-      console.log("source", stepbackLayerSource);
-      if (stepbackLayerSource) {
-        (stepbackLayerSource as VectorSource<Geometry>).addFeatures(stepbackFeatures);
-      }
-    }
-  }
-
   return (
-    <MapContext.Provider
-      value={{
-        map,
-        saveProject,
-        buildingTool,
-        roadTool,
-        parkingTool,
-        stepbackTool,
-        topoLayer,
-        parcelLayer,
-        streetLayer,
-        tonerLayer,
-        wetlandsLayer,
-        contourLayer,
-        slopeLayer,
-        loadProject,
-        buildingLibrary,
-        parkingLots,
-      }}
-    >
-      {/* Primary column */}
+    <>
       <section aria-labelledby="primary-heading" className="flex h-full min-w-0 flex-1 flex-col overflow-y-auto lg:order-last">
         <h1 id="primary-heading" className="sr-only">
           Home
         </h1>
         {/* Your content */}
-        <OlMap
-          selectedTool={selectedTool}
-          map={map}
-          setMap={setMap}
-          setBuildingTool={setBuildingTool}
-          setRoadTool={setRoadTool}
-          setStepbackTool={setStepbackTool}
-          setParkingTool={setParkingTool}
-          setTopoLayer={setTopoLayer}
-          setParcelLayer={setParcelLayer}
-          setStreetLayer={setStreetLayer}
-          setTonerLayer={setTonerLayer}
-          setWetlandsLayer={setWetlandsLayer}
-          setContourLayer={setContourLayer}
-          setSlopeLayer={setSlopeLayer}
-          setBuildingLibrary={setBuildingLibrary}
-          setParkingLots={setParkingLots}
-        />
+        <OlMap />
       </section>
 
       {/* Secondary column (hidden on smaller screens) */}
@@ -154,6 +45,6 @@ export default function MapAndControls({ children }: Props & PropsWithChildren) 
           {/* Your content */}
         </div>
       </aside>
-    </MapContext.Provider>
+    </>
   );
 }

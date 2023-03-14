@@ -1,4 +1,4 @@
-import { defaults as defaultControls } from "ol/control";
+import { defaults as defaultControls, ScaleLine } from "ol/control";
 import TileLayer from "ol/layer/Tile";
 import type { GeoJSONFeature } from "ol/format/GeoJSON";
 import GeoJSON from "ol/format/GeoJSON";
@@ -36,28 +36,9 @@ import { getArea } from "ol/sphere";
 import { geojsonType } from "@turf/turf";
 import type { GeoJsonObject, Feature as GJFeature, Polygon as GJPolygon } from "geojson";
 import type { GeoJsonProperties } from "geojson";
-import { getUsableParkingLot } from "~/routes/site-planning/parking";
+import { getUsableParkingLot } from "~/routes/site-planning/map/parking";
 
-export interface Props {
-  //zoom: number;
-  //center: number[];
-  selectedTool?: string;
-  map: Map | undefined;
-  setMap: React.Dispatch<React.SetStateAction<Map | undefined>>;
-  setBuildingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setRoadTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setStepbackTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setParkingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setTopoLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
-  setParcelLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
-  setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
-  setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
-  setWetlandsLayer: React.Dispatch<React.SetStateAction<TileLayer<TileWMS> | undefined>>;
-  setContourLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
-  setSlopeLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
-  setBuildingLibrary: React.Dispatch<React.SetStateAction<ISavedPolygon[]>>;
-  setParkingLots: React.Dispatch<React.SetStateAction<Feature<Geometry>[]>>;
-}
+export interface Props {}
 
 function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: ISavedPolygon) => void) {
   const drawTool = new Draw({
@@ -183,29 +164,30 @@ function createTranslationTool(map: Map, selectInteraction: Select) {
   return translateInteraction;
 }
 
-export default function OlMap({
-  selectedTool,
-  setMap,
-  setBuildingTool,
-  setRoadTool,
-  setParkingTool,
-  setStepbackTool,
-  setTopoLayer,
-  setParcelLayer,
-  setStreetLayer,
-  setTonerLayer,
-  setWetlandsLayer,
-  setContourLayer,
-  setSlopeLayer,
-  setBuildingLibrary,
-  setParkingLots,
-}: Props) {
-  const { map, buildingTool, loadProject, buildingLibrary } = useContext(MapContext);
+export default function OlMap({}: Props) {
+  const {
+    map,
+    loadProject,
+    setMap,
+    setBuildingTool,
+    setRoadTool,
+    setParkingTool,
+    setStepbackTool,
+    setTopoLayer,
+    setParcelLayer,
+    setStreetLayer,
+    setTonerLayer,
+    setWetlandsLayer,
+    setContourLayer,
+    setSlopeLayer,
+    setBuildingLibrary,
+    setParkingLots,
+  } = useContext(MapContext);
   const [selectInteraction, setSelectInteraction] = React.useState<Select | undefined>(undefined);
   const [translateInteraction, setTranslateInteraction] = React.useState<Translate | undefined>(undefined);
 
   function initMap() {
-    if (map !== undefined) return;
+    console.log(map, map !== undefined);
     if (document.getElementById("map")?.hasChildNodes()) return;
     const stepbackLayerSource = new VectorSource({ wrapX: false });
     const stepbackLayer: VectorLayer<VectorSource<Geometry>> = new VectorLayer({
@@ -395,6 +377,10 @@ export default function OlMap({
 
     const newBuildingTool = createBuildingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool, (b) => {
       console.log("trying to save");
+      if (setBuildingLibrary === undefined) {
+        console.log("Can't save, hooks not initialized.");
+        return;
+      }
       setBuildingLibrary((currentState) => [...currentState, b]);
     });
     newBuildingTool.setActive(false);
@@ -409,6 +395,9 @@ export default function OlMap({
     const newStepbackTool = createStepbackTool(stepbackLayerSource, newMap, newSelectTool, newTranslateTool);
     setStepbackTool(newStepbackTool);
     newStepbackTool.setActive(false);
+
+    const scaleLine = new ScaleLine({ bar: true, text: true, minWidth: 125, units: "imperial" });
+    newMap.addControl(scaleLine);
 
     if (loadProject) {
       console.log("All layers now", newMap.getAllLayers());

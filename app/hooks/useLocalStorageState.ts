@@ -8,6 +8,11 @@ export default function useLocalStorageState<T>(
   { serialize = JSON.stringify, deserialize = JSON.parse } = {}
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [state, setState] = React.useState<T>(() => {
+    try {
+      console.log(window);
+    } catch (error) {
+      return undefined;
+    }
     if (window !== undefined) {
       const valueInLocalStorage = window.localStorage.getItem(key);
       if (valueInLocalStorage) {
