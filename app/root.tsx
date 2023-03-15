@@ -19,6 +19,10 @@ export const links: LinksFunction = () => {
       rel: "stylesheet",
       href: "/styles/map-styles.css",
     },
+    {
+      rel: "stylesheet",
+      href: "https://cdn.jsdelivr.net/npm/ol-contextmenu@latest/dist/ol-contextmenu.css",
+    },
   ];
 };
 
