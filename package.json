@@ -56,6 +56,7 @@
     "isbot": "^3.5.3",
     "jscad-react": "^0.1.6",
     "ol": "^7.2.2",
+    "ol-contextmenu": "^5.2.0",
     "ol-ext": "^4.0.6",
     "react": "^18.2.0",
     "react-currency-format": "^1.1.0",

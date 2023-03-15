@@ -31,6 +31,10 @@ import { ImageArcGISRest, TileWMS } from "ol/source";
 import type { Feature as GJFeature, Polygon as GJPolygon } from "geojson";
 import type { GeoJsonProperties } from "geojson";
 import { getUsableParkingLot } from "~/routes/site-planning/map/parking";
+import ContextMenu from "ol-contextmenu";
+import type { SingleItem, Item, CallbackObject } from "ol-contextmenu/dist/types";
+import { ItemWithNested } from "ol-contextmenu/dist/types";
+import { defaultRightClickMenu } from "./RightClickMenu";
 
 export interface Props {}
 
@@ -391,8 +395,9 @@ export default function OlMap({}: Props) {
     const scaleLine = new ScaleLine({ bar: true, text: true, minWidth: 125, units: "imperial" });
     newMap.addControl(scaleLine);
 
+    newMap.addControl(defaultRightClickMenu(newMap, drawLayerSource));
+
     if (loadProject) {
-      console.log("All layers now", newMap.getAllLayers());
       loadProject(newMap);
     }
   }
