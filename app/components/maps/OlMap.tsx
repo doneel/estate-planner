@@ -1,14 +1,12 @@
-import { defaults as defaultControls } from "ol/control";
+import { defaults as defaultControls, ScaleLine } from "ol/control";
 import TileLayer from "ol/layer/Tile";
-import type { GeoJSONFeature } from "ol/format/GeoJSON";
 import GeoJSON from "ol/format/GeoJSON";
-import { intersect } from "@turf/turf";
+import { buffer, intersect } from "@turf/turf";
 import OSM from "ol/source/OSM";
 import View from "ol/View";
 import Map from "ol/Map";
 import React from "react";
 import { useContext } from "react";
-import { useGeographic } from "ol/proj";
 import { Vector as VectorLayer } from "ol/layer";
 import Select from "ol/interaction/Select";
 import ImageLayer from "ol/layer/Image";
@@ -17,46 +15,26 @@ import type { DrawEvent } from "ol/interaction/Draw";
 import Draw from "ol/interaction/Draw";
 import VectorSource from "ol/source/Vector";
 import type { Geometry, Polygon } from "ol/geom";
-import { GeometryCollection } from "ol/geom";
 import { LineString } from "ol/geom";
 import type { LongLat, ISavedPolygon } from "./MapContext";
 import { MapContext } from "./MapContext";
 import XYZ from "ol/source/XYZ";
-import { formatArea, formatLength, getRectangleCenteredAt, getWrappingPolygon, styleFunction } from "./interactiveMapStyles";
+import { formatArea, formatLength, styleFunction } from "./interactiveMapStyles";
 import { v4 as uuidv4 } from "uuid";
 import Stamen from "ol/source/Stamen";
-import { Feature } from "ol";
-import { defaultFillStyle } from "ol/render/canvas";
+import type { Feature } from "ol";
 import Style from "ol/style/Style";
 import type { FeatureLike } from "ol/Feature";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
 import { ImageArcGISRest, TileWMS } from "ol/source";
-import { getArea } from "ol/sphere";
-import { geojsonType } from "@turf/turf";
-import type { GeoJsonObject, Feature as GJFeature, Polygon as GJPolygon } from "geojson";
+import type { Feature as GJFeature, Polygon as GJPolygon } from "geojson";
 import type { GeoJsonProperties } from "geojson";
+import { getUsableParkingLot } from "~/routes/site-planning/map/parking";
 
-export interface Props {
-  //zoom: number;
-  //center: number[];
-  selectedTool?: string;
-  map: Map | undefined;
-  setMap: React.Dispatch<React.SetStateAction<Map | undefined>>;
-  setBuildingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setRoadTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setStepbackTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setParkingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
-  setTopoLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
-  setParcelLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
-  setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
-  setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
-  setWetlandsLayer: React.Dispatch<React.SetStateAction<TileLayer<TileWMS> | undefined>>;
-  setContourLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
-  setSlopeLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
-  setBuildingLibrary: React.Dispatch<React.SetStateAction<ISavedPolygon[]>>;
-}
+export interface Props {}
 
+const format = new GeoJSON();
 function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: ISavedPolygon) => void) {
   const drawTool = new Draw({
     source: drawLayerSource,
@@ -124,15 +102,14 @@ function createStepbackTool(stepbackLayerSource: VectorSource, map: Map, selectI
     },
   });
   drawTool.on("drawend", (e: DrawEvent) => {
-    const borderBox = new Feature(getWrappingPolygon(e.feature.getGeometry() as LineString, 10));
-    borderBox.set("type", "stepbackBorder");
-    stepbackLayerSource.addFeature(borderBox);
-    const polys: Polygon[] = [];
-    (e.feature.getGeometry() as LineString).forEachSegment((start, end) => {
-      polys.push(getRectangleCenteredAt(start, end, 10));
-    });
-    //stepbackLayerSource.addFeature(new Feature(new GeometryCollection(polys)));
-
+    const lineClone = e.feature.clone();
+    lineClone.getGeometry()?.transform("EPSG:3857", "EPSG:4326");
+    const geoJson = format.writeFeatureObject(lineClone) as GJFeature<GJPolygon, GeoJsonProperties>;
+    const setbackBufferTurf = buffer(geoJson, 10, { units: "meters" });
+    const setBackBuffer = format.readFeature(setbackBufferTurf);
+    setBackBuffer?.getGeometry()?.transform("EPSG:4326", "EPSG:3857");
+    setBackBuffer.set("type", "stepbackBorder");
+    stepbackLayerSource.addFeature(setBackBuffer);
     e.feature.set("type", "stepbackLine");
     (e.target as Draw).setActive(false);
     selectInteraction?.setActive(true);
@@ -143,7 +120,7 @@ function createStepbackTool(stepbackLayerSource: VectorSource, map: Map, selectI
   return drawTool;
 }
 
-function createParkingTool(drawLayerSource: VectorSource, map: Map, selectInteraction?: Select, translateInteraction?: Translate) {
+function createParkingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addParkingLot: (lot: Feature<Geometry>) => void) {
   const drawTool = new Draw({
     source: drawLayerSource,
     type: "Polygon",
@@ -156,8 +133,11 @@ function createParkingTool(drawLayerSource: VectorSource, map: Map, selectIntera
   drawTool.on("drawend", (e: DrawEvent) => {
     e.feature.set("type", "parking");
     (e.target as Draw).setActive(false);
+    const internalRect = getUsableParkingLot(e.feature);
+    drawLayerSource.addFeature(internalRect);
     selectInteraction?.setActive(true);
     translateInteraction?.setActive(true);
+    addParkingLot(e.feature);
   });
 
   map.addInteraction(drawTool);
@@ -178,28 +158,30 @@ function createTranslationTool(map: Map, selectInteraction: Select) {
   return translateInteraction;
 }
 
-export default function OlMap({
-  selectedTool,
-  setMap,
-  setBuildingTool,
-  setRoadTool,
-  setParkingTool,
-  setStepbackTool,
-  setTopoLayer,
-  setParcelLayer,
-  setStreetLayer,
-  setTonerLayer,
-  setWetlandsLayer,
-  setContourLayer,
-  setSlopeLayer,
-  setBuildingLibrary,
-}: Props) {
-  const { map, buildingTool, loadProject, buildingLibrary } = useContext(MapContext);
+export default function OlMap({}: Props) {
+  const {
+    map,
+    loadProject,
+    setMap,
+    setBuildingTool,
+    setRoadTool,
+    setParkingTool,
+    setStepbackTool,
+    setTopoLayer,
+    setParcelLayer,
+    setStreetLayer,
+    setTonerLayer,
+    setWetlandsLayer,
+    setContourLayer,
+    setSlopeLayer,
+    setBuildingLibrary,
+    setParkingLots,
+  } = useContext(MapContext);
   const [selectInteraction, setSelectInteraction] = React.useState<Select | undefined>(undefined);
   const [translateInteraction, setTranslateInteraction] = React.useState<Translate | undefined>(undefined);
 
   function initMap() {
-    if (map !== undefined) return;
+    console.log(map, map !== undefined);
     if (document.getElementById("map")?.hasChildNodes()) return;
     const stepbackLayerSource = new VectorSource({ wrapX: false });
     const stepbackLayer: VectorLayer<VectorSource<Geometry>> = new VectorLayer({
@@ -228,8 +210,6 @@ export default function OlMap({
       },
     });
     stepbackLayer.set("type", "stepback");
-
-    const format = new GeoJSON();
 
     const drawLayerSource = new VectorSource({ wrapX: false });
     const drawLayer: VectorLayer<VectorSource<Geometry>> = new VectorLayer({
@@ -285,10 +265,20 @@ export default function OlMap({
         }
         if (feature.get("type") === "parking") {
           return new Style({
-            fill: new Fill({ color: "#AAAAAA99" }),
+            fill: new Fill({ color: "#AAAAAA11" }),
             stroke: new Stroke({
-              color: "white",
+              color: "#FFF",
               width: 2,
+            }),
+          });
+        }
+        if (feature.get("type") === "parking-internal-rect") {
+          var offset = 6;
+          return new Style({
+            fill: new Fill({ color: "#AAAAAA33" }),
+            stroke: new Stroke({
+              color: "#888",
+              width: 1,
             }),
           });
         }
@@ -317,7 +307,7 @@ export default function OlMap({
     const contourLayer = new ImageLayer({
       source: new ImageArcGISRest({
         ratio: 1,
-        params: { renderingRule: '{"rasterFunction":"Contour 25","rasterFunctionArguments":{"ContourInterval":0.33,"ZBase":1,"NumberOfContours":0}}' },
+        params: { renderingRule: '{"rasterFunction":"Contour 25","rasterFunctionArguments":{"ContourInterval":0.3048,"ZBase":1,"NumberOfContours":0}}' },
         url: "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
       }),
       visible: false,
@@ -379,19 +369,27 @@ export default function OlMap({
 
     const newBuildingTool = createBuildingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool, (b) => {
       console.log("trying to save");
+      if (setBuildingLibrary === undefined) {
+        console.log("Can't save, hooks not initialized.");
+        return;
+      }
       setBuildingLibrary((currentState) => [...currentState, b]);
     });
     newBuildingTool.setActive(false);
     setBuildingTool(newBuildingTool);
 
-    const newParkingTool = createParkingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool);
-    console.log("setting");
+    const newParkingTool = createParkingTool(drawLayerSource, newMap, newSelectTool, newTranslateTool, (lot) => {
+      setParkingLots((currentState) => [...currentState, lot]);
+    });
     setParkingTool(newParkingTool);
     newParkingTool.setActive(false);
 
     const newStepbackTool = createStepbackTool(stepbackLayerSource, newMap, newSelectTool, newTranslateTool);
     setStepbackTool(newStepbackTool);
     newStepbackTool.setActive(false);
+
+    const scaleLine = new ScaleLine({ bar: true, text: true, minWidth: 125, units: "imperial" });
+    newMap.addControl(scaleLine);
 
     if (loadProject) {
       console.log("All layers now", newMap.getAllLayers());

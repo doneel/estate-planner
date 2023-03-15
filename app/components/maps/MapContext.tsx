@@ -1,13 +1,12 @@
 import React from "react";
-import type { Map } from "ol";
+import type { Feature, Map } from "ol";
 import type Draw from "ol/interaction/Draw";
 import type TileLayer from "ol/layer/Tile";
 import type { ImageArcGISRest, OSM, TileWMS, XYZ } from "ol/source";
 import { JsonObject, JsonProperty, JsonSerializer, throwError } from "typescript-json-serializer";
 import type { GeoJSONFeature } from "ol/format/GeoJSON";
 import type ImageLayer from "ol/layer/Image";
-import { Vector as VectorLayer } from "ol/layer";
-import { Feature, Geometry, GeoJsonProperties } from "geojson";
+import type { Geometry } from "ol/geom";
 
 export interface LongLat {
   long: number;
@@ -86,10 +85,23 @@ export class Project implements IProject {
 
 export interface MapContextType {
   map?: Map;
+  setMap: React.Dispatch<React.SetStateAction<Map | undefined>>;
+  setTopoLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setParcelLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setTonerLayer: React.Dispatch<React.SetStateAction<TileLayer<XYZ> | undefined>>;
+  setStreetLayer: React.Dispatch<React.SetStateAction<TileLayer<OSM> | undefined>>;
+  setWetlandsLayer: React.Dispatch<React.SetStateAction<TileLayer<TileWMS> | undefined>>;
+  setContourLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
+  setSlopeLayer: React.Dispatch<React.SetStateAction<ImageLayer<ImageArcGISRest> | undefined>>;
+  setParkingLots: React.Dispatch<React.SetStateAction<Feature<Geometry>[]>>;
   buildingTool?: Draw;
+  setBuildingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   roadTool?: Draw;
+  setRoadTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   parkingTool?: Draw;
+  setParkingTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   stepbackTool?: Draw;
+  setStepbackTool: React.Dispatch<React.SetStateAction<Draw | undefined>>;
   topoLayer?: TileLayer<XYZ>;
   parcelLayer?: TileLayer<XYZ>;
   streetLayer?: TileLayer<OSM>;
@@ -98,8 +110,24 @@ export interface MapContextType {
   contourLayer?: ImageLayer<ImageArcGISRest>;
   slopeLayer?: ImageLayer<ImageArcGISRest>;
   buildingLibrary?: ISavedPolygon[];
+  parkingLots?: Feature<Geometry>[];
   setBuildingLibrary?: React.Dispatch<React.SetStateAction<ISavedPolygon[]>>;
   saveProject: () => void;
   loadProject?: (map: Map) => void;
 }
-export const MapContext = React.createContext<MapContextType>({ saveProject: () => {} });
+export const MapContext = React.createContext<MapContextType>({
+  setMap: () => {},
+  setTopoLayer: () => {},
+  setParcelLayer: () => {},
+  setTonerLayer: () => {},
+  setStreetLayer: () => {},
+  setWetlandsLayer: () => {},
+  setContourLayer: () => {},
+  setSlopeLayer: () => {},
+  setParkingLots: () => {},
+  setBuildingTool: () => {},
+  setParkingTool: () => {},
+  setRoadTool: () => {},
+  setStepbackTool: () => {},
+  saveProject: () => {},
+});

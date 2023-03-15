@@ -10,6 +10,9 @@ module.exports = {
       height: {
         "screen-75": "75vh",
       },
+      colors: {
+        earth: { 100: "#e7e5d7", 200: "#D8D3C1", 300: "#B9AF9A" },
+      },
     },
   },
   plugins: [require("flowbite/plugin"), require("@tailwindcss/forms")],
