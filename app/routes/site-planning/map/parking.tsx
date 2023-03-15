@@ -6,8 +6,7 @@ import type { Geometry, Polygon } from "ol/geom";
 import GeoJSON from "ol/format/GeoJSON";
 import type { Feature as GJFeature, GeoJsonProperties, Polygon as GJPolygon } from "geojson";
 import type { Units } from "@turf/turf";
-import { point } from "@turf/turf";
-import { formatArea, formatAreaFt, getAreaFt, getRectDimensions } from "~/components/maps/interactiveMapStyles";
+import { formatAreaFt, getAreaFt, getRectDimensions } from "~/components/maps/interactiveMapStyles";
 import type { Feature } from "ol";
 
 function CalculateAccessible(spaces: number): number {
@@ -214,11 +213,11 @@ function runByFeatures(features: GJFeature<GJPolygon, GeoJsonProperties>) {
   const polygon = turf.polygon(features.geometry.coordinates);
 
   const unitsOption: { units: Units } = { units: "kilometers" };
-  let bbox, percentage1, percentage2, fraction, point1, point2, bearing;
-  let point1a, point1b, point2a, point2b, line1, line2;
-  let largest, diagonalLength;
+  let bbox, percentage1, percentage2, fraction, point1: turf.Feature<turf.Point>, point2: turf.Feature<turf.Point>, bearing;
+  let point1a, point1b, point2a, point2b, line1: turf.Feature<turf.LineString>, line2: turf.Feature<turf.LineString>;
+  let largest: turf.helpers.Feature | undefined, diagonalLength;
 
-  const polyline: turf.LineString = turf.polygonToLineString(polygon);
+  const polyline: turf.Feature<turf.LineString> | turf.FeatureCollection<turf.LineString> = turf.polygonToLineString(polygon) as turf.Feature<turf.LineString>;
   const length = turf.length(polyline, unitsOption);
   bbox = turf.bbox(polygon);
   diagonalLength = turf.length(
@@ -261,7 +260,7 @@ function runByFeatures(features: GJFeature<GJPolygon, GeoJsonProperties>) {
       let intersect1 = turf.lineIntersect(line1, polygon);
       let intersect2 = turf.lineIntersect(line2, polygon);
 
-      const intersectObjArray = [];
+      const intersectObjArray: { coord: number[]; origin: number[]; opp: number[]; oppLine: turf.Feature<turf.LineString>; p: turf.Feature<turf.Point>; op: turf.Feature<turf.Point> }[] = [];
       turf
         .coordAll(intersect1)
         .filter((coord) => {
@@ -333,7 +332,7 @@ export function getUsableParkingLot(drawnSpace: Feature<Geometry>): Feature<Geom
 }
 
 export default function Parking() {
-  const { map, parkingTool, parkingLots } = useContext(MapContext);
+  const { map, parkingTool } = useContext(MapContext);
 
   const buildings = map
     ?.getAllLayers()

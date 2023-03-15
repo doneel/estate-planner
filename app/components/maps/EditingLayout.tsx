@@ -12,47 +12,12 @@
   }
   ```
 */
-import { Fragment, useState } from "react";
-import { Dialog, Menu, Transition } from "@headlessui/react";
-import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import {
-  ArchiveBoxIcon,
-  Bars3Icon,
-  BellIcon,
-  FlagIcon,
-  StopIcon,
-  InboxIcon,
-  NoSymbolIcon,
-  PencilSquareIcon,
-  UserCircleIcon,
-  XMarkIcon,
-  ExclamationTriangleIcon,
-  HomeModernIcon,
-  Square3Stack3DIcon,
-} from "@heroicons/react/24/outline";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { FlagIcon, PencilSquareIcon, ExclamationTriangleIcon, HomeModernIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
 import { FaRoad } from "react-icons/fa";
 import { NavLink, Outlet } from "@remix-run/react";
-import OlMap from "./OlMap";
 import MapAndControls from "./MapAndControls";
 
-const user = {
-  name: "Whitney Francis",
-  email: "whitney.francis@example.com",
-  imageUrl: "https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
-const navigation = [
-  {
-    name: "Inboxes",
-    href: "#",
-    children: [
-      { name: "Technical Support", href: "#" },
-      { name: "Sales", href: "#" },
-      { name: "General", href: "#" },
-    ],
-  },
-  { name: "Reporting", href: "#", children: [] },
-  { name: "Settings", href: "#", children: [] },
-];
 const sidebarNavigation = [
   { name: "Layers", href: "layers", icon: Square3Stack3DIcon, current: false },
   { name: "Buildings", href: "buildings", icon: HomeModernIcon, current: true },
@@ -61,18 +26,12 @@ const sidebarNavigation = [
   { name: "Stepbacks", href: "stepbacks", icon: ExclamationTriangleIcon, current: false },
   { name: "Drafts", href: "drafts", icon: PencilSquareIcon, current: false },
 ];
-const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Sign out", href: "#" },
-];
 
-function classNames(...classes: string[]) {
+export function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function Example() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
     <>
       {/*

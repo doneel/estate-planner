@@ -1,14 +1,12 @@
 import { defaults as defaultControls, ScaleLine } from "ol/control";
 import TileLayer from "ol/layer/Tile";
-import type { GeoJSONFeature } from "ol/format/GeoJSON";
 import GeoJSON from "ol/format/GeoJSON";
-import { intersect } from "@turf/turf";
+import { buffer, intersect } from "@turf/turf";
 import OSM from "ol/source/OSM";
 import View from "ol/View";
 import Map from "ol/Map";
 import React from "react";
 import { useContext } from "react";
-import { useGeographic } from "ol/proj";
 import { Vector as VectorLayer } from "ol/layer";
 import Select from "ol/interaction/Select";
 import ImageLayer from "ol/layer/Image";
@@ -17,29 +15,26 @@ import type { DrawEvent } from "ol/interaction/Draw";
 import Draw from "ol/interaction/Draw";
 import VectorSource from "ol/source/Vector";
 import type { Geometry, Polygon } from "ol/geom";
-import { GeometryCollection } from "ol/geom";
 import { LineString } from "ol/geom";
 import type { LongLat, ISavedPolygon } from "./MapContext";
 import { MapContext } from "./MapContext";
 import XYZ from "ol/source/XYZ";
-import { formatArea, formatLength, getRectangleCenteredAt, getWrappingPolygon, styleFunction } from "./interactiveMapStyles";
+import { formatArea, formatLength, styleFunction } from "./interactiveMapStyles";
 import { v4 as uuidv4 } from "uuid";
 import Stamen from "ol/source/Stamen";
-import { Feature } from "ol";
-import { defaultFillStyle } from "ol/render/canvas";
+import type { Feature } from "ol";
 import Style from "ol/style/Style";
 import type { FeatureLike } from "ol/Feature";
 import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
 import { ImageArcGISRest, TileWMS } from "ol/source";
-import { getArea } from "ol/sphere";
-import { geojsonType } from "@turf/turf";
-import type { GeoJsonObject, Feature as GJFeature, Polygon as GJPolygon } from "geojson";
+import type { Feature as GJFeature, Polygon as GJPolygon } from "geojson";
 import type { GeoJsonProperties } from "geojson";
 import { getUsableParkingLot } from "~/routes/site-planning/map/parking";
 
 export interface Props {}
 
+const format = new GeoJSON();
 function createBuildingTool(drawLayerSource: VectorSource, map: Map, selectInteraction: Select, translateInteraction: Translate, addBuildingToLibrary: (b: ISavedPolygon) => void) {
   const drawTool = new Draw({
     source: drawLayerSource,
@@ -107,15 +102,14 @@ function createStepbackTool(stepbackLayerSource: VectorSource, map: Map, selectI
     },
   });
   drawTool.on("drawend", (e: DrawEvent) => {
-    const borderBox = new Feature(getWrappingPolygon(e.feature.getGeometry() as LineString, 10));
-    borderBox.set("type", "stepbackBorder");
-    stepbackLayerSource.addFeature(borderBox);
-    const polys: Polygon[] = [];
-    (e.feature.getGeometry() as LineString).forEachSegment((start, end) => {
-      polys.push(getRectangleCenteredAt(start, end, 10));
-    });
-    //stepbackLayerSource.addFeature(new Feature(new GeometryCollection(polys)));
-
+    const lineClone = e.feature.clone();
+    lineClone.getGeometry()?.transform("EPSG:3857", "EPSG:4326");
+    const geoJson = format.writeFeatureObject(lineClone) as GJFeature<GJPolygon, GeoJsonProperties>;
+    const setbackBufferTurf = buffer(geoJson, 10, { units: "meters" });
+    const setBackBuffer = format.readFeature(setbackBufferTurf);
+    setBackBuffer?.getGeometry()?.transform("EPSG:4326", "EPSG:3857");
+    setBackBuffer.set("type", "stepbackBorder");
+    stepbackLayerSource.addFeature(setBackBuffer);
     e.feature.set("type", "stepbackLine");
     (e.target as Draw).setActive(false);
     selectInteraction?.setActive(true);
@@ -216,8 +210,6 @@ export default function OlMap({}: Props) {
       },
     });
     stepbackLayer.set("type", "stepback");
-
-    const format = new GeoJSON();
 
     const drawLayerSource = new VectorSource({ wrapX: false });
     const drawLayer: VectorLayer<VectorSource<Geometry>> = new VectorLayer({

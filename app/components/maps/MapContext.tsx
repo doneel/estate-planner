@@ -6,8 +6,6 @@ import type { ImageArcGISRest, OSM, TileWMS, XYZ } from "ol/source";
 import { JsonObject, JsonProperty, JsonSerializer, throwError } from "typescript-json-serializer";
 import type { GeoJSONFeature } from "ol/format/GeoJSON";
 import type ImageLayer from "ol/layer/Image";
-import { Vector as VectorLayer } from "ol/layer";
-import { GeoJsonProperties } from "geojson";
 import type { Geometry } from "ol/geom";
 
 export interface LongLat {

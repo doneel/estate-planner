@@ -1,10 +1,10 @@
 import { Fragment, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { Bars3Icon, BellIcon, FlagIcon, PencilSquareIcon, XMarkIcon, ExclamationTriangleIcon, HomeModernIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
-import { FaRoad } from "react-icons/fa";
+import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { NavLink, Outlet } from "@remix-run/react";
 import SitePlanningContextProvider from "~/components/site-planning/SitePlanningContextProvider";
+import { classNames } from "~/components/maps/EditingLayout";
 
 const user = {
   name: "Whitney Francis",
